@@ -82,4 +82,58 @@ public final class FabricBuyingTests {
     public void selectionsAreKeptInRange(GameTestHelper helper) {
         BuyingTests.selectionsAreKeptInRange(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void trayGoesToWhoeverClicksIt(GameTestHelper helper) {
+        BuyingTests.trayGoesToWhoeverClicksIt(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void aFullInventoryDropsTheRestAtYourFeet(GameTestHelper helper) {
+        BuyingTests.aFullInventoryDropsTheRestAtYourFeet(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void onlyTheFrontDoesAnything(GameTestHelper helper) {
+        BuyingTests.onlyTheFrontDoesAnything(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void heldBlocksAreNeverPlaced(GameTestHelper helper) {
+        BuyingTests.heldBlocksAreNeverPlaced(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void ownerNameFollowsRenames(GameTestHelper helper) {
+        BuyingTests.ownerNameFollowsRenames(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void strangersHoldingDyeCanStillUseTheTray(GameTestHelper helper) {
+        BuyingTests.strangersHoldingDyeCanStillUseTheTray(helper);
+    }
 }

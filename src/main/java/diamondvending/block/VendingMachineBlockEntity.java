@@ -18,6 +18,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -100,6 +101,12 @@ public class VendingMachineBlockEntity extends BlockEntity {
         this.owner = owner;
         this.ownerName = ownerName;
         changed();
+    }
+
+    /** Keeps the owner's last-known name current (spec §5.3) — players can change their names. */
+    public void refreshOwnerName(Player player) {
+        String name = player.getName().getString();
+        if (player.getUUID().equals(owner) && !name.equals(ownerName)) setOwner(owner, name);
     }
 
     // ---- contents ------------------------------------------------------------------------------------------------

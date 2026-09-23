@@ -59,5 +59,35 @@ public final class NeoForgeBuyingTests {
     public static void selectionsAreKeptInRange(GameTestHelper helper) {
         BuyingTests.selectionsAreKeptInRange(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void trayGoesToWhoeverClicksIt(GameTestHelper helper) {
+        BuyingTests.trayGoesToWhoeverClicksIt(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void aFullInventoryDropsTheRestAtYourFeet(GameTestHelper helper) {
+        BuyingTests.aFullInventoryDropsTheRestAtYourFeet(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void onlyTheFrontDoesAnything(GameTestHelper helper) {
+        BuyingTests.onlyTheFrontDoesAnything(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void heldBlocksAreNeverPlaced(GameTestHelper helper) {
+        BuyingTests.heldBlocksAreNeverPlaced(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void ownerNameFollowsRenames(GameTestHelper helper) {
+        BuyingTests.ownerNameFollowsRenames(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void strangersHoldingDyeCanStillUseTheTray(GameTestHelper helper) {
+        BuyingTests.strangersHoldingDyeCanStillUseTheTray(helper);
+    }
     *///?}
 }
