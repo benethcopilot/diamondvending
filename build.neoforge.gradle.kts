@@ -16,6 +16,13 @@ sourceSets.main {
     java.exclude("diamondvending/platform/fabric/**")
 }
 
+// Game tests live in their own source set and test mod, so no test code ships in the release jar.
+val gametest: SourceSet = sourceSets.create("gametest") {
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += sourceSets.main.get().output
+    java.exclude("diamondvending/gametest/fabric/**")
+}
+
 dependencies {
     testImplementation(platform("org.junit:junit-bom:${property("deps.junit")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -24,10 +31,14 @@ dependencies {
 
 neoForge {
     version = property("deps.neo_loader") as String
+    addModdingDependenciesTo(gametest)
 
     mods {
         register(property("mod.id") as String) {
             sourceSet(sourceSets.main.get())
+        }
+        register("diamondvending_gametest") {
+            sourceSet(gametest)
         }
     }
 
@@ -40,6 +51,12 @@ neoForge {
         register("server") {
             gameDirectory = file("../../run/${sc.current.project}")
             server()
+        }
+        register("gameTestServer") {
+            type = "gameTestServer"
+            sourceSet = gametest
+            gameDirectory = file("build/gametest")
+            systemProperty("neoforge.enabledGameTestNamespaces", property("mod.id") as String)
         }
     }
 }
@@ -82,6 +99,16 @@ tasks {
 
     test {
         useJUnitPlatform()
+        // GeneratedFilesTest compares against the files in the repository
+        systemProperty("diamondvending.root", rootProject.projectDir.absolutePath)
+    }
+
+    register<JavaExec>("generateArt") {
+        group = "diamondvending"
+        description = "Regenerates textures, models and test structures from MachineLayout"
+        classpath = sourceSets.test.get().runtimeClasspath
+        mainClass = "diamondvending.art.ArtGenerator"
+        args(rootProject.projectDir.absolutePath)
     }
 
     // Includes the license file in the built mod

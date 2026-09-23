@@ -45,6 +45,16 @@ jobs:
       - name: Build and test
         run: ./gradlew :${{ matrix.target }}:build --stacktrace
 
+      - name: Game tests
+        run: ./gradlew :${{ matrix.target }}:${{ endsWith(matrix.target, '-fabric') && 'runGametest' || 'runGameTestServer' }} --stacktrace
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: gametest-${{ matrix.target }}
+          path: versions/${{ matrix.target }}/build/gametest/
+          if-no-files-found: ignore
+
       - name: Jar check self-test
         if: matrix.target == '26.1-neoforge'
         run: bash .github/scripts/check-jar-contents.test.sh

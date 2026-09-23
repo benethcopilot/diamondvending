@@ -16,6 +16,13 @@ sourceSets.main {
     java.exclude("diamondvending/platform/neoforge/**")
 }
 
+// Game tests live in their own source set and test mod, so no test code ships in the release jar.
+val gametest: SourceSet = sourceSets.create("gametest") {
+    compileClasspath += sourceSets.main.get().compileClasspath + sourceSets.main.get().output
+    runtimeClasspath += sourceSets.main.get().runtimeClasspath + sourceSets.main.get().output
+    java.exclude("diamondvending/gametest/neoforge/**")
+}
+
 dependencies {
     minecraft("com.mojang:minecraft:${sc.current.version}")
     loomx.applyMojangMappings()
@@ -40,6 +47,27 @@ loom {
         generateRunConfig = true
         // One run folder per node: worlds from 26.1 must never be opened by 1.21.1
         runDirectory = rootProject.file("run/${sc.current.project}")
+    }
+
+    mods {
+        register("diamondvending") {
+            sourceSet(sourceSets.main.get())
+        }
+        register("diamondvending_gametest") {
+            sourceSet(gametest)
+        }
+    }
+
+    runs {
+        register("gametest") {
+            server()
+            displayName = "Game Test"
+            sourceSet = gametest.name
+            systemProperties.put("fabric-api.gametest", "true")
+            systemProperties.put("fabric-api.gametest.report-file", file("build/gametest/report.xml").absolutePath)
+            runDirectory = file("build/gametest")
+            generateRunConfig = false
+        }
     }
 }
 
@@ -80,6 +108,16 @@ tasks {
 
     test {
         useJUnitPlatform()
+        // GeneratedFilesTest compares against the files in the repository
+        systemProperty("diamondvending.root", rootProject.projectDir.absolutePath)
+    }
+
+    register<JavaExec>("generateArt") {
+        group = "diamondvending"
+        description = "Regenerates textures, models and test structures from MachineLayout"
+        classpath = sourceSets.test.get().runtimeClasspath
+        mainClass = "diamondvending.art.ArtGenerator"
+        args(rootProject.projectDir.absolutePath)
     }
 
     // Includes the license file in the built mod
