@@ -1,0 +1,72 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    name: Stonecutter is on the VCS version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Active version must be 26.1-neoforge
+        run: grep -q 'stonecutter active "26.1-neoforge"' stonecutter.gradle.kts
+
+  build:
+    name: Build ${{ matrix.target }}
+    needs: guard
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [1.21.1-fabric, 1.21.1-neoforge, 26.1-fabric, 26.1-neoforge]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: |
+            21
+            25
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Build and test
+        run: ./gradlew :${{ matrix.target }}:build --stacktrace
+
+      - name: Jar contains only this loader's code
+        run: |
+          jar=$(ls versions/${{ matrix.target }}/build/libs/diamondvending-*.jar | grep -v -- '-sources' | head -n 1)
+          echo "Checking $jar"
+          case "${{ matrix.target }}" in
+            *-fabric)   other=neoforge ;;
+            *-neoforge) other=fabric ;;
+          esac
+          if jar tf "$jar" | grep -q "diamondvending/platform/$other/"; then
+            echo "::error::$jar contains diamondvending/platform/$other classes"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: diamondvending-${{ matrix.target }}
+          path: versions/${{ matrix.target }}/build/libs/*.jar
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: test-report-${{ matrix.target }}
+          path: versions/${{ matrix.target }}/build/reports/tests/
+          if-no-files-found: ignore
