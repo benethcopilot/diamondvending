@@ -18,6 +18,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
@@ -192,6 +193,28 @@ public class VendingMachineBlockEntity extends BlockEntity {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
     }
+
+    /** Drops everything the machine holds (spec §5.3): the tray, every player's credit, the stock and the cash box. */
+    public void spillContents() {
+        if (level == null || level.isClientSide()) return;
+        Containers.dropContents(level, worldPosition, tray);
+        credits.values().forEach(items -> Containers.dropContents(level, worldPosition, items));
+        Containers.dropContents(level, worldPosition, stock);
+        Containers.dropContents(level, worldPosition, cashBox);
+        ItemSlots.clear(tray);
+        ItemSlots.clear(stock);
+        ItemSlots.clear(cashBox);
+        credits.clear();
+    }
+
+    //? if >=26.1 {
+    /** 26.1 calls this when the block is really removed — not when it's only repainted. */
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        spillContents();
+    }
+    //?}
 
     // ---- client view ---------------------------------------------------------------------------------------------
 

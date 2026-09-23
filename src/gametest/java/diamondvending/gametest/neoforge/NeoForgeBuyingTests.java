@@ -179,5 +179,20 @@ public final class NeoForgeBuyingTests {
     public static void nobodyElseCanSpendYourCredit(GameTestHelper helper) {
         BuyingTests.nobodyElseCanSpendYourCredit(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void breakingSpillsEverything(GameTestHelper helper) {
+        BuyingTests.breakingSpillsEverything(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void creativeBreakingStillSpills(GameTestHelper helper) {
+        BuyingTests.creativeBreakingStillSpills(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void dyeingKeepsTheContents(GameTestHelper helper) {
+        BuyingTests.dyeingKeepsTheContents(helper);
+    }
     *///?}
 }

@@ -185,6 +185,17 @@ public class VendingMachineBlock extends BaseEntityBlock {
         return super.playerWillDestroy(level, pos, state, player);
     }
 
+    //? if <26.1 {
+    /*// 1.21.1: spill when the master is really removed — a repaint keeps the same block, so it must not spill.
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof VendingMachineBlockEntity machine) {
+            machine.spillContents();
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
+    }
+    *///?}
+
     // ---- using ---------------------------------------------------------------------------------------------------
 
     //? if >=26.1 {

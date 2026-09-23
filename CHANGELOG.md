@@ -13,3 +13,7 @@ All notable changes to Diamond Vending are documented here. Format: [Keep a Chan
 - Dye it in any of the 16 colors.
 - Crafting recipe (iron blocks, glass pane, redstone, diamond), unlocked when you get a diamond.
 - In-game automated tests on all four targets.
+- Buying: press a numbered button to buy; pay with diamonds from your inventory or with credit loaded through the coin slot (credit is spent first and only you can use or return yours).
+- Coin return gives back exactly what you put in; your item drops into the pickup tray, which anyone can empty.
+- Every refused click tells you why (nothing for sale, sold out, not enough diamonds, tray full, cash box full), with vanilla sounds.
+- Breaking a machine spills its tray, credit, stock and cash box.

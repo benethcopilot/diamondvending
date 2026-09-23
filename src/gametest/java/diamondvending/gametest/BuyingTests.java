@@ -81,7 +81,10 @@ public final class BuyingTests {
             Map.entry("a_full_cash_box_stops_sales", BuyingTests::aFullCashBoxStopsSales),
             Map.entry("infinite_machines_never_run_out", BuyingTests::infiniteMachinesNeverRunOut),
             Map.entry("currency_inside_containers_does_not_pay", BuyingTests::currencyInsideContainersDoesNotPay),
-            Map.entry("nobody_else_can_spend_your_credit", BuyingTests::nobodyElseCanSpendYourCredit));
+            Map.entry("nobody_else_can_spend_your_credit", BuyingTests::nobodyElseCanSpendYourCredit),
+            Map.entry("breaking_spills_everything", BuyingTests::breakingSpillsEverything),
+            Map.entry("creative_breaking_still_spills", BuyingTests::creativeBreakingStillSpills),
+            Map.entry("dyeing_keeps_the_contents", BuyingTests::dyeingKeepsTheContents));
 
     private BuyingTests() {}
 
@@ -634,6 +637,49 @@ public final class BuyingTests {
         pressButton(helper, sam, 0);
         assertNeedMoney(helper, sam, 1, 0);
         helper.assertTrue(countIn(machine.credit(alex.getUUID()), Items.DIAMOND) == 5, "Alex's credit is only Alex's");
+        helper.succeed();
+    }
+
+    // ---- breaking ------------------------------------------------------------------------------------------------
+
+    /** Spec §5.3: nobody's items vanish when a machine is broken. */
+    public static void breakingSpillsEverything(GameTestHelper helper) {
+        RecordingPlayer owner = new RecordingPlayer(helper, GameType.SURVIVAL);
+        VendingMachineBlockEntity machine = placeMachine(helper, owner);
+        machine.tray().set(0, new ItemStack(Items.BREAD, 1));
+        machine.creditOf(UUID.randomUUID()).set(0, new ItemStack(Items.DIAMOND, 4));
+        machine.stock().set(0, new ItemStack(Items.APPLE, 10));
+        machine.cashBox().set(0, new ItemStack(Items.EMERALD, 3));
+        MachineTests.breakAsPlayer(helper, MachineTests.UPPER_RIGHT, owner);
+        helper.assertTrue(droppedNear(helper, MachineTests.MASTER, Items.BREAD) == 1, "the tray should spill");
+        helper.assertTrue(droppedNear(helper, MachineTests.MASTER, Items.DIAMOND) == 4, "everyone's credit should spill");
+        helper.assertTrue(droppedNear(helper, MachineTests.MASTER, Items.APPLE) == 10, "the stock should spill");
+        helper.assertTrue(droppedNear(helper, MachineTests.MASTER, Items.EMERALD) == 3, "the cash box should spill");
+        helper.assertTrue(MachineTests.droppedMachines(helper).size() == 1, "and the machine itself drops");
+        helper.succeed();
+    }
+
+    public static void creativeBreakingStillSpills(GameTestHelper helper) {
+        RecordingPlayer admin = new RecordingPlayer(helper, GameType.CREATIVE);
+        VendingMachineBlockEntity machine = placeMachine(helper, admin);
+        machine.tray().set(0, new ItemStack(Items.BREAD, 2));
+        MachineTests.breakAsPlayer(helper, MachineTests.MASTER, admin);
+        helper.assertTrue(droppedNear(helper, MachineTests.MASTER, Items.BREAD) == 2, "contents spill even in creative");
+        helper.assertTrue(MachineTests.droppedMachines(helper).isEmpty(), "but creative breaking still drops no machine");
+        helper.succeed();
+    }
+
+    public static void dyeingKeepsTheContents(GameTestHelper helper) {
+        RecordingPlayer owner = new RecordingPlayer(helper, GameType.SURVIVAL);
+        VendingMachineBlockEntity machine = placeMachine(helper, owner);
+        machine.tray().set(0, new ItemStack(Items.BREAD, 2));
+        owner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.BLUE_DYE));
+        click(helper, owner, MachineLayout.WINDOW);
+        MachineTests.assertWholeMachine(helper, DyeColor.BLUE);
+        helper.assertTrue(countIn(machine.tray(), Items.BREAD) == 2 && droppedNear(helper, MachineTests.MASTER, Items.BREAD) == 0,
+                "repainting must not spill the machine");
+        MachineTests.breakAsPlayer(helper, MachineTests.MASTER, owner);
+        helper.assertTrue(droppedNear(helper, MachineTests.MASTER, Items.BREAD) == 2, "breaking it afterwards still spills the tray");
         helper.succeed();
     }
 }

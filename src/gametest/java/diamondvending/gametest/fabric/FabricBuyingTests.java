@@ -298,4 +298,31 @@ public final class FabricBuyingTests {
     public void nobodyElseCanSpendYourCredit(GameTestHelper helper) {
         BuyingTests.nobodyElseCanSpendYourCredit(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void breakingSpillsEverything(GameTestHelper helper) {
+        BuyingTests.breakingSpillsEverything(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void creativeBreakingStillSpills(GameTestHelper helper) {
+        BuyingTests.creativeBreakingStillSpills(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void dyeingKeepsTheContents(GameTestHelper helper) {
+        BuyingTests.dyeingKeepsTheContents(helper);
+    }
 }

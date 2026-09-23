@@ -73,6 +73,17 @@ JSON that differs between Minecraft versions lives in `src/main/resources-1.21.1
 `fabric.mod.json` / `neoforge.mods.toml`: the oldest release that has every API we call. Raise a floor only when new
 code needs a newer API, so packs on older loaders keep working. `MetadataFloorsTest` checks both.
 
+## Stocking a machine by command
+Until the setup screen exists (Plan 5), stock a machine with `/data`. Look at its lower-left part and run, for example:
+
+```
+/data merge block <x> <y> <z> {selections:[{slot:0,item:{id:"minecraft:apple",count:2},price:3}],stock:{Items:[{Slot:0b,id:"minecraft:apple",count:64}]}}
+```
+
+`slot` 0–11 is button 1–12; `count` is how many one purchase gives; `price` is 0–999 diamonds. Add `infinite:1b` for a
+machine that never runs out and destroys what it's paid. The other saved fields are `owner`, `owner_name`, `cash_box`,
+`tray` and `credits` (see `VendingMachineBlockEntity`).
+
 ## Vanilla vs NeoForge sources
 NeoForge's patched Minecraft sources widen some access (e.g. `BlockEntityType`'s constructor is public there but
 private in vanilla 26.1). When checking an API, confirm it in vanilla too — Fabric builds see vanilla.
