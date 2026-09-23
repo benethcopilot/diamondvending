@@ -28,3 +28,11 @@ Thumbs.db
 
 # Brainstorming companion mockups
 .superpowers/
+
+# Gradle / Java extras (from the Stonecutter template)
+classes/
+*.launch
+hs_err_*.log
+replay_*.log
+*.hprof
+*.jfr
