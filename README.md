@@ -10,7 +10,7 @@ machine and sells items for **diamonds** — with a physical button for each of 
 - Targets Minecraft **1.21.1** and **26.1.x** on **NeoForge** and **Fabric**. No extra library
   dependencies.
 
-> Status: design phase — nothing to download yet.
+> Status: in development — see the [roadmap](docs/superpowers/plans/2026-09-23-roadmap.md). Building from source: [dev setup](docs/dev-setup.md).
 
 ## Docs
 

@@ -1,0 +1,74 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    name: Stonecutter is on the VCS version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Active version must be 26.1-neoforge
+        run: grep -q 'stonecutter active "26.1-neoforge"' stonecutter.gradle.kts
+
+  build:
+    name: Build ${{ matrix.target }}
+    needs: guard
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [1.21.1-fabric, 1.21.1-neoforge, 26.1-fabric, 26.1-neoforge]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: |
+            21
+            25
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Build and test
+        run: ./gradlew :${{ matrix.target }}:build --stacktrace
+
+      - name: Jar check self-test
+        if: matrix.target == '26.1-neoforge'
+        run: bash .github/scripts/check-jar-contents.test.sh
+
+      - name: Jar contains only this loader's code
+        run: bash .github/scripts/check-jar-contents.sh ${{ matrix.target }}
+
+      # The guard job only checks the `stonecutter active` line. This re-runs Stonecutter's comment
+      # processor for the VCS version; any diff means code was committed in another version's state.
+      - name: Committed code is in the 26.1-neoforge state
+        if: matrix.target == '26.1-neoforge'
+        run: |
+          ./gradlew "Refresh active project"
+          git diff --exit-code -- src stonecutter.gradle.kts
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: diamondvending-${{ matrix.target }}
+          path: versions/${{ matrix.target }}/build/libs/*.jar
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: test-report-${{ matrix.target }}
+          path: versions/${{ matrix.target }}/build/reports/tests/
+          if-no-files-found: ignore
