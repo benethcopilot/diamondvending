@@ -29,5 +29,35 @@ public final class NeoForgeBuyingTests {
     public static void moneyReadsNaturally(GameTestHelper helper) {
         BuyingTests.moneyReadsNaturally(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void contentsSurviveSaveAndLoad(GameTestHelper helper) {
+        BuyingTests.contentsSurviveSaveAndLoad(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void unknownItemsLoadAsEmptySelections(GameTestHelper helper) {
+        BuyingTests.unknownItemsLoadAsEmptySelections(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void clientsGetOnlyWhatTheyNeed(GameTestHelper helper) {
+        BuyingTests.clientsGetOnlyWhatTheyNeed(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void problemsFollowTheMachine(GameTestHelper helper) {
+        BuyingTests.problemsFollowTheMachine(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void infiniteMachinesHaveNoOwnerProblems(GameTestHelper helper) {
+        BuyingTests.infiniteMachinesHaveNoOwnerProblems(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void selectionsAreKeptInRange(GameTestHelper helper) {
+        BuyingTests.selectionsAreKeptInRange(helper);
+    }
     *///?}
 }

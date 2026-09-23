@@ -28,4 +28,58 @@ public final class FabricBuyingTests {
     public void moneyReadsNaturally(GameTestHelper helper) {
         BuyingTests.moneyReadsNaturally(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void contentsSurviveSaveAndLoad(GameTestHelper helper) {
+        BuyingTests.contentsSurviveSaveAndLoad(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void unknownItemsLoadAsEmptySelections(GameTestHelper helper) {
+        BuyingTests.unknownItemsLoadAsEmptySelections(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void clientsGetOnlyWhatTheyNeed(GameTestHelper helper) {
+        BuyingTests.clientsGetOnlyWhatTheyNeed(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void problemsFollowTheMachine(GameTestHelper helper) {
+        BuyingTests.problemsFollowTheMachine(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void infiniteMachinesHaveNoOwnerProblems(GameTestHelper helper) {
+        BuyingTests.infiniteMachinesHaveNoOwnerProblems(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void selectionsAreKeptInRange(GameTestHelper helper) {
+        BuyingTests.selectionsAreKeptInRange(helper);
+    }
 }
