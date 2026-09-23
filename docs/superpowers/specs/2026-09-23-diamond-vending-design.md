@@ -1,7 +1,7 @@
 # Diamond Vending — Design Spec
 
 - **Date:** 2026-09-23
-- **Status:** Draft — awaiting review
+- **Status:** Approved 2026-09-23 · Implementation: [roadmap](../plans/2026-09-23-roadmap.md)
 - **Mod ID:** `diamondvending` · **Display name:** Diamond Vending · **Java package / Gradle group:** `diamondvending`
 - **License:** MIT · **Mod-list author:** "Diamond Vending Team"
 - Research behind these decisions: [`docs/research.md`](../../research.md). Deferred ideas: [`docs/backlog.md`](../../backlog.md).
