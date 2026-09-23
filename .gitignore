@@ -1,0 +1,30 @@
+# Gradle
+.gradle/
+build/
+out/
+**/build/
+
+# Stonecutter / loom caches
+.kotlin/
+versions/*/build/
+versions/*/run/
+run/
+runs/
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Brainstorming companion mockups
+.superpowers/

@@ -1,0 +1,10 @@
+# Normalize line endings in the repo; Linux CI needs LF (e.g. gradlew)
+* text=auto eol=lf
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+*.png binary
+*.jar binary
+*.ogg binary
+*.bbmodel text eol=lf

@@ -1,0 +1,61 @@
+name: Bug report
+description: Something in Diamond Vending isn't working
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting! The more detail, the faster it gets fixed.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: dropdown
+    id: minecraft
+    attributes:
+      label: Minecraft version
+      options:
+        - "1.21.1"
+        - "26.1.x"
+        - Other (say which below)
+    validations:
+      required: true
+  - type: dropdown
+    id: loader
+    attributes:
+      label: Mod loader
+      options:
+        - NeoForge
+        - Fabric
+    validations:
+      required: true
+  - type: input
+    id: mod-version
+    attributes:
+      label: Diamond Vending version
+      placeholder: e.g. 1.0.0
+    validations:
+      required: true
+  - type: input
+    id: modpack
+    attributes:
+      label: Modpack (name and version), if any
+      placeholder: e.g. All the Mods 10 v5.2
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Where did it happen?
+      options:
+        - Singleplayer
+        - Multiplayer server
+        - Both
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or crash report
+      description: Paste `logs/latest.log` or the crash report (or a link to one).
+      render: shell
