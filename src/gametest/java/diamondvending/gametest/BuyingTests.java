@@ -25,6 +25,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
@@ -68,7 +69,19 @@ public final class BuyingTests {
             Map.entry("the_coin_slot_only_takes_money", BuyingTests::theCoinSlotOnlyTakesMoney),
             Map.entry("credit_stops_at_nine_stacks", BuyingTests::creditStopsAtNineStacks),
             Map.entry("coin_return_gives_back_the_exact_items", BuyingTests::coinReturnGivesBackTheExactItems),
-            Map.entry("credit_belongs_to_one_player", BuyingTests::creditBelongsToOnePlayer));
+            Map.entry("credit_belongs_to_one_player", BuyingTests::creditBelongsToOnePlayer),
+            Map.entry("buying_moves_goods_into_the_tray", BuyingTests::buyingMovesGoodsIntoTheTray),
+            Map.entry("credit_is_spent_first", BuyingTests::creditIsSpentFirst),
+            Map.entry("one_short_takes_nothing", BuyingTests::oneShortTakesNothing),
+            Map.entry("free_items_cost_nothing", BuyingTests::freeItemsCostNothing),
+            Map.entry("empty_buttons_say_so", BuyingTests::emptyButtonsSaySo),
+            Map.entry("sold_out_buttons_say_so", BuyingTests::soldOutButtonsSaySo),
+            Map.entry("stock_must_match_the_template_exactly", BuyingTests::stockMustMatchTheTemplateExactly),
+            Map.entry("a_full_tray_stops_sales", BuyingTests::aFullTrayStopsSales),
+            Map.entry("a_full_cash_box_stops_sales", BuyingTests::aFullCashBoxStopsSales),
+            Map.entry("infinite_machines_never_run_out", BuyingTests::infiniteMachinesNeverRunOut),
+            Map.entry("currency_inside_containers_does_not_pay", BuyingTests::currencyInsideContainersDoesNotPay),
+            Map.entry("nobody_else_can_spend_your_credit", BuyingTests::nobodyElseCanSpendYourCredit));
 
     private BuyingTests() {}
 
@@ -170,6 +183,28 @@ public final class BuyingTests {
         Component message = player.lastMessage();
         helper.assertTrue(message != null, "expected the player to be told " + key + ", but they were told nothing");
         return translation(helper, message, key);
+    }
+
+    /** A machine selling 2 apples for 3 diamonds on button 1, with 10 apples in stock. */
+    static VendingMachineBlockEntity appleMachine(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        machine.setSelection(0, Selection.of(new ItemStack(Items.APPLE, 2), 3));
+        machine.stock().set(0, new ItemStack(Items.APPLE, 10));
+        return machine;
+    }
+
+    static RecordingPlayer buyerWith(GameTestHelper helper, int diamonds) {
+        RecordingPlayer buyer = new RecordingPlayer(helper, GameType.SURVIVAL);
+        if (diamonds > 0) buyer.getInventory().add(new ItemStack(Items.DIAMOND, diamonds));
+        return buyer;
+    }
+
+    /** Checks the "Button N costs X. You have Y." message. */
+    static void assertNeedMoney(GameTestHelper helper, RecordingPlayer buyer, int button, int funds) {
+        Object[] args = lastMessage(helper, buyer, Texts.NEED_MONEY).getArgs();
+        helper.assertTrue(args[0].equals(button), "the message should name button " + button + ", named " + args[0]);
+        translation(helper, (Component) args[1], Texts.DIAMOND + ".many");
+        helper.assertTrue(args[2].equals(funds), "the buyer has " + funds + " to spend, the message said " + args[2]);
     }
 
     // ---- currency ------------------------------------------------------------------------------------------------
@@ -463,6 +498,142 @@ public final class BuyingTests {
         helper.assertTrue(countIn(machine.credit(alex.getUUID()), Items.DIAMOND) == 5, "Alex's credit should stay put");
         click(helper, alex, MachineLayout.COIN_RETURN);
         helper.assertTrue(countHeld(alex, Items.DIAMOND) == 5, "and Alex gets it back from the coin return");
+        helper.succeed();
+    }
+
+    // ---- buying --------------------------------------------------------------------------------------------------
+
+    public static void buyingMovesGoodsIntoTheTray(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = appleMachine(helper);
+        RecordingPlayer buyer = buyerWith(helper, 5);
+        pressButton(helper, buyer, 0);
+        helper.assertTrue(countIn(machine.tray(), Items.APPLE) == 2, "2 apples should drop into the tray");
+        helper.assertTrue(countIn(machine.stock(), Items.APPLE) == 8, "and come out of stock");
+        helper.assertTrue(countIn(machine.cashBox(), Items.DIAMOND) == 3, "the 3 diamonds should go in the cash box");
+        helper.assertTrue(countHeld(buyer, Items.DIAMOND) == 2, "the buyer keeps the other 2");
+        helper.assertTrue(buyer.messages().isEmpty(), "a good purchase needs no message");
+        helper.succeed();
+    }
+
+    public static void creditIsSpentFirst(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = appleMachine(helper);
+        RecordingPlayer buyer = buyerWith(helper, 5);
+        machine.creditOf(buyer.getUUID()).set(0, new ItemStack(Items.DIAMOND, 2));
+        pressButton(helper, buyer, 0);
+        helper.assertTrue(countIn(machine.credit(buyer.getUUID()), Items.DIAMOND) == 0, "both credit diamonds are spent first");
+        helper.assertTrue(countHeld(buyer, Items.DIAMOND) == 4, "then 1 from the inventory");
+        helper.assertTrue(countIn(machine.cashBox(), Items.DIAMOND) == 3, "all 3 end up in the cash box");
+        helper.succeed();
+    }
+
+    public static void oneShortTakesNothing(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = appleMachine(helper);
+        RecordingPlayer buyer = buyerWith(helper, 1);
+        machine.creditOf(buyer.getUUID()).set(0, new ItemStack(Items.DIAMOND, 1));
+        pressButton(helper, buyer, 0);
+        assertNeedMoney(helper, buyer, 1, 2);
+        helper.assertTrue(countIn(machine.credit(buyer.getUUID()), Items.DIAMOND) == 1 && countHeld(buyer, Items.DIAMOND) == 1,
+                "a failed purchase must not take anything");
+        helper.assertTrue(ItemSlots.isEmpty(machine.tray()) && countIn(machine.stock(), Items.APPLE) == 10
+                && ItemSlots.isEmpty(machine.cashBox()), "and must not change the machine");
+        helper.succeed();
+    }
+
+    public static void freeItemsCostNothing(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        machine.setSelection(0, Selection.of(new ItemStack(Items.BREAD), 0));
+        machine.stock().set(0, new ItemStack(Items.BREAD, 1));
+        RecordingPlayer buyer = buyerWith(helper, 0);
+        pressButton(helper, buyer, 0);
+        helper.assertTrue(countIn(machine.tray(), Items.BREAD) == 1, "a price of 0 means free");
+        helper.assertTrue(buyer.messages().isEmpty(), "no message for a free item");
+        helper.succeed();
+    }
+
+    public static void emptyButtonsSaySo(GameTestHelper helper) {
+        appleMachine(helper);
+        RecordingPlayer buyer = buyerWith(helper, 5);
+        pressButton(helper, buyer, 6);
+        helper.assertTrue(lastMessage(helper, buyer, Texts.BUTTON_EMPTY).getArgs()[0].equals(7), "the message should say button 7");
+        helper.assertTrue(countHeld(buyer, Items.DIAMOND) == 5, "nothing is taken");
+        helper.succeed();
+    }
+
+    public static void soldOutButtonsSaySo(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = appleMachine(helper);
+        machine.stock().set(0, new ItemStack(Items.APPLE, 1));
+        RecordingPlayer buyer = buyerWith(helper, 5);
+        pressButton(helper, buyer, 0);
+        helper.assertTrue(lastMessage(helper, buyer, Texts.SOLD_OUT).getArgs()[0].equals(1), "the message should say button 1");
+        helper.assertTrue(countHeld(buyer, Items.DIAMOND) == 5, "nothing is taken");
+        helper.succeed();
+    }
+
+    public static void stockMustMatchTheTemplateExactly(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = appleMachine(helper);
+        ItemStack namedApples = new ItemStack(Items.APPLE, 10);
+        namedApples.set(DataComponents.CUSTOM_NAME, Component.literal("Special"));
+        machine.stock().set(0, namedApples);
+        RecordingPlayer buyer = buyerWith(helper, 5);
+        pressButton(helper, buyer, 0);
+        lastMessage(helper, buyer, Texts.SOLD_OUT);
+        helper.assertTrue(countIn(machine.stock(), Items.APPLE) == 10, "renamed apples aren't the apples this button sells");
+        helper.succeed();
+    }
+
+    public static void aFullTrayStopsSales(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = appleMachine(helper);
+        fill(machine.tray(), Items.COBBLESTONE);
+        RecordingPlayer buyer = buyerWith(helper, 5);
+        pressButton(helper, buyer, 0);
+        lastMessage(helper, buyer, Texts.explanation(Problem.TRAY_FULL));
+        helper.assertTrue(countHeld(buyer, Items.DIAMOND) == 5 && countIn(machine.stock(), Items.APPLE) == 10, "nothing changes");
+        helper.succeed();
+    }
+
+    public static void aFullCashBoxStopsSales(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = appleMachine(helper);
+        fill(machine.cashBox(), Items.COBBLESTONE);
+        RecordingPlayer buyer = buyerWith(helper, 5);
+        pressButton(helper, buyer, 0);
+        TranslatableContents told = lastMessage(helper, buyer, Texts.explanation(Problem.CASH_BOX_FULL));
+        translation(helper, (Component) told.getArgs()[0], Texts.DIAMOND + ".name");
+        helper.assertTrue(countHeld(buyer, Items.DIAMOND) == 5 && countIn(machine.stock(), Items.APPLE) == 10, "nothing changes");
+        helper.succeed();
+    }
+
+    public static void infiniteMachinesNeverRunOut(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = appleMachine(helper);
+        machine.setInfinite(true);
+        machine.stock().set(0, ItemStack.EMPTY);
+        RecordingPlayer buyer = buyerWith(helper, 3);
+        pressButton(helper, buyer, 0);
+        helper.assertTrue(countIn(machine.tray(), Items.APPLE) == 2, "infinite machines sell without stock");
+        helper.assertTrue(countHeld(buyer, Items.DIAMOND) == 0, "the buyer still pays");
+        helper.assertTrue(ItemSlots.isEmpty(machine.cashBox()), "and the diamonds are destroyed, not kept");
+        helper.succeed();
+    }
+
+    public static void currencyInsideContainersDoesNotPay(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = appleMachine(helper);
+        RecordingPlayer buyer = buyerWith(helper, 0);
+        ItemStack box = new ItemStack(Items.SHULKER_BOX);
+        box.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(List.of(new ItemStack(Items.DIAMOND, 10))));
+        buyer.getInventory().add(box);
+        pressButton(helper, buyer, 0);
+        assertNeedMoney(helper, buyer, 1, 0);
+        helper.assertTrue(ItemSlots.isEmpty(machine.tray()), "diamonds packed in a shulker box don't count");
+        helper.succeed();
+    }
+
+    public static void nobodyElseCanSpendYourCredit(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = appleMachine(helper);
+        RecordingPlayer alex = buyerWith(helper, 0);
+        machine.creditOf(alex.getUUID()).set(0, new ItemStack(Items.DIAMOND, 5));
+        RecordingPlayer sam = buyerWith(helper, 0);
+        pressButton(helper, sam, 0);
+        assertNeedMoney(helper, sam, 1, 0);
+        helper.assertTrue(countIn(machine.credit(alex.getUUID()), Items.DIAMOND) == 5, "Alex's credit is only Alex's");
         helper.succeed();
     }
 }

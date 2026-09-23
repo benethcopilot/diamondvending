@@ -119,5 +119,65 @@ public final class NeoForgeBuyingTests {
     public static void creditBelongsToOnePlayer(GameTestHelper helper) {
         BuyingTests.creditBelongsToOnePlayer(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void buyingMovesGoodsIntoTheTray(GameTestHelper helper) {
+        BuyingTests.buyingMovesGoodsIntoTheTray(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void creditIsSpentFirst(GameTestHelper helper) {
+        BuyingTests.creditIsSpentFirst(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void oneShortTakesNothing(GameTestHelper helper) {
+        BuyingTests.oneShortTakesNothing(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void freeItemsCostNothing(GameTestHelper helper) {
+        BuyingTests.freeItemsCostNothing(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void emptyButtonsSaySo(GameTestHelper helper) {
+        BuyingTests.emptyButtonsSaySo(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void soldOutButtonsSaySo(GameTestHelper helper) {
+        BuyingTests.soldOutButtonsSaySo(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void stockMustMatchTheTemplateExactly(GameTestHelper helper) {
+        BuyingTests.stockMustMatchTheTemplateExactly(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void aFullTrayStopsSales(GameTestHelper helper) {
+        BuyingTests.aFullTrayStopsSales(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void aFullCashBoxStopsSales(GameTestHelper helper) {
+        BuyingTests.aFullCashBoxStopsSales(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void infiniteMachinesNeverRunOut(GameTestHelper helper) {
+        BuyingTests.infiniteMachinesNeverRunOut(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void currencyInsideContainersDoesNotPay(GameTestHelper helper) {
+        BuyingTests.currencyInsideContainersDoesNotPay(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void nobodyElseCanSpendYourCredit(GameTestHelper helper) {
+        BuyingTests.nobodyElseCanSpendYourCredit(helper);
+    }
     *///?}
 }

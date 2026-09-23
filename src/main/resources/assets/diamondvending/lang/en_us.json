@@ -1,8 +1,16 @@
 {
   "block.diamondvending.vending_machine": "Vending Machine",
   "message.diamondvending.owner_only": "Only the owner can do that.",
+  "message.diamondvending.button_empty": "Button %s has nothing for sale.",
+  "message.diamondvending.sold_out": "Button %s is sold out.",
+  "message.diamondvending.need_money": "Button %s costs %s. You have %s.",
   "message.diamondvending.wrong_currency": "This machine takes %s.",
   "message.diamondvending.credit_full": "You can't put in any more. Buy something or press coin return.",
+  "problem.diamondvending.catalog_missing.explanation": "This machine's catalog is missing. An admin needs to pick a new one.",
+  "problem.diamondvending.not_set_up.explanation": "Nothing is for sale yet. The owner can empty both hands, then sneak + right-click to set it up.",
+  "problem.diamondvending.cash_box_full.explanation": "The cash box is full of %s! The owner needs to take them out.",
+  "problem.diamondvending.sold_out.explanation": "Everything is sold out. The owner needs to put more items in the Stock.",
+  "problem.diamondvending.tray_full.explanation": "The tray is full! Right-click the tray to take the items out.",
   "currency.diamondvending.minecraft.diamond.one": "%s diamond",
   "currency.diamondvending.minecraft.diamond.many": "%s diamonds",
   "currency.diamondvending.minecraft.diamond.name": "diamonds"

@@ -6,6 +6,7 @@ import diamondvending.core.Hit;
 import diamondvending.core.Texts;
 import diamondvending.shop.CoinSlot;
 import diamondvending.shop.PickupTray;
+import diamondvending.shop.Purchase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -216,6 +217,7 @@ public class VendingMachineBlock extends BaseEntityBlock {
         }
         Hit target = FrontFace.hit(state, pos, hit);
         switch (target.region()) {
+            case BUTTON -> Purchase.pressButton(machine, player, target.button());
             case COIN_SLOT -> CoinSlot.insert(machine, player);
             case COIN_RETURN -> CoinSlot.giveBack(machine, player);
             case TRAY -> PickupTray.collect(machine, player);

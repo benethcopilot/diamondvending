@@ -1,5 +1,8 @@
 package diamondvending;
 
+import diamondvending.core.Problem;
+import diamondvending.core.Texts;
+import diamondvending.shop.Currency;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
@@ -14,5 +17,10 @@ public final class Messages {
         //?} else {
         /*player.displayClientMessage(message, true);
         *///?}
+    }
+
+    /** A problem's plain-language explanation (spec §3.5 b); "diamonds" becomes the machine's real currency. */
+    public static Component explanation(Problem problem, Currency currency) {
+        return Component.translatable(Texts.explanation(problem), currency.name());
     }
 }
