@@ -8,6 +8,7 @@ displayName = "${name}"
 version = "${version}"
 authors = "${authors}"
 description = '''${description}'''
+logoFile = "assets/diamondvending/icon.png"
 
 [[dependencies.${id}]]
 modId = "neoforge"

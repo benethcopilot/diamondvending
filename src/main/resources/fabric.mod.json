@@ -6,6 +6,7 @@
   "description": "${description}",
   "authors": ["${authors}"],
   "license": "MIT",
+  "icon": "assets/diamondvending/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": ["diamondvending.platform.fabric.DiamondVendingFabric"]

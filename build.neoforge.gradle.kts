@@ -14,6 +14,8 @@ val requiredJava = when {
 // Fabric-only classes never compile into the NeoForge jar.
 sourceSets.main {
     java.exclude("diamondvending/platform/fabric/**")
+    // JSON that differs between Minecraft versions (recipes, item models)
+    resources.srcDir(rootProject.file("src/main/resources-" + if (sc.current.parsed >= "26.1") "26.1" else "1.21.1"))
 }
 
 // Game tests live in their own source set and test mod, so no test code ships in the release jar.
