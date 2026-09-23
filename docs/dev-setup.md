@@ -65,6 +65,12 @@ Textures, block/item models, the blockstate, the mod icon and the GameTest platf
 JSON that differs between Minecraft versions lives in `src/main/resources-1.21.1/` and `src/main/resources-26.1/`
 (recipes, item models). Everything else goes in `src/main/resources/`.
 
+## Loader versions players need
+`stonecutter.properties.toml` has two kinds of dependency versions. `deps.fabric_api`, `deps.fabric_loader` and
+`deps.neo_loader` are what we build against — bump them freely. `deps.*_min` are the floors written into
+`fabric.mod.json` / `neoforge.mods.toml`: the oldest release that has every API we call. Raise a floor only when new
+code needs a newer API, so packs on older loaders keep working. `MetadataFloorsTest` checks both.
+
 ## Vanilla vs NeoForge sources
 NeoForge's patched Minecraft sources widen some access (e.g. `BlockEntityType`'s constructor is public there but
 private in vanilla 26.1). When checking an API, confirm it in vanilla too — Fabric builds see vanilla.

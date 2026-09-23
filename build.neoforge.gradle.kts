@@ -89,7 +89,8 @@ tasks {
             register("description", "mod.description")
             register("authors", "mod.authors")
             register("minecraft", "mod.mc_compat")
-            register("neoforge", "deps.neo_loader")
+            // Players need the floor, not the version we build against
+            register("neoforge", "deps.neo_loader_min")
         }
 
         filesMatching("META-INF/neoforge.mods.toml") { expand(props) }
@@ -108,6 +109,8 @@ tasks {
         useJUnitPlatform()
         // GeneratedFilesTest compares against the files in the repository
         systemProperty("diamondvending.root", rootProject.projectDir.absolutePath)
+        // MetadataFloorsTest checks this node's processed metadata
+        systemProperty("diamondvending.node", sc.current.project)
     }
 
     register<JavaExec>("generateArt") {

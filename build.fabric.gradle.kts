@@ -99,11 +99,9 @@ tasks {
             register("description", "mod.description")
             register("authors", "mod.authors")
             register("minecraft", "mod.mc_compat")
-            register("fabric_loader", "deps.fabric_loader")
-            val fabricApiVersion: String = sc.properties["deps.fabric_api"]
-            val fabricApi = fabricApiVersion.substringBefore('+')
-            inputs.property("fabric_api", fabricApi)
-            put("fabric_api", fabricApi)
+            // Players need the floors, not the versions we build against
+            register("fabric_loader", "deps.fabric_loader_min")
+            register("fabric_api", "deps.fabric_api_min")
             inputs.property("java", requiredJava.majorVersion)
             put("java", requiredJava.majorVersion)
         }
@@ -120,6 +118,8 @@ tasks {
         useJUnitPlatform()
         // GeneratedFilesTest compares against the files in the repository
         systemProperty("diamondvending.root", rootProject.projectDir.absolutePath)
+        // MetadataFloorsTest checks this node's processed metadata
+        systemProperty("diamondvending.node", sc.current.project)
     }
 
     register<JavaExec>("generateArt") {

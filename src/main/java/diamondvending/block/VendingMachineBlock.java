@@ -15,7 +15,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -32,6 +31,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
 //? if >=26.1 {
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
@@ -56,9 +56,6 @@ public class VendingMachineBlock extends BaseEntityBlock {
 
     /** Owners and admins mine it like an iron block. */
     private static final float OWNER_HARDNESS = 5.0F;
-    /** Placing/recoloring parts must not trigger shape checks on half-built neighbours. */
-    private static final int PLACE_FLAGS = Block.UPDATE_ALL | Block.UPDATE_KNOWN_SHAPE;
-    private static final int REMOVE_FLAGS = Block.UPDATE_ALL | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
 
     public VendingMachineBlock(BlockBehaviour.Properties properties) {
         super(properties);
@@ -110,7 +107,10 @@ public class VendingMachineBlock extends BaseEntityBlock {
 
     // ---- placing -------------------------------------------------------------------------------------------------
 
-    /** The clicked spot becomes the lower-left part; the other three spots must be free and inside the world. */
+    /**
+     * The clicked spot becomes the lower-left part; the other three spots must be free, inside the world and clear of
+     * creatures (the game checks the clicked spot itself).
+     */
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Direction facing = context.getHorizontalDirection().getOpposite();
@@ -120,7 +120,8 @@ public class VendingMachineBlock extends BaseEntityBlock {
             if (part == MachinePart.LOWER_LEFT) continue;
             BlockPos pos = part.posFrom(master, facing);
             if (level.isOutsideBuildHeight(pos) || !level.getWorldBorder().isWithinBounds(pos)
-                    || !level.getBlockState(pos).canBeReplaced(context)) {
+                    || !level.getBlockState(pos).canBeReplaced(context)
+                    || !level.isUnobstructed(defaultBlockState(), pos, CollisionContext.empty())) {
                 return null;
             }
         }
@@ -136,7 +137,7 @@ public class VendingMachineBlock extends BaseEntityBlock {
         Direction facing = state.getValue(FACING);
         for (MachinePart part : MachinePart.values()) {
             if (part != MachinePart.LOWER_LEFT) {
-                level.setBlock(part.posFrom(pos, facing), part.applyTo(state), PLACE_FLAGS);
+                level.setBlock(part.posFrom(pos, facing), part.applyTo(state), Block.UPDATE_ALL);
             }
         }
         if (placer instanceof Player player && level.getBlockEntity(pos) instanceof VendingMachineBlockEntity machine) {
@@ -167,32 +168,16 @@ public class VendingMachineBlock extends BaseEntityBlock {
         super.attack(state, level, pos, player);
     }
 
-    /** One player break takes the whole machine; survival breaks drop one machine item in the machine's color. */
+    /**
+     * Survival breaks drop one machine item in the machine's color. The other parts then remove themselves through
+     * {@link #keepIfWhole}, like a door's other half, so blocks hanging on them (torches, signs…) get their updates too.
+     */
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        if (!level.isClientSide()) {
-            BlockPos master = MachinePart.masterOf(pos, state);
-            if (!player.isCreative()) {
-                popResource(level, master, MachineItems.forColor(state.getValue(COLOR)));
-            }
-            removeOtherParts(level, pos, state);
+        if (!level.isClientSide() && !player.isCreative()) {
+            popResource(level, MachinePart.masterOf(pos, state), MachineItems.forColor(state.getValue(COLOR)));
         }
         return super.playerWillDestroy(level, pos, state, player);
-    }
-
-    private void removeOtherParts(Level level, BlockPos pos, BlockState state) {
-        MachinePart self = MachinePart.of(state);
-        Direction facing = state.getValue(FACING);
-        BlockPos master = self.masterFrom(pos, facing);
-        for (MachinePart part : MachinePart.values()) {
-            if (part == self) continue;
-            BlockPos partPos = part.posFrom(master, facing);
-            BlockState partState = level.getBlockState(partPos);
-            if (partState.is(this)) {
-                level.setBlock(partPos, Blocks.AIR.defaultBlockState(), REMOVE_FLAGS);
-                level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, partPos, Block.getId(partState));
-            }
-        }
     }
 
     // ---- dyeing --------------------------------------------------------------------------------------------------
@@ -229,7 +214,7 @@ public class VendingMachineBlock extends BaseEntityBlock {
             BlockPos partPos = part.posFrom(master, facing);
             BlockState partState = level.getBlockState(partPos);
             if (partState.is(this)) {
-                level.setBlock(partPos, partState.setValue(COLOR, color), PLACE_FLAGS);
+                level.setBlock(partPos, partState.setValue(COLOR, color), Block.UPDATE_ALL);
             }
         }
         if (!player.isCreative()) {

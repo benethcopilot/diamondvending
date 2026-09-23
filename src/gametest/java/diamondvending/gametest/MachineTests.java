@@ -11,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
@@ -18,6 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 //? if >=26.1 {
@@ -57,7 +59,9 @@ public final class MachineTests {
             Map.entry("strangers_cannot_dye_it", MachineTests::strangersCannotDyeIt),
             Map.entry("dyeing_the_same_color_uses_no_dye", MachineTests::dyeingTheSameColorUsesNoDye),
             Map.entry("creative_dyeing_keeps_the_dye", MachineTests::creativeDyeingKeepsTheDye),
-            Map.entry("machine_recipe_loads", MachineTests::machineRecipeLoads));
+            Map.entry("machine_recipe_loads", MachineTests::machineRecipeLoads),
+            Map.entry("attached_blocks_fall_when_the_machine_is_broken", MachineTests::attachedBlocksFallWhenTheMachineIsBroken),
+            Map.entry("cannot_be_placed_inside_creatures", MachineTests::cannotBePlacedInsideCreatures));
 
     static final BlockPos FLOOR = platform(3, 0, 3);
     static final BlockPos MASTER = FLOOR.above();
@@ -319,6 +323,28 @@ public final class MachineTests {
         /*boolean found = helper.getLevel().getRecipeManager().byKey(DiamondVending.id("vending_machine")).isPresent();
         *///?}
         helper.assertTrue(found, "the vending machine recipe did not load (check the log for recipe parse errors)");
+        helper.succeed();
+    }
+
+    /** Blocks hanging on any part (signs, torches…) must pop off when the machine is broken, never float. */
+    public static void attachedBlocksFallWhenTheMachineIsBroken(GameTestHelper helper) {
+        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        placeOn(helper, owner, machineItem(1), FLOOR);
+        BlockPos torch = LOWER_RIGHT.west(); // hangs on the far side of the right-hand column
+        helper.setBlock(torch, Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.WEST));
+        breakAsPlayer(helper, MASTER, owner);
+        assertAir(helper, MASTER, LOWER_RIGHT, UPPER_LEFT, UPPER_RIGHT, torch);
+        helper.succeed();
+    }
+
+    /** A pet or villager where another part would go blocks placement — otherwise it would be entombed. */
+    public static void cannotBePlacedInsideCreatures(GameTestHelper helper) {
+        helper.spawnWithNoFreeWill(EntityType.PIG, LOWER_RIGHT);
+        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        ItemStack stack = machineItem(1);
+        placeOn(helper, owner, stack, FLOOR);
+        assertAir(helper, MASTER, UPPER_LEFT, UPPER_RIGHT);
+        helper.assertTrue(stack.getCount() == 1, "a placement blocked by a creature must not use the item");
         helper.succeed();
     }
 }

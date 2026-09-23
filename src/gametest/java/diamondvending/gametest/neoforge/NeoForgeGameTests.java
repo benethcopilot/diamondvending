@@ -98,5 +98,15 @@ public final class NeoForgeGameTests {
     public static void machineRecipeLoads(GameTestHelper helper) {
         MachineTests.machineRecipeLoads(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void attachedBlocksFallWhenTheMachineIsBroken(GameTestHelper helper) {
+        MachineTests.attachedBlocksFallWhenTheMachineIsBroken(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void cannotBePlacedInsideCreatures(GameTestHelper helper) {
+        MachineTests.cannotBePlacedInsideCreatures(helper);
+    }
     *///?}
 }

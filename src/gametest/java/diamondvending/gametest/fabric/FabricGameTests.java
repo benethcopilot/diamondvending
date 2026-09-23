@@ -156,4 +156,22 @@ public final class FabricGameTests {
     public void machineRecipeLoads(GameTestHelper helper) {
         MachineTests.machineRecipeLoads(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void attachedBlocksFallWhenTheMachineIsBroken(GameTestHelper helper) {
+        MachineTests.attachedBlocksFallWhenTheMachineIsBroken(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void cannotBePlacedInsideCreatures(GameTestHelper helper) {
+        MachineTests.cannotBePlacedInsideCreatures(helper);
+    }
 }
