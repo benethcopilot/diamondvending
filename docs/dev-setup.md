@@ -38,5 +38,42 @@ Each node has its own game folder under `run/<node>/`.
   `./gradlew "Reset active project"`** — git must always hold the `26.1-neoforge` state. CI
   rejects anything else.
 
+## In-game tests (GameTests)
+Game tests live in `src/gametest/` and build a separate test-only mod, so they never ship. Run one node at a time:
+
+```bash
+./gradlew :26.1-neoforge:runGameTestServer
+./gradlew :26.1-fabric:runGametest
+```
+
+Add a test in three places: a `public static void` method in `gametest/MachineTests.java` (+ its `ALL` entry), a
+method in `gametest/fabric/FabricGameTests.java`, and one in the 1.21.1 block of `gametest/neoforge/NeoForgeGameTests.java`.
+Use `MachineTests.platform(x, y, z)` for fixed positions: 1.21.1 and 26.1 measure test coordinates from different
+origins. Put items in the mock player's hand before `placeAt`/`useBlock` — placement reads the item in hand.
+
+## Generated art
+Textures, block/item models, the blockstate, the mod icon and the GameTest platform are generated from
+`core/MachineLayout` by `src/test/java/diamondvending/art/`. Never edit them by hand — change the generator and run:
+
+```bash
+./gradlew :26.1-neoforge:generateArt
+```
+
+`GeneratedFilesTest` fails the build if the committed files drift from the generator.
+
+## Version-specific resources
+JSON that differs between Minecraft versions lives in `src/main/resources-1.21.1/` and `src/main/resources-26.1/`
+(recipes, item models). Everything else goes in `src/main/resources/`.
+
+## Loader versions players need
+`stonecutter.properties.toml` has two kinds of dependency versions. `deps.fabric_api`, `deps.fabric_loader` and
+`deps.neo_loader` are what we build against — bump them freely. `deps.*_min` are the floors written into
+`fabric.mod.json` / `neoforge.mods.toml`: the oldest release that has every API we call. Raise a floor only when new
+code needs a newer API, so packs on older loaders keep working. `MetadataFloorsTest` checks both.
+
+## Vanilla vs NeoForge sources
+NeoForge's patched Minecraft sources widen some access (e.g. `BlockEntityType`'s constructor is public there but
+private in vanilla 26.1). When checking an API, confirm it in vanilla too — Fabric builds see vanilla.
+
 ## Workflow
 Branch → PR (fill in the checklist) → CI green → squash-merge.

@@ -4,21 +4,26 @@ mod.version = "0.1.0"
 mod.description = "A real-looking 2x2 vending machine that sells items for diamonds."
 mod.authors = "Diamond Vending Team"
 
+# Build versions (deps.*) can move freely. The *_min floors are what players need, chosen by hand: the oldest release
+# for the targeted Minecraft versions that has every API we call. Raise one only when the code needs it.
 deps.fabric_loader = "0.19.5"
 deps.junit = "6.1.3"
 loomx.loom_version = "1.17-SNAPSHOT"
 
 ["1.21.1"]
 # Releases to mark compatible when publishing (later)
-mod.mc_releases = ["1.21", "1.21.1"]
+mod.mc_releases = ["1.21.1"]
 
 [fabric."1.21.1"]
-mod.mc_compat = ">=1.21 <=1.21.1"
+mod.mc_compat = "1.21.1"
 deps.fabric_api = "0.116.17+1.21.1"
+deps.fabric_api_min = "0.102.0"
+deps.fabric_loader_min = "0.15.11"
 
 [neoforge."1.21.1"]
-mod.mc_compat = "[1.21, 1.21.1]"
+mod.mc_compat = "[1.21.1]"
 deps.neo_loader = "21.1.250"
+deps.neo_loader_min = "21.1.1"
 
 ["26.1"]
 mod.mc_releases = ["26.1", "26.1.1", "26.1.2"]
@@ -26,7 +31,12 @@ mod.mc_releases = ["26.1", "26.1.1", "26.1.2"]
 [fabric."26.1"]
 mod.mc_compat = "~26.1"
 deps.fabric_api = "0.155.3+26.1.2"
+# 0.140.3 is the first with fabric-creative-tab-api-v1 (CreativeModeTabEvents)
+deps.fabric_api_min = "0.140.3"
+deps.fabric_loader_min = "0.18.3"
 
 [neoforge."26.1"]
 mod.mc_compat = "[26.1, 26.2)"
 deps.neo_loader = "26.1.2.107"
+# Any NeoForge for 26.1.x; "[26.1,)" sorts after the 26.1 snapshot alphas
+deps.neo_loader_min = "26.1"

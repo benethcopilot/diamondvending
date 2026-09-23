@@ -1,0 +1,964 @@
+{
+  "variants": {
+    "color=white,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/white_lower_left",
+      "y": 90
+    },
+    "color=white,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/white_lower_right",
+      "y": 90
+    },
+    "color=white,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/white_upper_left",
+      "y": 90
+    },
+    "color=white,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/white_upper_right",
+      "y": 90
+    },
+    "color=white,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/white_lower_left"
+    },
+    "color=white,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/white_lower_right"
+    },
+    "color=white,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/white_upper_left"
+    },
+    "color=white,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/white_upper_right"
+    },
+    "color=white,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/white_lower_left",
+      "y": 180
+    },
+    "color=white,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/white_lower_right",
+      "y": 180
+    },
+    "color=white,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/white_upper_left",
+      "y": 180
+    },
+    "color=white,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/white_upper_right",
+      "y": 180
+    },
+    "color=white,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/white_lower_left",
+      "y": 270
+    },
+    "color=white,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/white_lower_right",
+      "y": 270
+    },
+    "color=white,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/white_upper_left",
+      "y": 270
+    },
+    "color=white,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/white_upper_right",
+      "y": 270
+    },
+    "color=orange,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/orange_lower_left",
+      "y": 90
+    },
+    "color=orange,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/orange_lower_right",
+      "y": 90
+    },
+    "color=orange,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/orange_upper_left",
+      "y": 90
+    },
+    "color=orange,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/orange_upper_right",
+      "y": 90
+    },
+    "color=orange,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/orange_lower_left"
+    },
+    "color=orange,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/orange_lower_right"
+    },
+    "color=orange,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/orange_upper_left"
+    },
+    "color=orange,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/orange_upper_right"
+    },
+    "color=orange,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/orange_lower_left",
+      "y": 180
+    },
+    "color=orange,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/orange_lower_right",
+      "y": 180
+    },
+    "color=orange,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/orange_upper_left",
+      "y": 180
+    },
+    "color=orange,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/orange_upper_right",
+      "y": 180
+    },
+    "color=orange,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/orange_lower_left",
+      "y": 270
+    },
+    "color=orange,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/orange_lower_right",
+      "y": 270
+    },
+    "color=orange,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/orange_upper_left",
+      "y": 270
+    },
+    "color=orange,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/orange_upper_right",
+      "y": 270
+    },
+    "color=magenta,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/magenta_lower_left",
+      "y": 90
+    },
+    "color=magenta,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/magenta_lower_right",
+      "y": 90
+    },
+    "color=magenta,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/magenta_upper_left",
+      "y": 90
+    },
+    "color=magenta,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/magenta_upper_right",
+      "y": 90
+    },
+    "color=magenta,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/magenta_lower_left"
+    },
+    "color=magenta,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/magenta_lower_right"
+    },
+    "color=magenta,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/magenta_upper_left"
+    },
+    "color=magenta,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/magenta_upper_right"
+    },
+    "color=magenta,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/magenta_lower_left",
+      "y": 180
+    },
+    "color=magenta,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/magenta_lower_right",
+      "y": 180
+    },
+    "color=magenta,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/magenta_upper_left",
+      "y": 180
+    },
+    "color=magenta,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/magenta_upper_right",
+      "y": 180
+    },
+    "color=magenta,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/magenta_lower_left",
+      "y": 270
+    },
+    "color=magenta,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/magenta_lower_right",
+      "y": 270
+    },
+    "color=magenta,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/magenta_upper_left",
+      "y": 270
+    },
+    "color=magenta,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/magenta_upper_right",
+      "y": 270
+    },
+    "color=light_blue,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/light_blue_lower_left",
+      "y": 90
+    },
+    "color=light_blue,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/light_blue_lower_right",
+      "y": 90
+    },
+    "color=light_blue,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/light_blue_upper_left",
+      "y": 90
+    },
+    "color=light_blue,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/light_blue_upper_right",
+      "y": 90
+    },
+    "color=light_blue,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/light_blue_lower_left"
+    },
+    "color=light_blue,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/light_blue_lower_right"
+    },
+    "color=light_blue,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/light_blue_upper_left"
+    },
+    "color=light_blue,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/light_blue_upper_right"
+    },
+    "color=light_blue,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/light_blue_lower_left",
+      "y": 180
+    },
+    "color=light_blue,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/light_blue_lower_right",
+      "y": 180
+    },
+    "color=light_blue,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/light_blue_upper_left",
+      "y": 180
+    },
+    "color=light_blue,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/light_blue_upper_right",
+      "y": 180
+    },
+    "color=light_blue,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/light_blue_lower_left",
+      "y": 270
+    },
+    "color=light_blue,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/light_blue_lower_right",
+      "y": 270
+    },
+    "color=light_blue,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/light_blue_upper_left",
+      "y": 270
+    },
+    "color=light_blue,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/light_blue_upper_right",
+      "y": 270
+    },
+    "color=yellow,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/yellow_lower_left",
+      "y": 90
+    },
+    "color=yellow,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/yellow_lower_right",
+      "y": 90
+    },
+    "color=yellow,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/yellow_upper_left",
+      "y": 90
+    },
+    "color=yellow,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/yellow_upper_right",
+      "y": 90
+    },
+    "color=yellow,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/yellow_lower_left"
+    },
+    "color=yellow,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/yellow_lower_right"
+    },
+    "color=yellow,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/yellow_upper_left"
+    },
+    "color=yellow,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/yellow_upper_right"
+    },
+    "color=yellow,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/yellow_lower_left",
+      "y": 180
+    },
+    "color=yellow,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/yellow_lower_right",
+      "y": 180
+    },
+    "color=yellow,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/yellow_upper_left",
+      "y": 180
+    },
+    "color=yellow,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/yellow_upper_right",
+      "y": 180
+    },
+    "color=yellow,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/yellow_lower_left",
+      "y": 270
+    },
+    "color=yellow,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/yellow_lower_right",
+      "y": 270
+    },
+    "color=yellow,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/yellow_upper_left",
+      "y": 270
+    },
+    "color=yellow,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/yellow_upper_right",
+      "y": 270
+    },
+    "color=lime,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/lime_lower_left",
+      "y": 90
+    },
+    "color=lime,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/lime_lower_right",
+      "y": 90
+    },
+    "color=lime,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/lime_upper_left",
+      "y": 90
+    },
+    "color=lime,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/lime_upper_right",
+      "y": 90
+    },
+    "color=lime,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/lime_lower_left"
+    },
+    "color=lime,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/lime_lower_right"
+    },
+    "color=lime,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/lime_upper_left"
+    },
+    "color=lime,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/lime_upper_right"
+    },
+    "color=lime,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/lime_lower_left",
+      "y": 180
+    },
+    "color=lime,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/lime_lower_right",
+      "y": 180
+    },
+    "color=lime,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/lime_upper_left",
+      "y": 180
+    },
+    "color=lime,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/lime_upper_right",
+      "y": 180
+    },
+    "color=lime,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/lime_lower_left",
+      "y": 270
+    },
+    "color=lime,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/lime_lower_right",
+      "y": 270
+    },
+    "color=lime,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/lime_upper_left",
+      "y": 270
+    },
+    "color=lime,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/lime_upper_right",
+      "y": 270
+    },
+    "color=pink,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/pink_lower_left",
+      "y": 90
+    },
+    "color=pink,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/pink_lower_right",
+      "y": 90
+    },
+    "color=pink,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/pink_upper_left",
+      "y": 90
+    },
+    "color=pink,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/pink_upper_right",
+      "y": 90
+    },
+    "color=pink,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/pink_lower_left"
+    },
+    "color=pink,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/pink_lower_right"
+    },
+    "color=pink,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/pink_upper_left"
+    },
+    "color=pink,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/pink_upper_right"
+    },
+    "color=pink,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/pink_lower_left",
+      "y": 180
+    },
+    "color=pink,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/pink_lower_right",
+      "y": 180
+    },
+    "color=pink,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/pink_upper_left",
+      "y": 180
+    },
+    "color=pink,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/pink_upper_right",
+      "y": 180
+    },
+    "color=pink,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/pink_lower_left",
+      "y": 270
+    },
+    "color=pink,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/pink_lower_right",
+      "y": 270
+    },
+    "color=pink,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/pink_upper_left",
+      "y": 270
+    },
+    "color=pink,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/pink_upper_right",
+      "y": 270
+    },
+    "color=gray,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/gray_lower_left",
+      "y": 90
+    },
+    "color=gray,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/gray_lower_right",
+      "y": 90
+    },
+    "color=gray,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/gray_upper_left",
+      "y": 90
+    },
+    "color=gray,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/gray_upper_right",
+      "y": 90
+    },
+    "color=gray,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/gray_lower_left"
+    },
+    "color=gray,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/gray_lower_right"
+    },
+    "color=gray,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/gray_upper_left"
+    },
+    "color=gray,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/gray_upper_right"
+    },
+    "color=gray,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/gray_lower_left",
+      "y": 180
+    },
+    "color=gray,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/gray_lower_right",
+      "y": 180
+    },
+    "color=gray,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/gray_upper_left",
+      "y": 180
+    },
+    "color=gray,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/gray_upper_right",
+      "y": 180
+    },
+    "color=gray,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/gray_lower_left",
+      "y": 270
+    },
+    "color=gray,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/gray_lower_right",
+      "y": 270
+    },
+    "color=gray,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/gray_upper_left",
+      "y": 270
+    },
+    "color=gray,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/gray_upper_right",
+      "y": 270
+    },
+    "color=light_gray,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/light_gray_lower_left",
+      "y": 90
+    },
+    "color=light_gray,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/light_gray_lower_right",
+      "y": 90
+    },
+    "color=light_gray,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/light_gray_upper_left",
+      "y": 90
+    },
+    "color=light_gray,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/light_gray_upper_right",
+      "y": 90
+    },
+    "color=light_gray,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/light_gray_lower_left"
+    },
+    "color=light_gray,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/light_gray_lower_right"
+    },
+    "color=light_gray,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/light_gray_upper_left"
+    },
+    "color=light_gray,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/light_gray_upper_right"
+    },
+    "color=light_gray,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/light_gray_lower_left",
+      "y": 180
+    },
+    "color=light_gray,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/light_gray_lower_right",
+      "y": 180
+    },
+    "color=light_gray,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/light_gray_upper_left",
+      "y": 180
+    },
+    "color=light_gray,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/light_gray_upper_right",
+      "y": 180
+    },
+    "color=light_gray,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/light_gray_lower_left",
+      "y": 270
+    },
+    "color=light_gray,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/light_gray_lower_right",
+      "y": 270
+    },
+    "color=light_gray,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/light_gray_upper_left",
+      "y": 270
+    },
+    "color=light_gray,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/light_gray_upper_right",
+      "y": 270
+    },
+    "color=cyan,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/cyan_lower_left",
+      "y": 90
+    },
+    "color=cyan,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/cyan_lower_right",
+      "y": 90
+    },
+    "color=cyan,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/cyan_upper_left",
+      "y": 90
+    },
+    "color=cyan,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/cyan_upper_right",
+      "y": 90
+    },
+    "color=cyan,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/cyan_lower_left"
+    },
+    "color=cyan,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/cyan_lower_right"
+    },
+    "color=cyan,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/cyan_upper_left"
+    },
+    "color=cyan,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/cyan_upper_right"
+    },
+    "color=cyan,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/cyan_lower_left",
+      "y": 180
+    },
+    "color=cyan,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/cyan_lower_right",
+      "y": 180
+    },
+    "color=cyan,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/cyan_upper_left",
+      "y": 180
+    },
+    "color=cyan,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/cyan_upper_right",
+      "y": 180
+    },
+    "color=cyan,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/cyan_lower_left",
+      "y": 270
+    },
+    "color=cyan,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/cyan_lower_right",
+      "y": 270
+    },
+    "color=cyan,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/cyan_upper_left",
+      "y": 270
+    },
+    "color=cyan,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/cyan_upper_right",
+      "y": 270
+    },
+    "color=purple,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/purple_lower_left",
+      "y": 90
+    },
+    "color=purple,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/purple_lower_right",
+      "y": 90
+    },
+    "color=purple,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/purple_upper_left",
+      "y": 90
+    },
+    "color=purple,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/purple_upper_right",
+      "y": 90
+    },
+    "color=purple,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/purple_lower_left"
+    },
+    "color=purple,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/purple_lower_right"
+    },
+    "color=purple,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/purple_upper_left"
+    },
+    "color=purple,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/purple_upper_right"
+    },
+    "color=purple,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/purple_lower_left",
+      "y": 180
+    },
+    "color=purple,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/purple_lower_right",
+      "y": 180
+    },
+    "color=purple,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/purple_upper_left",
+      "y": 180
+    },
+    "color=purple,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/purple_upper_right",
+      "y": 180
+    },
+    "color=purple,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/purple_lower_left",
+      "y": 270
+    },
+    "color=purple,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/purple_lower_right",
+      "y": 270
+    },
+    "color=purple,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/purple_upper_left",
+      "y": 270
+    },
+    "color=purple,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/purple_upper_right",
+      "y": 270
+    },
+    "color=blue,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/blue_lower_left",
+      "y": 90
+    },
+    "color=blue,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/blue_lower_right",
+      "y": 90
+    },
+    "color=blue,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/blue_upper_left",
+      "y": 90
+    },
+    "color=blue,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/blue_upper_right",
+      "y": 90
+    },
+    "color=blue,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/blue_lower_left"
+    },
+    "color=blue,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/blue_lower_right"
+    },
+    "color=blue,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/blue_upper_left"
+    },
+    "color=blue,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/blue_upper_right"
+    },
+    "color=blue,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/blue_lower_left",
+      "y": 180
+    },
+    "color=blue,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/blue_lower_right",
+      "y": 180
+    },
+    "color=blue,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/blue_upper_left",
+      "y": 180
+    },
+    "color=blue,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/blue_upper_right",
+      "y": 180
+    },
+    "color=blue,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/blue_lower_left",
+      "y": 270
+    },
+    "color=blue,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/blue_lower_right",
+      "y": 270
+    },
+    "color=blue,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/blue_upper_left",
+      "y": 270
+    },
+    "color=blue,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/blue_upper_right",
+      "y": 270
+    },
+    "color=brown,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/brown_lower_left",
+      "y": 90
+    },
+    "color=brown,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/brown_lower_right",
+      "y": 90
+    },
+    "color=brown,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/brown_upper_left",
+      "y": 90
+    },
+    "color=brown,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/brown_upper_right",
+      "y": 90
+    },
+    "color=brown,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/brown_lower_left"
+    },
+    "color=brown,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/brown_lower_right"
+    },
+    "color=brown,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/brown_upper_left"
+    },
+    "color=brown,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/brown_upper_right"
+    },
+    "color=brown,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/brown_lower_left",
+      "y": 180
+    },
+    "color=brown,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/brown_lower_right",
+      "y": 180
+    },
+    "color=brown,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/brown_upper_left",
+      "y": 180
+    },
+    "color=brown,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/brown_upper_right",
+      "y": 180
+    },
+    "color=brown,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/brown_lower_left",
+      "y": 270
+    },
+    "color=brown,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/brown_lower_right",
+      "y": 270
+    },
+    "color=brown,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/brown_upper_left",
+      "y": 270
+    },
+    "color=brown,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/brown_upper_right",
+      "y": 270
+    },
+    "color=green,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/green_lower_left",
+      "y": 90
+    },
+    "color=green,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/green_lower_right",
+      "y": 90
+    },
+    "color=green,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/green_upper_left",
+      "y": 90
+    },
+    "color=green,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/green_upper_right",
+      "y": 90
+    },
+    "color=green,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/green_lower_left"
+    },
+    "color=green,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/green_lower_right"
+    },
+    "color=green,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/green_upper_left"
+    },
+    "color=green,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/green_upper_right"
+    },
+    "color=green,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/green_lower_left",
+      "y": 180
+    },
+    "color=green,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/green_lower_right",
+      "y": 180
+    },
+    "color=green,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/green_upper_left",
+      "y": 180
+    },
+    "color=green,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/green_upper_right",
+      "y": 180
+    },
+    "color=green,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/green_lower_left",
+      "y": 270
+    },
+    "color=green,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/green_lower_right",
+      "y": 270
+    },
+    "color=green,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/green_upper_left",
+      "y": 270
+    },
+    "color=green,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/green_upper_right",
+      "y": 270
+    },
+    "color=red,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/red_lower_left",
+      "y": 90
+    },
+    "color=red,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/red_lower_right",
+      "y": 90
+    },
+    "color=red,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/red_upper_left",
+      "y": 90
+    },
+    "color=red,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/red_upper_right",
+      "y": 90
+    },
+    "color=red,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/red_lower_left"
+    },
+    "color=red,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/red_lower_right"
+    },
+    "color=red,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/red_upper_left"
+    },
+    "color=red,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/red_upper_right"
+    },
+    "color=red,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/red_lower_left",
+      "y": 180
+    },
+    "color=red,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/red_lower_right",
+      "y": 180
+    },
+    "color=red,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/red_upper_left",
+      "y": 180
+    },
+    "color=red,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/red_upper_right",
+      "y": 180
+    },
+    "color=red,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/red_lower_left",
+      "y": 270
+    },
+    "color=red,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/red_lower_right",
+      "y": 270
+    },
+    "color=red,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/red_upper_left",
+      "y": 270
+    },
+    "color=red,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/red_upper_right",
+      "y": 270
+    },
+    "color=black,facing=east,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/black_lower_left",
+      "y": 90
+    },
+    "color=black,facing=east,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/black_lower_right",
+      "y": 90
+    },
+    "color=black,facing=east,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/black_upper_left",
+      "y": 90
+    },
+    "color=black,facing=east,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/black_upper_right",
+      "y": 90
+    },
+    "color=black,facing=north,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/black_lower_left"
+    },
+    "color=black,facing=north,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/black_lower_right"
+    },
+    "color=black,facing=north,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/black_upper_left"
+    },
+    "color=black,facing=north,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/black_upper_right"
+    },
+    "color=black,facing=south,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/black_lower_left",
+      "y": 180
+    },
+    "color=black,facing=south,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/black_lower_right",
+      "y": 180
+    },
+    "color=black,facing=south,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/black_upper_left",
+      "y": 180
+    },
+    "color=black,facing=south,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/black_upper_right",
+      "y": 180
+    },
+    "color=black,facing=west,half=lower,side=left": {
+      "model": "diamondvending:block/vending_machine/black_lower_left",
+      "y": 270
+    },
+    "color=black,facing=west,half=lower,side=right": {
+      "model": "diamondvending:block/vending_machine/black_lower_right",
+      "y": 270
+    },
+    "color=black,facing=west,half=upper,side=left": {
+      "model": "diamondvending:block/vending_machine/black_upper_left",
+      "y": 270
+    },
+    "color=black,facing=west,half=upper,side=right": {
+      "model": "diamondvending:block/vending_machine/black_upper_right",
+      "y": 270
+    }
+  }
+}

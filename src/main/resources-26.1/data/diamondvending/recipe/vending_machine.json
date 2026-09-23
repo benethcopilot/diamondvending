@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:iron_block",
+    "D": "minecraft:diamond",
+    "G": "minecraft:glass_pane",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "BGB",
+    "BRB",
+    "BDB"
+  ],
+  "result": {
+    "id": "diamondvending:vending_machine"
+  }
+}

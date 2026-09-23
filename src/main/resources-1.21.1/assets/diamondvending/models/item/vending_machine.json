@@ -1,0 +1,104 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "diamondvending:item/vending_machine_red"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "diamondvending:item/vending_machine_white"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "diamondvending:item/vending_machine_orange"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "diamondvending:item/vending_machine_magenta"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 4
+      },
+      "model": "diamondvending:item/vending_machine_light_blue"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 5
+      },
+      "model": "diamondvending:item/vending_machine_yellow"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 6
+      },
+      "model": "diamondvending:item/vending_machine_lime"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 7
+      },
+      "model": "diamondvending:item/vending_machine_pink"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 8
+      },
+      "model": "diamondvending:item/vending_machine_gray"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 9
+      },
+      "model": "diamondvending:item/vending_machine_light_gray"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 10
+      },
+      "model": "diamondvending:item/vending_machine_cyan"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 11
+      },
+      "model": "diamondvending:item/vending_machine_purple"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 12
+      },
+      "model": "diamondvending:item/vending_machine_blue"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 13
+      },
+      "model": "diamondvending:item/vending_machine_brown"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 14
+      },
+      "model": "diamondvending:item/vending_machine_green"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 15
+      },
+      "model": "diamondvending:item/vending_machine_red"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 16
+      },
+      "model": "diamondvending:item/vending_machine_black"
+    }
+  ]
+}

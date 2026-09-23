@@ -6,13 +6,14 @@
   "description": "${description}",
   "authors": ["${authors}"],
   "license": "MIT",
+  "icon": "assets/diamondvending/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": ["diamondvending.platform.fabric.DiamondVendingFabric"]
   },
   "depends": {
     "fabricloader": ">=${fabric_loader}",
-    "fabric-api": "*",
+    "fabric-api": ">=${fabric_api}",
     "minecraft": "${minecraft}",
     "java": ">=${java}"
   }

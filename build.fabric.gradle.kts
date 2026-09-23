@@ -14,6 +14,15 @@ val requiredJava: JavaVersion = when {
 // NeoForge-only classes never compile into the Fabric jar.
 sourceSets.main {
     java.exclude("diamondvending/platform/neoforge/**")
+    // JSON that differs between Minecraft versions (recipes, item models)
+    resources.srcDir(rootProject.file("src/main/resources-" + if (sc.current.parsed >= "26.1") "26.1" else "1.21.1"))
+}
+
+// Game tests live in their own source set and test mod, so no test code ships in the release jar.
+val gametest: SourceSet = sourceSets.create("gametest") {
+    compileClasspath += sourceSets.main.get().compileClasspath + sourceSets.main.get().output
+    runtimeClasspath += sourceSets.main.get().runtimeClasspath + sourceSets.main.get().output
+    java.exclude("diamondvending/gametest/neoforge/**")
 }
 
 dependencies {
@@ -40,6 +49,27 @@ loom {
         generateRunConfig = true
         // One run folder per node: worlds from 26.1 must never be opened by 1.21.1
         runDirectory = rootProject.file("run/${sc.current.project}")
+    }
+
+    mods {
+        register("diamondvending") {
+            sourceSet(sourceSets.main.get())
+        }
+        register("diamondvending_gametest") {
+            sourceSet(gametest)
+        }
+    }
+
+    runs {
+        register("gametest") {
+            server()
+            displayName = "Game Test"
+            sourceSet = gametest.name
+            systemProperties.put("fabric-api.gametest", "true")
+            systemProperties.put("fabric-api.gametest.report-file", file("build/gametest/report.xml").absolutePath)
+            runDirectory = file("build/gametest")
+            generateRunConfig = false
+        }
     }
 }
 
@@ -69,7 +99,9 @@ tasks {
             register("description", "mod.description")
             register("authors", "mod.authors")
             register("minecraft", "mod.mc_compat")
-            register("fabric_loader", "deps.fabric_loader")
+            // Players need the floors, not the versions we build against
+            register("fabric_loader", "deps.fabric_loader_min")
+            register("fabric_api", "deps.fabric_api_min")
             inputs.property("java", requiredJava.majorVersion)
             put("java", requiredJava.majorVersion)
         }
@@ -78,8 +110,24 @@ tasks {
         exclude("META-INF/neoforge.mods.toml")
     }
 
+    withType<JavaCompile> {
+        options.compilerArgs.add("-Xlint:deprecation")
+    }
+
     test {
         useJUnitPlatform()
+        // GeneratedFilesTest compares against the files in the repository
+        systemProperty("diamondvending.root", rootProject.projectDir.absolutePath)
+        // MetadataFloorsTest checks this node's processed metadata
+        systemProperty("diamondvending.node", sc.current.project)
+    }
+
+    register<JavaExec>("generateArt") {
+        group = "diamondvending"
+        description = "Regenerates textures, models and test structures from MachineLayout"
+        classpath = sourceSets.test.get().runtimeClasspath
+        mainClass = "diamondvending.art.ArtGenerator"
+        args(rootProject.projectDir.absolutePath)
     }
 
     // Includes the license file in the built mod

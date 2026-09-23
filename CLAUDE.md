@@ -8,3 +8,6 @@
 - Player-facing text: every failure names the reason and who can fix it. Any rule a player could trip on must be explained in the manual (spec §6.2) in the same change.
 - No personal usernames in identifiers, metadata, or shipped URLs.
 - Git: branch → PR → CI green → squash-merge. Don't push to `main` directly.
+- Generated art/models/structures: change `src/test/java/diamondvending/art/`, run `./gradlew :26.1-neoforge:generateArt`, never hand-edit the outputs.
+- GameTests: `./gradlew :<node>:runGameTestServer` (NeoForge) / `:<node>:runGametest` (Fabric). New tests go in three files (see docs/dev-setup.md).
+- Verify Minecraft APIs against vanilla, not only NeoForge's patched sources — NeoForge widens access that Fabric builds don't get.

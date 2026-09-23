@@ -14,6 +14,15 @@ val requiredJava = when {
 // Fabric-only classes never compile into the NeoForge jar.
 sourceSets.main {
     java.exclude("diamondvending/platform/fabric/**")
+    // JSON that differs between Minecraft versions (recipes, item models)
+    resources.srcDir(rootProject.file("src/main/resources-" + if (sc.current.parsed >= "26.1") "26.1" else "1.21.1"))
+}
+
+// Game tests live in their own source set and test mod, so no test code ships in the release jar.
+val gametest: SourceSet = sourceSets.create("gametest") {
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += sourceSets.main.get().output
+    java.exclude("diamondvending/gametest/fabric/**")
 }
 
 dependencies {
@@ -24,10 +33,14 @@ dependencies {
 
 neoForge {
     version = property("deps.neo_loader") as String
+    addModdingDependenciesTo(gametest)
 
     mods {
         register(property("mod.id") as String) {
             sourceSet(sourceSets.main.get())
+        }
+        register("diamondvending_gametest") {
+            sourceSet(gametest)
         }
     }
 
@@ -40,6 +53,12 @@ neoForge {
         register("server") {
             gameDirectory = file("../../run/${sc.current.project}")
             server()
+        }
+        register("gameTestServer") {
+            type = "gameTestServer"
+            sourceSet = gametest
+            gameDirectory = file("build/gametest")
+            systemProperty("neoforge.enabledGameTestNamespaces", property("mod.id") as String)
         }
     }
 }
@@ -70,6 +89,8 @@ tasks {
             register("description", "mod.description")
             register("authors", "mod.authors")
             register("minecraft", "mod.mc_compat")
+            // Players need the floor, not the version we build against
+            register("neoforge", "deps.neo_loader_min")
         }
 
         filesMatching("META-INF/neoforge.mods.toml") { expand(props) }
@@ -80,8 +101,24 @@ tasks {
         dependsOn("stonecutterGenerate")
     }
 
+    withType<JavaCompile> {
+        options.compilerArgs.add("-Xlint:deprecation")
+    }
+
     test {
         useJUnitPlatform()
+        // GeneratedFilesTest compares against the files in the repository
+        systemProperty("diamondvending.root", rootProject.projectDir.absolutePath)
+        // MetadataFloorsTest checks this node's processed metadata
+        systemProperty("diamondvending.node", sc.current.project)
+    }
+
+    register<JavaExec>("generateArt") {
+        group = "diamondvending"
+        description = "Regenerates textures, models and test structures from MachineLayout"
+        classpath = sourceSets.test.get().runtimeClasspath
+        mainClass = "diamondvending.art.ArtGenerator"
+        args(rootProject.projectDir.absolutePath)
     }
 
     // Includes the license file in the built mod

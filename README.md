@@ -3,6 +3,8 @@
 A Minecraft Java Edition mod that adds a **2×2 vending machine** that looks like a real snack
 machine and sells items for **diamonds** — with a physical button for each of its 12 items.
 
+![The vending machine in all 16 dye colors](docs/images/machine-colors.png)
+
 - Player-owned shops (stock it, price it, collect diamonds) and admin "infinite" shops
   (datapack catalogs, diamond sink).
 - Pay from your inventory or load credit through the coin slot; purchases drop into the tray.
