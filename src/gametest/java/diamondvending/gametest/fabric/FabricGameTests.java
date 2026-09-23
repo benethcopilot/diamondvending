@@ -21,4 +21,94 @@ public final class FabricGameTests {
     public void platformIsReady(GameTestHelper helper) {
         MachineTests.platformIsReady(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void placesAllFourParts(GameTestHelper helper) {
+        MachineTests.placesAllFourParts(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void placementNeedsRoom(GameTestHelper helper) {
+        MachineTests.placementNeedsRoom(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void placesInTheItemsColor(GameTestHelper helper) {
+        MachineTests.placesInTheItemsColor(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void worksInEveryFacing(GameTestHelper helper) {
+        MachineTests.worksInEveryFacing(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void breakingAnyPartRemovesTheMachineAndDropsIt(GameTestHelper helper) {
+        MachineTests.breakingAnyPartRemovesTheMachineAndDropsIt(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void creativeBreakingDropsNothing(GameTestHelper helper) {
+        MachineTests.creativeBreakingDropsNothing(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void onlyOwnersAndAdminsCanMineIt(GameTestHelper helper) {
+        MachineTests.onlyOwnersAndAdminsCanMineIt(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void ownerlessMachinesAreAdminOnly(GameTestHelper helper) {
+        MachineTests.ownerlessMachinesAreAdminOnly(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void aBrokenMachineCleansItselfUp(GameTestHelper helper) {
+        MachineTests.aBrokenMachineCleansItselfUp(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void neighbouringMachinesStaySeparate(GameTestHelper helper) {
+        MachineTests.neighbouringMachinesStaySeparate(helper);
+    }
 }

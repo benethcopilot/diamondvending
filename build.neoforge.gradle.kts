@@ -87,6 +87,7 @@ tasks {
             register("description", "mod.description")
             register("authors", "mod.authors")
             register("minecraft", "mod.mc_compat")
+            register("neoforge", "deps.neo_loader")
         }
 
         filesMatching("META-INF/neoforge.mods.toml") { expand(props) }

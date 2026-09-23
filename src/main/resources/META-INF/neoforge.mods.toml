@@ -10,6 +10,13 @@ authors = "${authors}"
 description = '''${description}'''
 
 [[dependencies.${id}]]
+modId = "neoforge"
+type = "required"
+versionRange = "[${neoforge},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${id}]]
 modId = "minecraft"
 type = "required"
 versionRange = "${minecraft}"

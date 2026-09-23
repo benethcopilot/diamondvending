@@ -98,6 +98,10 @@ tasks {
             register("authors", "mod.authors")
             register("minecraft", "mod.mc_compat")
             register("fabric_loader", "deps.fabric_loader")
+            val fabricApiVersion: String = sc.properties["deps.fabric_api"]
+            val fabricApi = fabricApiVersion.substringBefore('+')
+            inputs.property("fabric_api", fabricApi)
+            put("fabric_api", fabricApi)
             inputs.property("java", requiredJava.majorVersion)
             put("java", requiredJava.majorVersion)
         }
