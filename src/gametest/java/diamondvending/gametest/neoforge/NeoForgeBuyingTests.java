@@ -89,5 +89,35 @@ public final class NeoForgeBuyingTests {
     public static void strangersHoldingDyeCanStillUseTheTray(GameTestHelper helper) {
         BuyingTests.strangersHoldingDyeCanStillUseTheTray(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theCoinSlotTakesTheWholeStack(GameTestHelper helper) {
+        BuyingTests.theCoinSlotTakesTheWholeStack(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void offhandMoneyWorksToo(GameTestHelper helper) {
+        BuyingTests.offhandMoneyWorksToo(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theCoinSlotOnlyTakesMoney(GameTestHelper helper) {
+        BuyingTests.theCoinSlotOnlyTakesMoney(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void creditStopsAtNineStacks(GameTestHelper helper) {
+        BuyingTests.creditStopsAtNineStacks(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void coinReturnGivesBackTheExactItems(GameTestHelper helper) {
+        BuyingTests.coinReturnGivesBackTheExactItems(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void creditBelongsToOnePlayer(GameTestHelper helper) {
+        BuyingTests.creditBelongsToOnePlayer(helper);
+    }
     *///?}
 }

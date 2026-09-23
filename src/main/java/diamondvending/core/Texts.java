@@ -9,6 +9,8 @@ import java.util.List;
  */
 public final class Texts {
     public static final String OWNER_ONLY = "message.diamondvending.owner_only";
+    public static final String WRONG_CURRENCY = "message.diamondvending.wrong_currency";
+    public static final String CREDIT_FULL = "message.diamondvending.credit_full";
     /** Prefix of the keys that name the default currency: {@code .one}, {@code .many}, {@code .name} (see shop/Currency). */
     public static final String DIAMOND = "currency.diamondvending.minecraft.diamond";
 
@@ -16,7 +18,7 @@ public final class Texts {
 
     /** Every key a player can see. */
     public static List<String> all() {
-        List<String> keys = new ArrayList<>(List.of(OWNER_ONLY));
+        List<String> keys = new ArrayList<>(List.of(OWNER_ONLY, WRONG_CURRENCY, CREDIT_FULL));
         for (String form : List.of(".one", ".many", ".name")) keys.add(DIAMOND + form);
         return keys;
     }

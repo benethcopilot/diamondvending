@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import diamondvending.Messages;
 import diamondvending.core.Hit;
 import diamondvending.core.Texts;
+import diamondvending.shop.CoinSlot;
 import diamondvending.shop.PickupTray;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -215,6 +216,8 @@ public class VendingMachineBlock extends BaseEntityBlock {
         }
         Hit target = FrontFace.hit(state, pos, hit);
         switch (target.region()) {
+            case COIN_SLOT -> CoinSlot.insert(machine, player);
+            case COIN_RETURN -> CoinSlot.giveBack(machine, player);
             case TRAY -> PickupTray.collect(machine, player);
             default -> {
                 // Spec §3.5 c: someone who isn't the owner tried to dye it.

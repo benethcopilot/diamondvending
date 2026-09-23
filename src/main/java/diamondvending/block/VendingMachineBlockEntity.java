@@ -155,6 +155,12 @@ public class VendingMachineBlockEntity extends BlockEntity {
         return credits.computeIfAbsent(player, id -> NonNullList.withSize(CREDIT_SLOTS, ItemStack.EMPTY));
     }
 
+    /** Removes a player's credit and returns it, exactly the items they put in. */
+    public List<ItemStack> takeCredit(UUID player) {
+        NonNullList<ItemStack> items = credits.remove(player);
+        return items == null ? List.of() : ItemSlots.takeAll(items);
+    }
+
     /** What this machine takes as money (spec §5.5). Plan 5 adds the admin currency slot and catalog currency. */
     public Currency currency() {
         return Currency.DEFAULT;

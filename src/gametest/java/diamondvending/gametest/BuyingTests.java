@@ -4,12 +4,14 @@ import diamondvending.block.VendingMachineBlockEntity;
 import diamondvending.core.MachineLayout;
 import diamondvending.core.Problem;
 import diamondvending.core.Rect;
+import diamondvending.core.Texts;
 import diamondvending.shop.Currency;
 import diamondvending.shop.ItemSlots;
 import diamondvending.shop.Selection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -60,7 +62,13 @@ public final class BuyingTests {
             Map.entry("only_the_front_does_anything", BuyingTests::onlyTheFrontDoesAnything),
             Map.entry("held_blocks_are_never_placed", BuyingTests::heldBlocksAreNeverPlaced),
             Map.entry("owner_name_follows_renames", BuyingTests::ownerNameFollowsRenames),
-            Map.entry("strangers_holding_dye_can_still_use_the_tray", BuyingTests::strangersHoldingDyeCanStillUseTheTray));
+            Map.entry("strangers_holding_dye_can_still_use_the_tray", BuyingTests::strangersHoldingDyeCanStillUseTheTray),
+            Map.entry("the_coin_slot_takes_the_whole_stack", BuyingTests::theCoinSlotTakesTheWholeStack),
+            Map.entry("offhand_money_works_too", BuyingTests::offhandMoneyWorksToo),
+            Map.entry("the_coin_slot_only_takes_money", BuyingTests::theCoinSlotOnlyTakesMoney),
+            Map.entry("credit_stops_at_nine_stacks", BuyingTests::creditStopsAtNineStacks),
+            Map.entry("coin_return_gives_back_the_exact_items", BuyingTests::coinReturnGivesBackTheExactItems),
+            Map.entry("credit_belongs_to_one_player", BuyingTests::creditBelongsToOnePlayer));
 
     private BuyingTests() {}
 
@@ -368,6 +376,93 @@ public final class BuyingTests {
         helper.assertTrue(countHeld(stranger, Items.BREAD) == 1, "a dye in hand shouldn't stop a customer using the tray");
         helper.assertTrue(dye.getCount() == 2 && stranger.messages().isEmpty(), "and it isn't treated as an attempt to dye");
         MachineTests.assertWholeMachine(helper, DyeColor.RED);
+        helper.succeed();
+    }
+
+    // ---- credit --------------------------------------------------------------------------------------------------
+
+    public static void theCoinSlotTakesTheWholeStack(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        RecordingPlayer buyer = new RecordingPlayer(helper, GameType.SURVIVAL);
+        buyer.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.DIAMOND, 12));
+        click(helper, buyer, MachineLayout.COIN_SLOT);
+        helper.assertTrue(buyer.getMainHandItem().isEmpty(), "the whole held stack should go in");
+        helper.assertTrue(countIn(machine.credit(buyer.getUUID()), Items.DIAMOND) == 12, "and become that player's credit");
+        helper.assertTrue(buyer.messages().isEmpty(), "a good insert needs no message");
+        helper.succeed();
+    }
+
+    public static void offhandMoneyWorksToo(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        RecordingPlayer buyer = new RecordingPlayer(helper, GameType.SURVIVAL);
+        buyer.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.APPLE));
+        buyer.setItemInHand(InteractionHand.OFF_HAND, new ItemStack(Items.DIAMOND, 5));
+        click(helper, buyer, MachineLayout.COIN_SLOT);
+        helper.assertTrue(countIn(machine.credit(buyer.getUUID()), Items.DIAMOND) == 5, "diamonds in the offhand should go in");
+        helper.assertTrue(buyer.getMainHandItem().is(Items.APPLE) && buyer.getOffhandItem().isEmpty(), "the apple stays in hand");
+        helper.succeed();
+    }
+
+    public static void theCoinSlotOnlyTakesMoney(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        RecordingPlayer buyer = new RecordingPlayer(helper, GameType.SURVIVAL);
+        ItemStack emeralds = new ItemStack(Items.EMERALD, 3);
+        buyer.setItemInHand(InteractionHand.MAIN_HAND, emeralds);
+        click(helper, buyer, MachineLayout.COIN_SLOT);
+        TranslatableContents told = lastMessage(helper, buyer, Texts.WRONG_CURRENCY);
+        translation(helper, (Component) told.getArgs()[0], Texts.DIAMOND + ".name");
+        helper.assertTrue(emeralds.getCount() == 3 && machine.credit(buyer.getUUID()).isEmpty(), "emeralds are refused, not taken");
+        buyer.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        buyer.messages().clear();
+        click(helper, buyer, MachineLayout.COIN_SLOT);
+        lastMessage(helper, buyer, Texts.WRONG_CURRENCY);
+        helper.succeed();
+    }
+
+    public static void creditStopsAtNineStacks(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        RecordingPlayer buyer = new RecordingPlayer(helper, GameType.SURVIVAL);
+        NonNullList<ItemStack> credit = machine.creditOf(buyer.getUUID());
+        for (int i = 0; i < 8; i++) credit.set(i, new ItemStack(Items.DIAMOND, 64));
+        credit.set(8, new ItemStack(Items.DIAMOND, 60));
+        ItemStack held = new ItemStack(Items.DIAMOND, 10);
+        buyer.setItemInHand(InteractionHand.MAIN_HAND, held);
+        click(helper, buyer, MachineLayout.COIN_SLOT);
+        helper.assertTrue(countIn(machine.credit(buyer.getUUID()), Items.DIAMOND) == 9 * 64, "credit should fill up to 9 stacks");
+        helper.assertTrue(held.getCount() == 6, "the rest should stay in hand, but " + held.getCount() + " did");
+        lastMessage(helper, buyer, Texts.CREDIT_FULL);
+        helper.succeed();
+    }
+
+    public static void coinReturnGivesBackTheExactItems(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        RecordingPlayer buyer = new RecordingPlayer(helper, GameType.SURVIVAL);
+        ItemStack lucky = new ItemStack(Items.DIAMOND, 3);
+        lucky.set(DataComponents.CUSTOM_NAME, Component.literal("Lucky"));
+        machine.creditOf(buyer.getUUID()).set(0, lucky.copy());
+        machine.creditOf(buyer.getUUID()).set(1, new ItemStack(Items.DIAMOND, 2));
+        click(helper, buyer, MachineLayout.COIN_RETURN);
+        helper.assertTrue(countHeld(buyer, Items.DIAMOND) == 5, "all 5 diamonds should come back");
+        boolean luckyBack = false;
+        for (int i = 0; i < buyer.getInventory().getContainerSize(); i++) {
+            ItemStack stack = buyer.getInventory().getItem(i);
+            luckyBack |= ItemStack.isSameItemSameComponents(stack, lucky) && stack.getCount() == 3;
+        }
+        helper.assertTrue(luckyBack, "renamed diamonds should come back still renamed");
+        helper.assertTrue(machine.credit(buyer.getUUID()).isEmpty(), "and the credit should be gone");
+        helper.succeed();
+    }
+
+    public static void creditBelongsToOnePlayer(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        RecordingPlayer alex = new RecordingPlayer(helper, GameType.SURVIVAL);
+        RecordingPlayer sam = new RecordingPlayer(helper, GameType.SURVIVAL);
+        machine.creditOf(alex.getUUID()).set(0, new ItemStack(Items.DIAMOND, 5));
+        click(helper, sam, MachineLayout.COIN_RETURN);
+        helper.assertTrue(countHeld(sam, Items.DIAMOND) == 0, "coin return only gives back your own credit");
+        helper.assertTrue(countIn(machine.credit(alex.getUUID()), Items.DIAMOND) == 5, "Alex's credit should stay put");
+        click(helper, alex, MachineLayout.COIN_RETURN);
+        helper.assertTrue(countHeld(alex, Items.DIAMOND) == 5, "and Alex gets it back from the coin return");
         helper.succeed();
     }
 }

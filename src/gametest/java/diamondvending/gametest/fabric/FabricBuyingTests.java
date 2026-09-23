@@ -136,4 +136,58 @@ public final class FabricBuyingTests {
     public void strangersHoldingDyeCanStillUseTheTray(GameTestHelper helper) {
         BuyingTests.strangersHoldingDyeCanStillUseTheTray(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void theCoinSlotTakesTheWholeStack(GameTestHelper helper) {
+        BuyingTests.theCoinSlotTakesTheWholeStack(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void offhandMoneyWorksToo(GameTestHelper helper) {
+        BuyingTests.offhandMoneyWorksToo(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void theCoinSlotOnlyTakesMoney(GameTestHelper helper) {
+        BuyingTests.theCoinSlotOnlyTakesMoney(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void creditStopsAtNineStacks(GameTestHelper helper) {
+        BuyingTests.creditStopsAtNineStacks(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void coinReturnGivesBackTheExactItems(GameTestHelper helper) {
+        BuyingTests.coinReturnGivesBackTheExactItems(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void creditBelongsToOnePlayer(GameTestHelper helper) {
+        BuyingTests.creditBelongsToOnePlayer(helper);
+    }
 }
