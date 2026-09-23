@@ -15,6 +15,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -47,7 +48,11 @@ public final class MachineTests {
             Map.entry("only_owners_and_admins_can_mine_it", MachineTests::onlyOwnersAndAdminsCanMineIt),
             Map.entry("ownerless_machines_are_admin_only", MachineTests::ownerlessMachinesAreAdminOnly),
             Map.entry("a_broken_machine_cleans_itself_up", MachineTests::aBrokenMachineCleansItselfUp),
-            Map.entry("neighbouring_machines_stay_separate", MachineTests::neighbouringMachinesStaySeparate));
+            Map.entry("neighbouring_machines_stay_separate", MachineTests::neighbouringMachinesStaySeparate),
+            Map.entry("owners_can_dye_the_whole_machine", MachineTests::ownersCanDyeTheWholeMachine),
+            Map.entry("strangers_cannot_dye_it", MachineTests::strangersCannotDyeIt),
+            Map.entry("dyeing_the_same_color_uses_no_dye", MachineTests::dyeingTheSameColorUsesNoDye),
+            Map.entry("creative_dyeing_keeps_the_dye", MachineTests::creativeDyeingKeepsTheDye));
 
     static final BlockPos FLOOR = platform(3, 0, 3);
     static final BlockPos MASTER = FLOOR.above();
@@ -254,6 +259,50 @@ public final class MachineTests {
         assertPart(helper, otherMaster.west(), MachinePart.LOWER_RIGHT, Direction.NORTH, DyeColor.RED);
         assertPart(helper, otherMaster.above(), MachinePart.UPPER_LEFT, Direction.NORTH, DyeColor.RED);
         assertPart(helper, otherMaster.west().above(), MachinePart.UPPER_RIGHT, Direction.NORTH, DyeColor.RED);
+        helper.succeed();
+    }
+
+    public static void ownersCanDyeTheWholeMachine(GameTestHelper helper) {
+        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        placeOn(helper, owner, machineItem(1), FLOOR);
+        ItemStack dye = new ItemStack(Items.BLUE_DYE, 2);
+        owner.setItemInHand(InteractionHand.MAIN_HAND, dye);
+        helper.useBlock(UPPER_RIGHT, owner);
+        assertWholeMachine(helper, DyeColor.BLUE);
+        helper.assertTrue(dye.getCount() == 1, "dyeing should use one dye, stack is now " + dye.getCount());
+        helper.succeed();
+    }
+
+    public static void strangersCannotDyeIt(GameTestHelper helper) {
+        placeOn(helper, helper.makeMockPlayer(GameType.SURVIVAL), machineItem(1), FLOOR);
+        Player stranger = helper.makeMockPlayer(GameType.SURVIVAL);
+        ItemStack dye = new ItemStack(Items.BLUE_DYE, 2);
+        stranger.setItemInHand(InteractionHand.MAIN_HAND, dye);
+        helper.useBlock(MASTER, stranger);
+        assertWholeMachine(helper, DyeColor.RED);
+        helper.assertTrue(dye.getCount() == 2, "a refused dye must not be used up");
+        helper.succeed();
+    }
+
+    public static void dyeingTheSameColorUsesNoDye(GameTestHelper helper) {
+        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        placeOn(helper, owner, machineItem(1), FLOOR);
+        ItemStack dye = new ItemStack(Items.RED_DYE, 2);
+        owner.setItemInHand(InteractionHand.MAIN_HAND, dye);
+        helper.useBlock(MASTER, owner);
+        assertWholeMachine(helper, DyeColor.RED);
+        helper.assertTrue(dye.getCount() == 2, "dyeing to the same color must not use a dye");
+        helper.succeed();
+    }
+
+    public static void creativeDyeingKeepsTheDye(GameTestHelper helper) {
+        Player admin = helper.makeMockPlayer(GameType.CREATIVE);
+        placeOn(helper, admin, machineItem(1), FLOOR);
+        ItemStack dye = new ItemStack(Items.GREEN_DYE, 1);
+        admin.setItemInHand(InteractionHand.MAIN_HAND, dye);
+        helper.useBlock(MASTER, admin);
+        assertWholeMachine(helper, DyeColor.GREEN);
+        helper.assertTrue(dye.getCount() == 1, "creative dyeing must not use up the dye");
         helper.succeed();
     }
 }

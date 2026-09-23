@@ -27,12 +27,18 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.phys.BlockHitResult;
 //? if >=26.1 {
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 //?} else {
-/*import net.minecraft.world.level.LevelAccessor;
+/*import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.level.LevelAccessor;
 *///?}
 
 import java.util.UUID;
@@ -182,6 +188,50 @@ public class VendingMachineBlock extends BaseEntityBlock {
                 level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, partPos, Block.getId(partState));
             }
         }
+    }
+
+    // ---- dyeing --------------------------------------------------------------------------------------------------
+
+    //? if >=26.1 {
+    @Override
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+                                          InteractionHand hand, BlockHitResult hit) {
+        return tryDye(stack, state, level, pos, player) ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
+    }
+    //?} else {
+    /*@Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+                                              InteractionHand hand, BlockHitResult hit) {
+        return tryDye(stack, state, level, pos, player)
+                ? ItemInteractionResult.sidedSuccess(level.isClientSide())
+                : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+    *///?}
+
+    /** Spec §3.2 rule 2: owners and admins repaint the whole machine. Returns false if the stack isn't a dye. */
+    private boolean tryDye(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player) {
+        DyeColor color = MachineItems.dyeColorOf(stack);
+        if (color == null) return false;
+        if (level.isClientSide()) return true;
+        if (!MachineAccess.canManage(player, ownerOf(level, pos, state))) {
+            Messages.actionBar(player, Component.translatable(Messages.OWNER_ONLY));
+            return true;
+        }
+        if (state.getValue(COLOR) == color) return true;
+        Direction facing = state.getValue(FACING);
+        BlockPos master = MachinePart.masterOf(pos, state);
+        for (MachinePart part : MachinePart.values()) {
+            BlockPos partPos = part.posFrom(master, facing);
+            BlockState partState = level.getBlockState(partPos);
+            if (partState.is(this)) {
+                level.setBlock(partPos, partState.setValue(COLOR, color), PLACE_FLAGS);
+            }
+        }
+        if (!player.isCreative()) {
+            stack.shrink(1);
+        }
+        level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+        return true;
     }
 
     // ---- integrity -----------------------------------------------------------------------------------------------

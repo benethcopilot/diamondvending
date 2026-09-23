@@ -111,4 +111,40 @@ public final class FabricGameTests {
     public void neighbouringMachinesStaySeparate(GameTestHelper helper) {
         MachineTests.neighbouringMachinesStaySeparate(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void ownersCanDyeTheWholeMachine(GameTestHelper helper) {
+        MachineTests.ownersCanDyeTheWholeMachine(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void strangersCannotDyeIt(GameTestHelper helper) {
+        MachineTests.strangersCannotDyeIt(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void dyeingTheSameColorUsesNoDye(GameTestHelper helper) {
+        MachineTests.dyeingTheSameColorUsesNoDye(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void creativeDyeingKeepsTheDye(GameTestHelper helper) {
+        MachineTests.creativeDyeingKeepsTheDye(helper);
+    }
 }

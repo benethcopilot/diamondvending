@@ -73,5 +73,25 @@ public final class NeoForgeGameTests {
     public static void neighbouringMachinesStaySeparate(GameTestHelper helper) {
         MachineTests.neighbouringMachinesStaySeparate(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void ownersCanDyeTheWholeMachine(GameTestHelper helper) {
+        MachineTests.ownersCanDyeTheWholeMachine(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void strangersCannotDyeIt(GameTestHelper helper) {
+        MachineTests.strangersCannotDyeIt(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void dyeingTheSameColorUsesNoDye(GameTestHelper helper) {
+        MachineTests.dyeingTheSameColorUsesNoDye(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void creativeDyeingKeepsTheDye(GameTestHelper helper) {
+        MachineTests.creativeDyeingKeepsTheDye(helper);
+    }
     *///?}
 }
