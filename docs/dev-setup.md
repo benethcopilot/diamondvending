@@ -46,10 +46,12 @@ Game tests live in `src/gametest/` and build a separate test-only mod, so they n
 ./gradlew :26.1-fabric:runGametest
 ```
 
-Add a test in three places: a `public static void` method in `gametest/MachineTests.java` (+ its `ALL` entry), a
-method in `gametest/fabric/FabricGameTests.java`, and one in the 1.21.1 block of `gametest/neoforge/NeoForgeGameTests.java`.
-Use `MachineTests.platform(x, y, z)` for fixed positions: 1.21.1 and 26.1 measure test coordinates from different
-origins. Put items in the mock player's hand before `placeAt`/`useBlock` — placement reads the item in hand.
+Add a test in three places: a `public static void` method in `gametest/MachineTests.java` or `gametest/BuyingTests.java`
+(+ its `ALL` entry), a method in the matching `gametest/fabric/Fabric*Tests.java`, and one in the 1.21.1 block of the
+matching `gametest/neoforge/NeoForge*Tests.java`. A new test class also goes into `AllTests` and the test mod's
+`fabric.mod.json` entrypoints. Use `MachineTests.platform(x, y, z)` for fixed positions: 1.21.1 and 26.1 measure test
+coordinates from different origins. Put items in the mock player's hand before `placeAt`/`useBlock` — placement reads
+the item in hand. `RecordingPlayer` is a mock player that remembers its action-bar messages.
 
 ## Generated art
 Textures, block/item models, the blockstate, the mod icon and the GameTest platform are generated from

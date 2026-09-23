@@ -1,4 +1,7 @@
 {
   "block.diamondvending.vending_machine": "Vending Machine",
-  "message.diamondvending.owner_only": "Only the owner can do that."
+  "message.diamondvending.owner_only": "Only the owner can do that.",
+  "currency.diamondvending.minecraft.diamond.one": "%s diamond",
+  "currency.diamondvending.minecraft.diamond.many": "%s diamonds",
+  "currency.diamondvending.minecraft.diamond.name": "diamonds"
 }

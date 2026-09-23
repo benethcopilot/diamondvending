@@ -2,6 +2,7 @@ package diamondvending.block;
 
 import com.mojang.serialization.MapCodec;
 import diamondvending.Messages;
+import diamondvending.core.Texts;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -163,7 +164,7 @@ public class VendingMachineBlock extends BaseEntityBlock {
     @Override
     protected void attack(BlockState state, Level level, BlockPos pos, Player player) {
         if (!level.isClientSide() && !MachineAccess.canManage(player, ownerOf(level, pos, state))) {
-            Messages.actionBar(player, Component.translatable(Messages.OWNER_ONLY));
+            Messages.actionBar(player, Component.translatable(Texts.OWNER_ONLY));
         }
         super.attack(state, level, pos, player);
     }
@@ -204,7 +205,7 @@ public class VendingMachineBlock extends BaseEntityBlock {
         if (color == null) return false;
         if (level.isClientSide()) return true;
         if (!MachineAccess.canManage(player, ownerOf(level, pos, state))) {
-            Messages.actionBar(player, Component.translatable(Messages.OWNER_ONLY));
+            Messages.actionBar(player, Component.translatable(Texts.OWNER_ONLY));
             return true;
         }
         if (state.getValue(COLOR) == color) return true;
