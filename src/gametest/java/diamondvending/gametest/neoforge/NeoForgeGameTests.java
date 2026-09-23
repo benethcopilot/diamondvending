@@ -93,5 +93,10 @@ public final class NeoForgeGameTests {
     public static void creativeDyeingKeepsTheDye(GameTestHelper helper) {
         MachineTests.creativeDyeingKeepsTheDye(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void machineRecipeLoads(GameTestHelper helper) {
+        MachineTests.machineRecipeLoads(helper);
+    }
     *///?}
 }

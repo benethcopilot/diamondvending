@@ -3,8 +3,10 @@ package diamondvending.platform.fabric;
 import diamondvending.DiamondVending;
 import diamondvending.registry.Registrar;
 import diamondvending.registry.RegistryCompat;
-import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.core.Registry;
+//? if >=26.1 {
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+//?}
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -29,12 +31,16 @@ final class FabricRegistrar implements Registrar {
         return () -> item;
     }
 
-    /** Vanilla's BlockEntityType constructor is private on 26.1; Fabric API's builder works on every version. */
+    /** 26.1 makes vanilla's BlockEntityType constructor private, so Fabric API's builder is the way; on 1.21.1 that builder is deprecated in favour of vanilla's. */
     @Override
     public <T extends BlockEntity> Supplier<BlockEntityType<T>> blockEntity(String name, BlockEntityFactory<T> factory,
                                                                             Supplier<? extends Block> block) {
-        BlockEntityType<T> type = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, DiamondVending.id(name),
-                FabricBlockEntityTypeBuilder.<T>create(factory::create, block.get()).build());
+        //? if >=26.1 {
+        BlockEntityType<T> built = FabricBlockEntityTypeBuilder.<T>create(factory::create, block.get()).build();
+        //?} else {
+        /*BlockEntityType<T> built = BlockEntityType.Builder.<T>of(factory::create, block.get()).build(null);
+        *///?}
+        BlockEntityType<T> type = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, DiamondVending.id(name), built);
         return () -> type;
     }
 }

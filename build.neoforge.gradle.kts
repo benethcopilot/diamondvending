@@ -100,6 +100,10 @@ tasks {
         dependsOn("stonecutterGenerate")
     }
 
+    withType<JavaCompile> {
+        options.compilerArgs.add("-Xlint:deprecation")
+    }
+
     test {
         useJUnitPlatform()
         // GeneratedFilesTest compares against the files in the repository

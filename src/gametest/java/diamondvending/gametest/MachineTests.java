@@ -20,6 +20,10 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+//? if >=26.1 {
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+//?}
 
 import java.util.List;
 import java.util.Map;
@@ -52,7 +56,8 @@ public final class MachineTests {
             Map.entry("owners_can_dye_the_whole_machine", MachineTests::ownersCanDyeTheWholeMachine),
             Map.entry("strangers_cannot_dye_it", MachineTests::strangersCannotDyeIt),
             Map.entry("dyeing_the_same_color_uses_no_dye", MachineTests::dyeingTheSameColorUsesNoDye),
-            Map.entry("creative_dyeing_keeps_the_dye", MachineTests::creativeDyeingKeepsTheDye));
+            Map.entry("creative_dyeing_keeps_the_dye", MachineTests::creativeDyeingKeepsTheDye),
+            Map.entry("machine_recipe_loads", MachineTests::machineRecipeLoads));
 
     static final BlockPos FLOOR = platform(3, 0, 3);
     static final BlockPos MASTER = FLOOR.above();
@@ -303,6 +308,17 @@ public final class MachineTests {
         helper.useBlock(MASTER, admin);
         assertWholeMachine(helper, DyeColor.GREEN);
         helper.assertTrue(dye.getCount() == 1, "creative dyeing must not use up the dye");
+        helper.succeed();
+    }
+
+    public static void machineRecipeLoads(GameTestHelper helper) {
+        //? if >=26.1 {
+        boolean found = helper.getLevel().recipeAccess()
+                .byKey(ResourceKey.create(Registries.RECIPE, DiamondVending.id("vending_machine"))).isPresent();
+        //?} else {
+        /*boolean found = helper.getLevel().getRecipeManager().byKey(DiamondVending.id("vending_machine")).isPresent();
+        *///?}
+        helper.assertTrue(found, "the vending machine recipe did not load (check the log for recipe parse errors)");
         helper.succeed();
     }
 }

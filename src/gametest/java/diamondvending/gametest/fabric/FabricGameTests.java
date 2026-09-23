@@ -147,4 +147,13 @@ public final class FabricGameTests {
     public void creativeDyeingKeepsTheDye(GameTestHelper helper) {
         MachineTests.creativeDyeingKeepsTheDye(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void machineRecipeLoads(GameTestHelper helper) {
+        MachineTests.machineRecipeLoads(helper);
+    }
 }

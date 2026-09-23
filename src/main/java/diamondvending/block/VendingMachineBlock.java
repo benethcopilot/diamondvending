@@ -146,7 +146,12 @@ public class VendingMachineBlock extends BaseEntityBlock {
 
     // ---- breaking ------------------------------------------------------------------------------------------------
 
+    /**
+     * NeoForge 26.1 deprecates the position-less {@code getDestroySpeed}/{@code hasCorrectToolForDrops} in favour of its
+     * own overloads, which vanilla (and so Fabric) lacks. The vanilla calls work on every loader, so we keep them.
+     */
     @Override
+    @SuppressWarnings("deprecation")
     protected float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
         if (!MachineAccess.canManage(player, ownerOf(level, pos, state))) return 0.0F;
         int divisor = player.hasCorrectToolForDrops(state) ? 30 : 100;
