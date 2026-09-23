@@ -45,18 +45,20 @@ jobs:
       - name: Build and test
         run: ./gradlew :${{ matrix.target }}:build --stacktrace
 
+      - name: Jar check self-test
+        if: matrix.target == '26.1-neoforge'
+        run: bash .github/scripts/check-jar-contents.test.sh
+
       - name: Jar contains only this loader's code
+        run: bash .github/scripts/check-jar-contents.sh ${{ matrix.target }}
+
+      # The guard job only checks the `stonecutter active` line. This re-runs Stonecutter's comment
+      # processor for the VCS version; any diff means code was committed in another version's state.
+      - name: Committed code is in the 26.1-neoforge state
+        if: matrix.target == '26.1-neoforge'
         run: |
-          jar=$(ls versions/${{ matrix.target }}/build/libs/diamondvending-*.jar | grep -v -- '-sources' | head -n 1)
-          echo "Checking $jar"
-          case "${{ matrix.target }}" in
-            *-fabric)   other=neoforge ;;
-            *-neoforge) other=fabric ;;
-          esac
-          if jar tf "$jar" | grep -q "diamondvending/platform/$other/"; then
-            echo "::error::$jar contains diamondvending/platform/$other classes"
-            exit 1
-          fi
+          ./gradlew "Refresh active project"
+          git diff --exit-code -- src stonecutter.gradle.kts
 
       - uses: actions/upload-artifact@v7
         with:
