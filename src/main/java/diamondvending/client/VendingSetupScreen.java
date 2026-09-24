@@ -18,12 +18,12 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.lwjgl.glfw.GLFW;
 //? if >=26.1 {
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.KeyEvent;
 //?} else {
 /*import net.minecraft.client.gui.GuiGraphics;
-import org.lwjgl.glfw.GLFW;
 *///?}
 
 import java.util.EnumMap;
@@ -62,7 +62,12 @@ public final class VendingSetupScreen extends AbstractContainerScreen<VendingSet
     private Button nextCatalog;
     private EditBox price;
     private boolean settingPrice;
-    private int priceShownFor = -1;
+    // The price box shows button priceFor's price as read from the machine (priceRead). Typed digits (priceEdited) stay
+    // in the box until Enter, another control, another button or closing the screen sends them: a half-typed price
+    // (1, then 15, on the way to 150) must never go on sale.
+    private int priceFor = -1;
+    private int priceRead = -1;
+    private boolean priceEdited;
 
     public VendingSetupScreen(VendingSetupMenu menu, Inventory inventory, Component title) {
         //? if >=26.1 {
@@ -102,6 +107,8 @@ public final class VendingSetupScreen extends AbstractContainerScreen<VendingSet
                 .bounds(x + 112, y + 68, 14, 14).build());
         nextCatalog = addRenderableWidget(Button.builder(Component.literal(">"), button -> press(SetupButtons.cycleCatalog(1)))
                 .bounds(x + 190, y + 68, 14, 14).build());
+        priceFor = -1; // a fresh (e.g. resized) price box starts from the machine's price
+        priceEdited = false;
         refresh();
     }
 
@@ -111,14 +118,38 @@ public final class VendingSetupScreen extends AbstractContainerScreen<VendingSet
         refresh();
     }
 
-    /** Asks the menu, then the server (the client's menu only switches tabs itself). */
+    /** Sends a typed price first, then this control's press. */
     private void press(int id) {
+        commitPrice();
+        send(id);
+    }
+
+    /** Asks the menu, then the server (the client's menu only switches tabs itself). */
+    private void send(int id) {
         if (menu.clickMenuButton(minecraft.player, id)) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
     }
 
     private void priceTyped(String text) {
-        if (settingPrice || text.isEmpty()) return;
-        press(SetupButtons.price(menu.selected(), Math.min(Integer.parseInt(text), SetupButtons.MAX_PRICE)));
+        if (!settingPrice) priceEdited = true;
+    }
+
+    /** Sends the typed price for the button it was typed for. An empty box sends nothing and shows the price again. */
+    private void commitPrice() {
+        if (!priceEdited) return;
+        priceEdited = false;
+        String text = price.getValue();
+        if (text.isEmpty() || priceFor < 0) {
+            priceRead = -1;
+            return;
+        }
+        send(SetupButtons.price(priceFor, Math.min(Integer.parseInt(text), SetupButtons.MAX_PRICE)));
+    }
+
+    /** Closing (Escape or the inventory key) keeps a typed price. */
+    @Override
+    public void onClose() {
+        commitPrice();
+        super.onClose();
     }
 
     @Override
@@ -144,13 +175,15 @@ public final class VendingSetupScreen extends AbstractContainerScreen<VendingSet
         fewer.visible = more.visible = price.visible = clear.visible = editing;
         fewer.active = selection.quantity() > 1;
         more.active = selection.quantity() < selection.template().getMaxStackSize();
+        if (priceEdited && (!editing || !price.isFocused() || priceFor != menu.selected())) commitPrice();
         if (!editing) {
             price.setFocused(false);
-        } else if (!price.isFocused() || priceShownFor != menu.selected()) {
+        } else if (!priceEdited && (priceFor != menu.selected() || selection.price() != priceRead)) {
             settingPrice = true;
             price.setValue(Integer.toString(selection.price()));
             settingPrice = false;
-            priceShownFor = menu.selected();
+            priceFor = menu.selected();
+            priceRead = selection.price();
         }
         withdraw.visible = current == SetupTab.CASH_BOX;
         withdraw.active = !menu.cashBoxEmpty();
@@ -285,6 +318,16 @@ public final class VendingSetupScreen extends AbstractContainerScreen<VendingSet
         }
     }
 
+    private static boolean isEnter(int key) {
+        return key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER;
+    }
+
+    /** Enter in the price box: sends the price. */
+    private boolean commitPriceKey() {
+        commitPrice();
+        return true;
+    }
+
     // ---- the four methods that differ between versions -----------------------------------------------------------
 
     //? if >=26.1 {
@@ -302,7 +345,10 @@ public final class VendingSetupScreen extends AbstractContainerScreen<VendingSet
     // While the price box is being typed in, letters and numbers are for it — not the inventory or hotbar keys.
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (price.isFocused() && !event.isEscape()) return price.keyPressed(event) || price.canConsumeInput() || super.keyPressed(event);
+        if (price.isFocused() && !event.isEscape()) {
+            if (isEnter(event.key())) return commitPriceKey();
+            return price.keyPressed(event) || price.canConsumeInput() || super.keyPressed(event);
+        }
         return super.keyPressed(event);
     }
     //?} else {
@@ -326,6 +372,7 @@ public final class VendingSetupScreen extends AbstractContainerScreen<VendingSet
     @Override
     public boolean keyPressed(int key, int scanCode, int modifiers) {
         if (price.isFocused() && key != GLFW.GLFW_KEY_ESCAPE) {
+            if (isEnter(key)) return commitPriceKey();
             return price.keyPressed(key, scanCode, modifiers) || price.canConsumeInput() || super.keyPressed(key, scanCode, modifiers);
         }
         return super.keyPressed(key, scanCode, modifiers);

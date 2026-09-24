@@ -4,11 +4,14 @@ package diamondvending.gametest.fabric;
 import diamondvending.block.VendingMachineBlockEntity;
 import diamondvending.client.VendingSetupScreen;
 import diamondvending.core.SetupTab;
+import diamondvending.shop.Selection;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Locale;
@@ -105,9 +108,19 @@ public final class FabricClientTests implements FabricClientGameTest {
             // A real button press, through the network: button 1 sold 2 apples, "+" makes it 3.
             context.clickScreenButton("+");
             context.waitTicks(5);
-            int apples = server.computeOnServer(s -> ((VendingMachineBlockEntity) s.overworld().getBlockEntity(new BlockPos(0, -60, 0)))
-                    .getSelection(0).quantity());
+            int apples = server.computeOnServer(s -> buttonOne(s).quantity());
             if (apples != 3) throw new AssertionError("\"+\" should make button 1 sell 3 apples, it sells " + apples);
+            // Typing into the price box changes nothing until Enter: a half-typed price must never be on sale.
+            context.runOnClient(client -> client.screen.setFocused(
+                    client.screen.children().stream().filter(EditBox.class::isInstance).findFirst().orElseThrow()));
+            context.getInput().typeChars("45");
+            context.waitTicks(5);
+            int typing = server.computeOnServer(s -> buttonOne(s).price());
+            if (typing != 3) throw new AssertionError("a half-typed price went on sale: button 1 costs " + typing);
+            context.getInput().pressKey(GLFW.GLFW_KEY_ENTER);
+            context.waitTicks(5);
+            int entered = server.computeOnServer(s -> buttonOne(s).price());
+            if (entered != 345) throw new AssertionError("Enter should make button 1 cost 345, it costs " + entered);
             for (SetupTab tab : new SetupTab[] {SetupTab.STOCK, SetupTab.CASH_BOX, SetupTab.ADMIN}) {
                 context.runOnClient(client -> ((VendingSetupScreen) client.screen).showTab(tab));
                 context.waitTicks(3);
@@ -128,6 +141,11 @@ public final class FabricClientTests implements FabricClientGameTest {
             context.waitTicks(10);
             context.takeScreenshot("close_up");
         }
+    }
+
+    /** What button 1 of the test machine sells, on the server. */
+    private static Selection buttonOne(MinecraftServer server) {
+        return ((VendingMachineBlockEntity) server.overworld().getBlockEntity(new BlockPos(0, -60, 0))).getSelection(0);
     }
 }
 //?} else {
