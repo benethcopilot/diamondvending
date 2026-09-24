@@ -5,6 +5,7 @@ import diamondvending.Messages;
 import diamondvending.core.Hit;
 import diamondvending.core.Region;
 import diamondvending.core.Texts;
+import diamondvending.registry.ModContent;
 import diamondvending.shop.CoinSlot;
 import diamondvending.shop.PickupTray;
 import diamondvending.shop.Purchase;
@@ -24,6 +25,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -104,6 +107,13 @@ public class VendingMachineBlock extends BaseEntityBlock {
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return MachinePart.of(state) == MachinePart.LOWER_LEFT ? new VendingMachineBlockEntity(pos, state) : null;
+    }
+
+    /** Server only: machines using a catalog re-sync after /reload ({@link VendingMachineBlockEntity#serverTick}). */
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return level.isClientSide() ? null
+                : createTickerHelper(type, ModContent.VENDING_MACHINE_BLOCK_ENTITY.get(), VendingMachineBlockEntity::serverTick);
     }
 
     /** The machine's owner, read from the master part; null if it has none. */

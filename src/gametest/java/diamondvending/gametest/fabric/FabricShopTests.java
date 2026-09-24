@@ -46,4 +46,76 @@ public final class FabricShopTests {
     public void anUnknownCurrencyLoadsAsTheDefault(GameTestHelper helper) {
         ShopTests.anUnknownCurrencyLoadsAsTheDefault(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void theExampleCatalogLoads(GameTestHelper helper) {
+        ShopTests.theExampleCatalogLoads(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void aBrokenCatalogIsSkipped(GameTestHelper helper) {
+        ShopTests.aBrokenCatalogIsSkipped(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void catalogFilesAreChecked(GameTestHelper helper) {
+        ShopTests.catalogFilesAreChecked(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void aCatalogMachineSellsTheCatalog(GameTestHelper helper) {
+        ShopTests.aCatalogMachineSellsTheCatalog(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void anOwnedCatalogMachineSellsFromItsStock(GameTestHelper helper) {
+        ShopTests.anOwnedCatalogMachineSellsFromItsStock(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void aMissingCatalogStopsSalesAndSaysWhy(GameTestHelper helper) {
+        ShopTests.aMissingCatalogStopsSalesAndSaysWhy(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void clearingTheCatalogBringsBackOwnSelections(GameTestHelper helper) {
+        ShopTests.clearingTheCatalogBringsBackOwnSelections(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void clientsSeeWhatTheCatalogSells(GameTestHelper helper) {
+        ShopTests.clientsSeeWhatTheCatalogSells(helper);
+    }
 }

@@ -38,7 +38,7 @@ public final class Purchase {
         payment.addAll(ItemSlots.take(ItemSlots.copyOf(wallet), currency::matches, fromWallet));
 
         PurchaseInput input = new PurchaseInput(
-                false,
+                machine.catalogMissing(),
                 selection.isSetUp(),
                 machine.isInfinite(),
                 selection.quantity(),

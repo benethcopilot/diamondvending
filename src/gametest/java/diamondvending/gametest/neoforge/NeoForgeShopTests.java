@@ -39,5 +39,45 @@ public final class NeoForgeShopTests {
     public static void anUnknownCurrencyLoadsAsTheDefault(GameTestHelper helper) {
         ShopTests.anUnknownCurrencyLoadsAsTheDefault(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theExampleCatalogLoads(GameTestHelper helper) {
+        ShopTests.theExampleCatalogLoads(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void aBrokenCatalogIsSkipped(GameTestHelper helper) {
+        ShopTests.aBrokenCatalogIsSkipped(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void catalogFilesAreChecked(GameTestHelper helper) {
+        ShopTests.catalogFilesAreChecked(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void aCatalogMachineSellsTheCatalog(GameTestHelper helper) {
+        ShopTests.aCatalogMachineSellsTheCatalog(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void anOwnedCatalogMachineSellsFromItsStock(GameTestHelper helper) {
+        ShopTests.anOwnedCatalogMachineSellsFromItsStock(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void aMissingCatalogStopsSalesAndSaysWhy(GameTestHelper helper) {
+        ShopTests.aMissingCatalogStopsSalesAndSaysWhy(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void clearingTheCatalogBringsBackOwnSelections(GameTestHelper helper) {
+        ShopTests.clearingTheCatalogBringsBackOwnSelections(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void clientsSeeWhatTheCatalogSells(GameTestHelper helper) {
+        ShopTests.clientsSeeWhatTheCatalogSells(helper);
+    }
     *///?}
 }

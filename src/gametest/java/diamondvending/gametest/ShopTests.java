@@ -1,16 +1,28 @@
 package diamondvending.gametest;
 
+import com.google.gson.JsonParser;
+import com.mojang.serialization.JsonOps;
+import diamondvending.DiamondVending;
 import diamondvending.block.VendingMachineBlockEntity;
+import diamondvending.catalog.Catalog;
+import diamondvending.catalog.Catalogs;
 import diamondvending.core.MachineLayout;
+import diamondvending.core.Problem;
 import diamondvending.core.Texts;
+import diamondvending.shop.Selection;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.GameType;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -25,7 +37,15 @@ public final class ShopTests {
             Map.entry("the_currency_slot_changes_what_the_machine_takes", ShopTests::theCurrencySlotChangesWhatTheMachineTakes),
             Map.entry("credit_comes_back_as_it_went_in_after_a_currency_change", ShopTests::creditComesBackAsItWentInAfterACurrencyChange),
             Map.entry("the_currency_slot_is_saved_and_synced", ShopTests::theCurrencySlotIsSavedAndSynced),
-            Map.entry("an_unknown_currency_loads_as_the_default", ShopTests::anUnknownCurrencyLoadsAsTheDefault));
+            Map.entry("an_unknown_currency_loads_as_the_default", ShopTests::anUnknownCurrencyLoadsAsTheDefault),
+            Map.entry("the_example_catalog_loads", ShopTests::theExampleCatalogLoads),
+            Map.entry("a_broken_catalog_is_skipped", ShopTests::aBrokenCatalogIsSkipped),
+            Map.entry("catalog_files_are_checked", ShopTests::catalogFilesAreChecked),
+            Map.entry("a_catalog_machine_sells_the_catalog", ShopTests::aCatalogMachineSellsTheCatalog),
+            Map.entry("an_owned_catalog_machine_sells_from_its_stock", ShopTests::anOwnedCatalogMachineSellsFromItsStock),
+            Map.entry("a_missing_catalog_stops_sales_and_says_why", ShopTests::aMissingCatalogStopsSalesAndSaysWhy),
+            Map.entry("clearing_the_catalog_brings_back_own_selections", ShopTests::clearingTheCatalogBringsBackOwnSelections),
+            Map.entry("clients_see_what_the_catalog_sells", ShopTests::clientsSeeWhatTheCatalogSells));
 
     private ShopTests() {}
 
@@ -80,6 +100,116 @@ public final class ShopTests {
         VendingMachineBlockEntity loaded = BuyingTests.reload(helper, machine, saved);
         helper.assertTrue(loaded.currencySlot() == null, "an unknown currency should load as an empty slot");
         helper.assertTrue(loaded.currency().displayItem() == Items.DIAMOND, "and the machine takes diamonds again");
+        helper.succeed();
+    }
+
+    // ---- catalogs (spec §5.1) -----------------------------------------------------------------------------------
+
+    /** Test data (src/gametest/resources): button 1 = 2 apples for 3 emeralds, button 2 = free bread. */
+    static final Identifier EMERALDS = DiamondVending.id("test_emeralds");
+
+    public static void theExampleCatalogLoads(GameTestHelper helper) {
+        Identifier id = DiamondVending.id("example_snacks");
+        Catalog catalog = Catalogs.get(id);
+        helper.assertTrue(catalog != null, "the example catalog should load; loaded: " + Catalogs.ids());
+        helper.assertTrue(catalog.name(id).equals("Snack Shack"), "its name comes from display_name, got " + catalog.name(id));
+        helper.assertTrue(catalog.selections().size() == 6, "it has 6 entries, got " + catalog.selections().size());
+        ItemStack book = catalog.selection(5).template();
+        helper.assertTrue(book.is(Items.ENCHANTED_BOOK)
+                        && !book.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY).isEmpty(),
+                "button 6 sells a book with mending on it, got " + book);
+        helper.assertTrue(catalog.currency().isEmpty(), "it takes the default currency");
+        helper.succeed();
+    }
+
+    public static void aBrokenCatalogIsSkipped(GameTestHelper helper) {
+        helper.assertTrue(Catalogs.get(DiamondVending.id("test_broken")) == null, "a catalog with a price of 5000 must not load");
+        helper.assertTrue(Catalogs.get(EMERALDS) != null, "the good test catalog next to it still loads");
+        helper.succeed();
+    }
+
+    /** Spec §5.1: 1 to 12 entries, prices 0–999, real items. */
+    public static void catalogFilesAreChecked(GameTestHelper helper) {
+        String apple = "{\"item\":{\"id\":\"minecraft:apple\"},\"price\":1}";
+        helper.assertTrue(parses(helper, "{\"entries\":[" + apple + "]}"), "one apple is a fine catalog");
+        helper.assertFalse(parses(helper, "{\"entries\":[" + String.join(",", Collections.nCopies(13, apple)) + "]}"), "13 entries are too many");
+        helper.assertFalse(parses(helper, "{\"entries\":[]}"), "a catalog needs at least one entry");
+        helper.assertFalse(parses(helper, "{\"entries\":[{\"item\":{\"id\":\"minecraft:apple\"},\"price\":1000}]}"), "prices stop at 999");
+        helper.assertFalse(parses(helper, "{\"entries\":[{\"item\":{\"id\":\"notamod:gadget\"},\"price\":1}]}"), "unknown items are rejected");
+        helper.assertFalse(parses(helper, "{\"currency\":{\"id\":\"minecraft:air\"},\"entries\":[" + apple + "]}"), "air is no currency");
+        helper.succeed();
+    }
+
+    private static boolean parses(GameTestHelper helper, String json) {
+        return Catalog.CODEC.parse(RegistryOps.create(JsonOps.INSTANCE, BuyingTests.registries(helper)), JsonParser.parseString(json))
+                .result().isPresent();
+    }
+
+    public static void aCatalogMachineSellsTheCatalog(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = BuyingTests.placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        machine.setSelection(0, Selection.of(new ItemStack(Items.BREAD), 1)); // the machine's own button 1, hidden by the catalog
+        machine.setInfinite(true);
+        machine.setCatalog(EMERALDS);
+        RecordingPlayer buyer = new RecordingPlayer(helper, GameType.SURVIVAL);
+        buyer.getInventory().add(new ItemStack(Items.EMERALD, 3));
+        BuyingTests.pressButton(helper, buyer, 0);
+        helper.assertTrue(BuyingTests.countIn(machine.tray(), Items.APPLE) == 2, "button 1 sells the catalog's 2 apples");
+        helper.assertTrue(BuyingTests.countHeld(buyer, Items.EMERALD) == 0, "for the catalog's price, in its currency");
+        helper.assertTrue(BuyingTests.countIn(machine.cashBox(), Items.EMERALD) == 0, "an infinite machine destroys the money");
+        helper.succeed();
+    }
+
+    /** Spec §5.2: owned machines with a catalog still sell from their stock. */
+    public static void anOwnedCatalogMachineSellsFromItsStock(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = BuyingTests.placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        machine.setCatalog(EMERALDS);
+        BuyingTests.assertProblems(helper, machine, Problem.SOLD_OUT);
+        machine.stock().set(0, new ItemStack(Items.APPLE, 4));
+        machine.changed();
+        BuyingTests.assertProblems(helper, machine);
+        RecordingPlayer buyer = new RecordingPlayer(helper, GameType.SURVIVAL);
+        buyer.getInventory().add(new ItemStack(Items.EMERALD, 3));
+        BuyingTests.pressButton(helper, buyer, 0);
+        helper.assertTrue(BuyingTests.countIn(machine.stock(), Items.APPLE) == 2, "the apples come out of stock");
+        helper.assertTrue(BuyingTests.countIn(machine.cashBox(), Items.EMERALD) == 3, "the emeralds go in the cash box");
+        helper.succeed();
+    }
+
+    /** Spec §5.1: a machine whose catalog isn't loaded says so and sells nothing. */
+    public static void aMissingCatalogStopsSalesAndSaysWhy(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = BuyingTests.appleMachine(helper);
+        machine.setCatalog(DiamondVending.id("no_such_catalog"));
+        BuyingTests.assertProblems(helper, machine, Problem.CATALOG_MISSING);
+        RecordingPlayer buyer = BuyingTests.buyerWith(helper, 5);
+        BuyingTests.pressButton(helper, buyer, 0);
+        BuyingTests.lastMessage(helper, buyer, Texts.explanation(Problem.CATALOG_MISSING));
+        helper.assertTrue(BuyingTests.countHeld(buyer, Items.DIAMOND) == 5 && BuyingTests.countIn(machine.tray(), Items.APPLE) == 0,
+                "nothing is sold");
+        helper.succeed();
+    }
+
+    public static void clearingTheCatalogBringsBackOwnSelections(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = BuyingTests.appleMachine(helper); // own button 1: 2 apples for 3, 10 in stock
+        machine.setCatalog(DiamondVending.id("no_such_catalog"));
+        machine.setCatalog(null);
+        BuyingTests.assertProblems(helper, machine);
+        BuyingTests.assertSelection(helper, machine, 0, Items.APPLE, 2, 3);
+        helper.succeed();
+    }
+
+    /** Spec §8.3: clients get the catalog's selections, name and currency; the save keeps the id and the own selections. */
+    public static void clientsSeeWhatTheCatalogSells(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = BuyingTests.placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        machine.setSelection(0, Selection.of(new ItemStack(Items.BREAD), 1));
+        machine.setCatalog(EMERALDS);
+        VendingMachineBlockEntity client = DisplayTests.clientView(helper, machine);
+        BuyingTests.assertSelection(helper, client, 0, Items.APPLE, 2, 3);
+        helper.assertTrue(client.currency().displayItem() == Items.EMERALD, "clients show the catalog's currency");
+        helper.assertTrue(client.usesCatalog() && client.catalogLabel().equals("Emerald Emporium"),
+                "clients know the catalog's name, got \"" + client.catalogLabel() + "\"");
+        VendingMachineBlockEntity loaded = BuyingTests.reload(helper, machine, machine.saveWithFullMetadata(BuyingTests.registries(helper)));
+        helper.assertTrue(EMERALDS.equals(loaded.catalogId()), "the save keeps the catalog id");
+        helper.assertTrue(loaded.ownSelection(0).template().is(Items.BREAD), "and the machine's own button 1");
         helper.succeed();
     }
 }

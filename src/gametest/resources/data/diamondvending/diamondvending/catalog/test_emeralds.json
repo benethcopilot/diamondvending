@@ -1,0 +1,8 @@
+{
+  "display_name": "Emerald Emporium",
+  "currency": { "id": "minecraft:emerald" },
+  "entries": [
+    { "item": { "id": "minecraft:apple", "count": 2 }, "price": 3 },
+    { "item": { "id": "minecraft:bread" }, "price": 0 }
+  ]
+}
