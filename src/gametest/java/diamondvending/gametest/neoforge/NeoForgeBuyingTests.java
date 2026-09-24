@@ -194,5 +194,15 @@ public final class NeoForgeBuyingTests {
     public static void dyeingKeepsTheContents(GameTestHelper helper) {
         BuyingTests.dyeingKeepsTheContents(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void creativeOverflowIsDroppedNotDeleted(GameTestHelper helper) {
+        BuyingTests.creativeOverflowIsDroppedNotDeleted(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void holdingRightClickBuysOnce(GameTestHelper helper) {
+        BuyingTests.holdingRightClickBuysOnce(helper);
+    }
     *///?}
 }

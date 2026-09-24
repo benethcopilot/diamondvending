@@ -1,6 +1,7 @@
 package diamondvending.block;
 
 import diamondvending.DiamondVending;
+import diamondvending.core.Hit;
 import diamondvending.core.MachineFacts;
 import diamondvending.core.MachineLayout;
 import diamondvending.core.MachineProblems;
@@ -51,6 +52,8 @@ public class VendingMachineBlockEntity extends BlockEntity {
     public static final int TRAY_SLOTS = 9;
     /** Credit is capped at 9 stacks per player per machine (spec §3.4). */
     public static final int CREDIT_SLOTS = 9;
+    /** How long a button has to be let go before pressing it again counts as a new press (0.5 s). */
+    public static final int REPEAT_TICKS = 10;
 
     // Saved keys — also what map makers write with /data, so keep them stable.
     private static final String OWNER = "owner";
@@ -78,6 +81,8 @@ public class VendingMachineBlockEntity extends BlockEntity {
     private final NonNullList<ItemStack> cashBox = NonNullList.withSize(CASH_BOX_SLOTS, ItemStack.EMPTY);
     private final NonNullList<ItemStack> tray = NonNullList.withSize(TRAY_SLOTS, ItemStack.EMPTY);
     private final Map<UUID, NonNullList<ItemStack>> credits = new HashMap<>();
+    /** Each player's latest button or coin-slot press, to spot held right-clicks. Not saved. */
+    private final Map<UUID, Press> lastPresses = new HashMap<>();
     private int[] syncedStock = new int[0];
     private int[] syncedCredits = new int[0];
     private int[] syncedProblems = new int[0];
@@ -192,6 +197,18 @@ public class VendingMachineBlockEntity extends BlockEntity {
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
         }
+    }
+
+    private record Press(Hit hit, long time) {}
+
+    /**
+     * Whether this press is a held right-click repeating (the client resends it every 4 ticks) rather than a new
+     * press: the same player pressing the same thing within {@link #REPEAT_TICKS} of their last try. Every try is
+     * remembered, so holding a button down buys once, and letting go for half a second makes the next press count.
+     */
+    public boolean isRepeatPress(UUID player, Hit hit, long gameTime) {
+        Press last = lastPresses.put(player, new Press(hit, gameTime));
+        return last != null && last.hit().equals(hit) && gameTime - last.time() < REPEAT_TICKS;
     }
 
     /** Drops everything the machine holds (spec §5.3): the tray, every player's credit, the stock and the cash box. */

@@ -3,6 +3,7 @@ package diamondvending.block;
 import com.mojang.serialization.MapCodec;
 import diamondvending.Messages;
 import diamondvending.core.Hit;
+import diamondvending.core.Region;
 import diamondvending.core.Texts;
 import diamondvending.shop.CoinSlot;
 import diamondvending.shop.PickupTray;
@@ -227,6 +228,9 @@ public class VendingMachineBlock extends BaseEntityBlock {
             return;
         }
         Hit target = FrontFace.hit(state, pos, hit);
+        // Holding right-click repeats the click every 4 ticks: one press buys (or inserts) once.
+        boolean pressable = target.region() == Region.BUTTON || target.region() == Region.COIN_SLOT;
+        if (pressable && machine.isRepeatPress(player.getUUID(), target, level.getGameTime())) return;
         switch (target.region()) {
             case BUTTON -> Purchase.pressButton(machine, player, target.button());
             case COIN_SLOT -> CoinSlot.insert(machine, player);

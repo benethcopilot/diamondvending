@@ -325,4 +325,22 @@ public final class FabricBuyingTests {
     public void dyeingKeepsTheContents(GameTestHelper helper) {
         BuyingTests.dyeingKeepsTheContents(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void creativeOverflowIsDroppedNotDeleted(GameTestHelper helper) {
+        BuyingTests.creativeOverflowIsDroppedNotDeleted(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void holdingRightClickBuysOnce(GameTestHelper helper) {
+        BuyingTests.holdingRightClickBuysOnce(helper);
+    }
 }

@@ -24,10 +24,27 @@ public final class PlayerItems {
         return slots;
     }
 
-    /** Puts a copy of the stack in the player's inventory; whatever doesn't fit drops at their feet (spec §3.4, §3.6). */
+    /**
+     * Puts a copy of the stack in the player's inventory; whatever doesn't fit drops at their feet (spec §3.4, §3.6).
+     * Not {@code Inventory.add}: for creative players that silently deletes whatever doesn't fit.
+     */
     public static void give(Player player, ItemStack stack) {
+        Inventory inventory = player.getInventory();
         ItemStack rest = stack.copy();
-        player.getInventory().add(rest);
+        while (!rest.isEmpty()) {
+            int slot = inventory.getSlotWithRemainingSpace(rest);
+            if (slot == -1) slot = inventory.getFreeSlot();
+            if (slot == -1) break;
+            ItemStack there = inventory.getItem(slot);
+            if (there.isEmpty()) {
+                inventory.setItem(slot, rest.split(Math.min(rest.getCount(), inventory.getMaxStackSize(rest))));
+            } else {
+                int moved = Math.min(rest.getCount(), inventory.getMaxStackSize(there) - there.getCount());
+                there.grow(moved);
+                rest.shrink(moved);
+            }
+        }
+        inventory.setChanged();
         if (!rest.isEmpty()) {
             Containers.dropItemStack(player.level(), player.getX(), player.getY(), player.getZ(), rest);
         }

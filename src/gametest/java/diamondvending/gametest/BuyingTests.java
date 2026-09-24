@@ -84,7 +84,9 @@ public final class BuyingTests {
             Map.entry("nobody_else_can_spend_your_credit", BuyingTests::nobodyElseCanSpendYourCredit),
             Map.entry("breaking_spills_everything", BuyingTests::breakingSpillsEverything),
             Map.entry("creative_breaking_still_spills", BuyingTests::creativeBreakingStillSpills),
-            Map.entry("dyeing_keeps_the_contents", BuyingTests::dyeingKeepsTheContents));
+            Map.entry("dyeing_keeps_the_contents", BuyingTests::dyeingKeepsTheContents),
+            Map.entry("creative_overflow_is_dropped_not_deleted", BuyingTests::creativeOverflowIsDroppedNotDeleted),
+            Map.entry("holding_right_click_buys_once", BuyingTests::holdingRightClickBuysOnce));
 
     private BuyingTests() {}
 
@@ -450,10 +452,9 @@ public final class BuyingTests {
         TranslatableContents told = lastMessage(helper, buyer, Texts.WRONG_CURRENCY);
         translation(helper, (Component) told.getArgs()[0], Texts.DIAMOND + ".name");
         helper.assertTrue(emeralds.getCount() == 3 && machine.credit(buyer.getUUID()).isEmpty(), "emeralds are refused, not taken");
-        buyer.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
-        buyer.messages().clear();
-        click(helper, buyer, MachineLayout.COIN_SLOT);
-        lastMessage(helper, buyer, Texts.WRONG_CURRENCY);
+        RecordingPlayer emptyHanded = new RecordingPlayer(helper, GameType.SURVIVAL);
+        click(helper, emptyHanded, MachineLayout.COIN_SLOT);
+        lastMessage(helper, emptyHanded, Texts.WRONG_CURRENCY);
         helper.succeed();
     }
 
@@ -681,5 +682,42 @@ public final class BuyingTests {
         MachineTests.breakAsPlayer(helper, MachineTests.MASTER, owner);
         helper.assertTrue(droppedNear(helper, MachineTests.MASTER, Items.BREAD) == 2, "breaking it afterwards still spills the tray");
         helper.succeed();
+    }
+
+    // ---- final review --------------------------------------------------------------------------------------------
+
+    /** Vanilla's Inventory.add throws away what doesn't fit for creative players; the machine must drop it instead. */
+    public static void creativeOverflowIsDroppedNotDeleted(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        machine.tray().set(0, new ItemStack(Items.BREAD, 5));
+        RecordingPlayer admin = new RecordingPlayer(helper, GameType.CREATIVE);
+        admin.getAbilities().instabuild = true; // what makes a real creative player "have infinite materials"
+        for (int i = 0; i < Inventory.INVENTORY_SIZE; i++) {
+            admin.getInventory().setItem(i, new ItemStack(Items.COBBLESTONE, 64));
+        }
+        BlockPos feet = MachineTests.platform(3, 1, 1);
+        admin.setPos(Vec3.atBottomCenterOf(helper.absolutePos(feet)));
+        click(helper, admin, MachineLayout.TRAY);
+        helper.assertTrue(droppedNear(helper, feet, Items.BREAD) == 5, "a creative player's full inventory must not delete someone's purchase");
+        helper.succeed();
+    }
+
+    /** The client repeats a held right-click every 4 ticks; one press must buy once, not keep spending diamonds. */
+    public static void holdingRightClickBuysOnce(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = appleMachine(helper);
+        RecordingPlayer buyer = buyerWith(helper, 9);
+        pressButton(helper, buyer, 0);
+        helper.runAfterDelay(4, () -> {
+            pressButton(helper, buyer, 0);
+            helper.runAfterDelay(8, () -> {
+                pressButton(helper, buyer, 0);
+                helper.assertTrue(countIn(machine.tray(), Items.APPLE) == 2, "holding right-click should buy only once");
+                helper.runAfterDelay(VendingMachineBlockEntity.REPEAT_TICKS, () -> {
+                    pressButton(helper, buyer, 0);
+                    helper.assertTrue(countIn(machine.tray(), Items.APPLE) == 4, "letting go and pressing again buys again");
+                    helper.succeed();
+                });
+            });
+        });
     }
 }
