@@ -7,7 +7,8 @@
   "entrypoints": {
     "fabric-gametest": [
       "diamondvending.gametest.fabric.FabricGameTests",
-      "diamondvending.gametest.fabric.FabricBuyingTests"
+      "diamondvending.gametest.fabric.FabricBuyingTests",
+      "diamondvending.gametest.fabric.FabricDisplayTests"
     ]
   },
   "depends": {

@@ -1,6 +1,7 @@
 package diamondvending.block;
 
 import diamondvending.DiamondVending;
+import diamondvending.core.Flash;
 import diamondvending.core.Hit;
 import diamondvending.core.MachineFacts;
 import diamondvending.core.MachineLayout;
@@ -54,6 +55,10 @@ public class VendingMachineBlockEntity extends BlockEntity {
     public static final int CREDIT_SLOTS = 9;
     /** How long a button has to be let go before pressing it again counts as a new press (0.5 s). */
     public static final int REPEAT_TICKS = 10;
+    /** Block event: button {@code param}'s item was sold — it drops on screen and the display says THANK YOU. */
+    public static final int EVENT_VEND = 1;
+    /** Block event: the display flashes {@code Flash.values()[param & 0xFF]} with the number {@code param >>> 8}. */
+    public static final int EVENT_FLASH = 2;
 
     // Saved keys — also what map makers write with /data, so keep them stable.
     private static final String OWNER = "owner";
@@ -83,6 +88,12 @@ public class VendingMachineBlockEntity extends BlockEntity {
     private final Map<UUID, NonNullList<ItemStack>> credits = new HashMap<>();
     /** Each player's latest button or coin-slot press, to spot held right-clicks. Not saved. */
     private final Map<UUID, Press> lastPresses = new HashMap<>();
+    // What the display last showed, from block events. Kept on both sides, never saved.
+    private Flash lastFlash;
+    private int lastFlashNumber;
+    private long lastFlashTime;
+    private int lastVendSelection = -1;
+    private long lastVendTime;
     private int[] syncedStock = new int[0];
     private int[] syncedCredits = new int[0];
     private int[] syncedProblems = new int[0];
@@ -209,6 +220,63 @@ public class VendingMachineBlockEntity extends BlockEntity {
     public boolean isRepeatPress(UUID player, Hit hit, long gameTime) {
         Press last = lastPresses.put(player, new Press(hit, gameTime));
         return last != null && last.hit().equals(hit) && gameTime - last.time() < REPEAT_TICKS;
+    }
+
+    /** Server side: makes every nearby display flash (spec §3.5 c); {@code number} fills texts like "NEED %s". */
+    public void sendFlash(Flash flash, int number) {
+        if (level != null) level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_FLASH, flash.ordinal() | (number << 8));
+    }
+
+    /** Server side: button {@code selection}'s item drops into the tray on every nearby screen (spec §2.3). */
+    public void sendVend(int selection) {
+        if (level != null) level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_VEND, selection);
+    }
+
+    /** Remembers the machine's block events, on the server and on each client (the client draws from them). */
+    @Override
+    public boolean triggerEvent(int id, int param) {
+        long now = level != null ? level.getGameTime() : 0;
+        if (id == EVENT_VEND) {
+            lastVendSelection = param >= 0 && param < selections.length ? param : -1;
+            lastVendTime = now;
+            lastFlash = Flash.THANK_YOU;
+            lastFlashNumber = 0;
+            lastFlashTime = now;
+            return true;
+        }
+        if (id == EVENT_FLASH) {
+            int ordinal = param & 0xFF;
+            if (ordinal >= Flash.values().length) return false;
+            lastFlash = Flash.values()[ordinal];
+            lastFlashNumber = param >>> 8;
+            lastFlashTime = now;
+            return true;
+        }
+        return super.triggerEvent(id, param);
+    }
+
+    /** The last flash, or null if there hasn't been one. */
+    public Flash lastFlash() {
+        return lastFlash;
+    }
+
+    public int lastFlashNumber() {
+        return lastFlashNumber;
+    }
+
+    /** Game time of the last flash. */
+    public long lastFlashTime() {
+        return lastFlashTime;
+    }
+
+    /** The button whose item last dropped, or −1. */
+    public int lastVendSelection() {
+        return lastVendSelection;
+    }
+
+    /** Game time of the last sale. */
+    public long lastVendTime() {
+        return lastVendTime;
     }
 
     /** Drops everything the machine holds (spec §5.3): the tray, every player's credit, the stock and the cash box. */
