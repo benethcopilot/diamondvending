@@ -31,4 +31,11 @@ public enum Facing {
     public int rightDz() {
         return -dx;
     }
+
+    /** Whether a camera at (x, z) is in front of the machine's front face; the master block is at (masterX, masterZ). */
+    public boolean frontVisible(int masterX, int masterZ, double x, double z) {
+        double faceX = masterX + 0.5 + dx * 0.5;
+        double faceZ = masterZ + 0.5 + dz * 0.5;
+        return (x - faceX) * dx + (z - faceZ) * dz > 0;
+    }
 }
