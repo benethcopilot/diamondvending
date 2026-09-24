@@ -153,7 +153,7 @@ public class VendingSetupMenu extends AbstractContainerMenu {
     /** Ghost-slot click: the cursor's item (all of it, or one with a right-click) becomes what the button sells; nothing is used up. */
     private void copyToButton(int index, int button, Player player) {
         selected = index;
-        if (player.level().isClientSide() || !MachineAccess.canManage(player, machine.getOwner()) || machine.usesCatalog()) return;
+        if (player.level().isClientSide() || !MachineAccess.canManage(player, machine) || machine.usesCatalog()) return;
         ItemStack carried = getCarried();
         if (carried.isEmpty()) return;
         ItemStack template = button == 1 ? carried.copyWithCount(1) : carried.copy();
@@ -174,7 +174,7 @@ public class VendingSetupMenu extends AbstractContainerMenu {
         if (press instanceof SetupButtons.ShowTab show) return showTab(show.tab());
         // Everything else is the server's to decide; the client only asks (spec §4).
         if (player.level().isClientSide()) return true;
-        if (!MachineAccess.canManage(player, machine.getOwner())) return false;
+        if (!MachineAccess.canManage(player, machine)) return false;
         return switch (press) {
             case SetupButtons.ShowTab show -> showTab(show.tab());
             case SetupButtons.Withdraw ignored -> withdraw(player);
@@ -251,7 +251,7 @@ public class VendingSetupMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Container.stillValidBlockEntity(machine, player) && MachineAccess.canManage(player, machine.getOwner());
+        return Container.stillValidBlockEntity(machine, player) && MachineAccess.canManage(player, machine);
     }
 
     // ---- slots ---------------------------------------------------------------------------------------------------

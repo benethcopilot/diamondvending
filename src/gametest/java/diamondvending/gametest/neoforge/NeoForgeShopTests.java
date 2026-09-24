@@ -189,5 +189,10 @@ public final class NeoForgeShopTests {
     public static void strangersSneakingWithBlocksPlaceThemAsUsual(GameTestHelper helper) {
         ShopTests.strangersSneakingWithBlocksPlaceThemAsUsual(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void anInfiniteMachineIsAdminOnlyEvenForItsOwner(GameTestHelper helper) {
+        ShopTests.anInfiniteMachineIsAdminOnlyEvenForItsOwner(helper);
+    }
     *///?}
 }

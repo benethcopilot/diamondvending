@@ -316,4 +316,13 @@ public final class FabricShopTests {
     public void strangersSneakingWithBlocksPlaceThemAsUsual(GameTestHelper helper) {
         ShopTests.strangersSneakingWithBlocksPlaceThemAsUsual(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void anInfiniteMachineIsAdminOnlyEvenForItsOwner(GameTestHelper helper) {
+        ShopTests.anInfiniteMachineIsAdminOnlyEvenForItsOwner(helper);
+    }
 }

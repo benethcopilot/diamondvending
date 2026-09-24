@@ -23,7 +23,7 @@ All notable changes to Diamond Vending are documented here. Format: [Keep a Chan
 - Look at the front of a machine to see a tooltip: what a button sells and costs, your credit, what's in the tray, any problems, and who owns it.
 - Owners and admins set up a machine on a setup screen — empty both hands, then sneak + right-click it. Items tab: click a slot while holding an item to sell it on that button, then set the amount and the price. Stock and Cash Box tabs (with Withdraw all), and an Admin tab for admins.
 - The setup screen lists every problem in a red banner and puts a red "!" on the tab that fixes it.
-- Admins can make a machine infinite (its Stock and Cash Box must be empty first), give it a datapack catalog, or set the currency it takes.
+- Admins can make a machine infinite (its Stock and Cash Box must be empty first), give it a datapack catalog, or set the currency it takes. Only admins can change or break an infinite machine, even its owner can't.
 - Datapack catalogs, with an example (`diamondvending:example_snacks`) and a pack-maker guide in `docs/catalogs.md`.
 - A broken machine keeps its setup on the item; it comes back infinite only when an admin places it.
 - Sneaking at your own machine with something in your hand tells you to empty your hands first.

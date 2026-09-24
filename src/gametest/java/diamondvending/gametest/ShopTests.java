@@ -90,7 +90,8 @@ public final class ShopTests {
             Map.entry("breaking_the_machine_closes_its_setup", ShopTests::breakingTheMachineClosesItsSetup),
             Map.entry("shift_click_only_stocks_on_the_stock_tab", ShopTests::shiftClickOnlyStocksOnTheStockTab),
             Map.entry("sneaking_with_an_item_shows_the_empty_hands_hint", ShopTests::sneakingWithAnItemShowsTheEmptyHandsHint),
-            Map.entry("strangers_sneaking_with_blocks_place_them_as_usual", ShopTests::strangersSneakingWithBlocksPlaceThemAsUsual));
+            Map.entry("strangers_sneaking_with_blocks_place_them_as_usual", ShopTests::strangersSneakingWithBlocksPlaceThemAsUsual),
+            Map.entry("an_infinite_machine_is_admin_only_even_for_its_owner", ShopTests::anInfiniteMachineIsAdminOnlyEvenForItsOwner));
 
     private ShopTests() {}
 
@@ -557,6 +558,29 @@ public final class ShopTests {
         stranger.setShiftKeyDown(true);
         BuyingTests.click(helper, stranger, MachineLayout.WINDOW);
         BuyingTests.lastMessage(helper, stranger, Texts.OWNER_ONLY);
+        helper.succeed();
+    }
+
+    /** Spec §5.2: only admins set up or break an infinite machine — its owner too, or they could sell from nothing. */
+    public static void anInfiniteMachineIsAdminOnlyEvenForItsOwner(GameTestHelper helper) {
+        RecordingPlayer owner = new RecordingPlayer(helper, GameType.SURVIVAL);
+        VendingMachineBlockEntity machine = appleMachineOwnedBy(helper, owner);
+        standInFront(helper, owner);
+        VendingSetupMenu menu = setupMenu(owner, machine);
+        machine.setInfinite(true); // an admin made it infinite while the owner had setup open
+        helper.assertFalse(menu.stillValid(owner), "the owner's open setup closes");
+        helper.assertFalse(menu.clickMenuButton(owner, SetupButtons.price(0, 0)), "and every change is refused");
+        menu.setCarried(new ItemStack(Items.NETHERITE_BLOCK, 64));
+        clickSlot(menu, VendingSetupMenu.FIRST_GHOST, 0, owner);
+        BuyingTests.assertSelection(helper, machine, 0, Items.APPLE, 2, 3);
+        owner.setShiftKeyDown(true);
+        BuyingTests.click(helper, owner, MachineLayout.WINDOW);
+        BuyingTests.lastMessage(helper, owner, Texts.INFINITE_ADMIN_ONLY);
+        helper.assertTrue(helper.getBlockState(MachineTests.MASTER).getDestroyProgress(owner, helper.getLevel(),
+                helper.absolutePos(MachineTests.MASTER)) == 0, "the owner can't break it");
+        RecordingPlayer admin = new RecordingPlayer(helper, GameType.CREATIVE);
+        standInFront(helper, admin);
+        helper.assertTrue(setupMenu(admin, machine).stillValid(admin), "admins still can");
         helper.succeed();
     }
 

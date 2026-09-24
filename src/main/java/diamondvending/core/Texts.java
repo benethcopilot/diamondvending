@@ -9,6 +9,7 @@ import java.util.List;
  */
 public final class Texts {
     public static final String OWNER_ONLY = "message.diamondvending.owner_only";
+    public static final String INFINITE_ADMIN_ONLY = "message.diamondvending.infinite_admin_only";
     public static final String WRONG_CURRENCY = "message.diamondvending.wrong_currency";
     public static final String CREDIT_FULL = "message.diamondvending.credit_full";
     public static final String BUTTON_EMPTY = "message.diamondvending.button_empty";
@@ -76,7 +77,7 @@ public final class Texts {
 
     /** Every key a player can see. */
     public static List<String> all() {
-        List<String> keys = new ArrayList<>(List.of(OWNER_ONLY, WRONG_CURRENCY, CREDIT_FULL, BUTTON_EMPTY, SOLD_OUT, NEED_MONEY, EMPTY_HANDS,
+        List<String> keys = new ArrayList<>(List.of(OWNER_ONLY, INFINITE_ADMIN_ONLY, WRONG_CURRENCY, CREDIT_FULL, BUTTON_EMPTY, SOLD_OUT, NEED_MONEY, EMPTY_HANDS,
                 SELECT_ITEM, CREDIT, TAG_FREE, TAG_SOLD_OUT));
         keys.addAll(List.of(HUD_ITEM, HUD_FREE, HUD_SOLD_OUT, HUD_NOTHING, HUD_INSERT, HUD_YOUR_CREDIT, HUD_RETURN_CREDIT,
                 HUD_TAKE_ITEMS, HUD_OWNED_BY, HUD_SHOP_MACHINE));

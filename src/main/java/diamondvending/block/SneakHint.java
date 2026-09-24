@@ -24,7 +24,7 @@ public final class SneakHint {
         if (player.getMainHandItem().isEmpty() && player.getOffhandItem().isEmpty()) return false;
         BlockState state = level.getBlockState(hit.getBlockPos());
         if (!state.is(ModContent.VENDING_MACHINE.get())) return false;
-        if (!MachineAccess.canManage(player, VendingMachineBlock.ownerOf(level, hit.getBlockPos(), state))) return false;
+        if (!MachineAccess.canManage(player, VendingMachineBlock.machineOf(level, hit.getBlockPos(), state))) return false;
         if (!level.isClientSide()) Messages.actionBar(player, Component.translatable(Texts.EMPTY_HANDS));
         return true;
     }

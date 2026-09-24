@@ -1,6 +1,7 @@
 {
   "block.diamondvending.vending_machine": "Vending Machine",
   "message.diamondvending.owner_only": "Only the owner can do that.",
+  "message.diamondvending.infinite_admin_only": "This is an infinite machine. Only an admin can change or break it.",
   "message.diamondvending.button_empty": "Button %s has nothing for sale.",
   "message.diamondvending.sold_out": "Button %s is sold out.",
   "message.diamondvending.need_money": "Button %s costs %s. You have %s.",

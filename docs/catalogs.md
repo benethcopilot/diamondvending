@@ -72,7 +72,7 @@ Fields on the lower-left block:
 |---|---|---|
 | `owner` | UUID (int array) | The owner. Leave it out for an admin-only shop. |
 | `owner_name` | string | Shown as "Owned by …". |
-| `infinite` | byte, 0 or 1 | Never sells out; the money disappears. |
+| `infinite` | byte, 0 or 1 | Never sells out; the money disappears. Only admins can set up or break an infinite machine, even if it has an owner. |
 | `catalog` | string | A catalog id. |
 | `currency` | string | An item id: the currency slot. |
 | `selections` | list of `{slot: 0–11, item: {id, count, components}, price: 0–999}` | The machine's own buttons (`slot` 0 is button 1). |

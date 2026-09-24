@@ -51,8 +51,6 @@ import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.LevelAccessor;
 *///?}
 
-import java.util.UUID;
-
 /**
  * The 2×2 vending machine (spec §2). Four block positions share this block; the lower-left part (as seen from the
  * front) is the master and owns the {@link VendingMachineBlockEntity}.
@@ -117,9 +115,9 @@ public class VendingMachineBlock extends BaseEntityBlock {
                 : createTickerHelper(type, ModContent.VENDING_MACHINE_BLOCK_ENTITY.get(), VendingMachineBlockEntity::serverTick);
     }
 
-    /** The machine's owner, read from the master part; null if it has none. */
-    public static UUID ownerOf(BlockGetter level, BlockPos pos, BlockState state) {
-        return level.getBlockEntity(MachinePart.masterOf(pos, state)) instanceof VendingMachineBlockEntity machine ? machine.getOwner() : null;
+    /** The machine a part belongs to (its master part's block entity); null if that's missing. */
+    public static VendingMachineBlockEntity machineOf(BlockGetter level, BlockPos pos, BlockState state) {
+        return level.getBlockEntity(MachinePart.masterOf(pos, state)) instanceof VendingMachineBlockEntity machine ? machine : null;
     }
 
     // ---- placing -------------------------------------------------------------------------------------------------
@@ -174,16 +172,17 @@ public class VendingMachineBlock extends BaseEntityBlock {
     @Override
     @SuppressWarnings("deprecation")
     protected float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
-        if (!MachineAccess.canManage(player, ownerOf(level, pos, state))) return 0.0F;
+        if (!MachineAccess.canManage(player, machineOf(level, pos, state))) return 0.0F;
         int divisor = player.hasCorrectToolForDrops(state) ? 30 : 100;
         return player.getDestroySpeed(state) / OWNER_HARDNESS / divisor;
     }
 
-    /** Tells a non-owner why nothing happens when they start mining. */
+    /** Tells someone who may not break it why nothing happens when they start mining. */
     @Override
     protected void attack(BlockState state, Level level, BlockPos pos, Player player) {
-        if (!level.isClientSide() && !MachineAccess.canManage(player, ownerOf(level, pos, state))) {
-            Messages.actionBar(player, Component.translatable(Texts.OWNER_ONLY));
+        VendingMachineBlockEntity machine = machineOf(level, pos, state);
+        if (!level.isClientSide() && !MachineAccess.canManage(player, machine)) {
+            Messages.actionBar(player, Component.translatable(MachineAccess.refusal(player, machine)));
         }
         super.attack(state, level, pos, player);
     }
@@ -245,7 +244,7 @@ public class VendingMachineBlock extends BaseEntityBlock {
             return;
         }
         DyeColor dye = MachineItems.dyeColorOf(stack);
-        if (dye != null && MachineAccess.canManage(player, machine.getOwner())) {
+        if (dye != null && MachineAccess.canManage(player, machine)) {
             dye(stack, state, level, pos, player, dye);
             return;
         }
@@ -259,16 +258,16 @@ public class VendingMachineBlock extends BaseEntityBlock {
             case COIN_RETURN -> CoinSlot.giveBack(machine, player);
             case TRAY -> PickupTray.collect(machine, player);
             default -> {
-                // Spec §3.5 c: someone who isn't the owner tried to dye it.
-                if (dye != null) Messages.actionBar(player, Component.translatable(Texts.OWNER_ONLY));
+                // Spec §3.5 c: someone who may not change it tried to dye it.
+                if (dye != null) Messages.actionBar(player, Component.translatable(MachineAccess.refusal(player, machine)));
             }
         }
     }
 
-    /** Opens the setup screen for the owner or an admin (spec §4); anyone else is told it's not theirs. */
+    /** Opens the setup screen for the owner or an admin (spec §4); anyone else is told why not. */
     private static void openSetup(VendingMachineBlockEntity machine, Player player) {
-        if (!MachineAccess.canManage(player, machine.getOwner())) {
-            Messages.actionBar(player, Component.translatable(Texts.OWNER_ONLY));
+        if (!MachineAccess.canManage(player, machine)) {
+            Messages.actionBar(player, Component.translatable(MachineAccess.refusal(player, machine)));
             return;
         }
         if (player instanceof ServerPlayer serverPlayer) {
