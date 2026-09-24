@@ -156,9 +156,12 @@ public class VendingMachineBlock extends BaseEntityBlock {
                 level.setBlock(part.posFrom(pos, facing), part.applyTo(state), Block.UPDATE_ALL);
             }
         }
-        if (placer instanceof Player player && level.getBlockEntity(pos) instanceof VendingMachineBlockEntity machine) {
-            machine.setOwner(player.getUUID(), player.getName().getString());
-        }
+        if (!(level.getBlockEntity(pos) instanceof VendingMachineBlockEntity machine)) return;
+        Player player = placer instanceof Player p ? p : null;
+        if (player != null) machine.setOwner(player.getUUID(), player.getName().getString());
+        // Spec §5.4: an item that kept its setup puts it back; only an admin gets an infinite machine back.
+        MachineSetup setup = stack.get(ModContent.MACHINE_SETUP.get());
+        if (setup != null) setup.applyTo(machine, player != null && MachineAccess.isAdmin(player));
     }
 
     // ---- breaking ------------------------------------------------------------------------------------------------
@@ -185,13 +188,16 @@ public class VendingMachineBlock extends BaseEntityBlock {
     }
 
     /**
-     * Survival breaks drop one machine item in the machine's color. The other parts then remove themselves through
-     * {@link #keepIfWhole}, like a door's other half, so blocks hanging on them (torches, signs…) get their updates too.
+     * Survival breaks drop one machine item in the machine's color, carrying its setup. The other parts then remove
+     * themselves through {@link #keepIfWhole}, like a door's other half, so blocks hanging on them (torches, signs…) get
+     * their updates too.
      */
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && !player.isCreative()) {
-            popResource(level, MachinePart.masterOf(pos, state), MachineItems.forColor(state.getValue(COLOR)));
+            BlockPos master = MachinePart.masterOf(pos, state);
+            VendingMachineBlockEntity machine = level.getBlockEntity(master) instanceof VendingMachineBlockEntity found ? found : null;
+            popResource(level, master, MachineItems.forMachine(state.getValue(COLOR), machine));
         }
         return super.playerWillDestroy(level, pos, state, player);
     }

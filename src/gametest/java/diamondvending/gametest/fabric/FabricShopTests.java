@@ -118,4 +118,49 @@ public final class FabricShopTests {
     public void clientsSeeWhatTheCatalogSells(GameTestHelper helper) {
         ShopTests.clientsSeeWhatTheCatalogSells(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void breakingKeepsTheSetupOnTheItem(GameTestHelper helper) {
+        ShopTests.breakingKeepsTheSetupOnTheItem(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void placingRestoresTheSetupForTheNewOwner(GameTestHelper helper) {
+        ShopTests.placingRestoresTheSetupForTheNewOwner(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void infiniteStaysOnlyForAdminPlacers(GameTestHelper helper) {
+        ShopTests.infiniteStaysOnlyForAdminPlacers(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void anUnsetMachineDropsAPlainItem(GameTestHelper helper) {
+        ShopTests.anUnsetMachineDropsAPlainItem(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void unknownItemsInAKeptSetupLeaveThatButtonEmpty(GameTestHelper helper) {
+        ShopTests.unknownItemsInAKeptSetupLeaveThatButtonEmpty(helper);
+    }
 }

@@ -24,6 +24,16 @@ public final class MachineItems {
         return stack;
     }
 
+    /** The item a broken machine drops (spec §5.4): its color, and its setup when it has one. */
+    public static ItemStack forMachine(DyeColor color, VendingMachineBlockEntity machine) {
+        ItemStack stack = forColor(color);
+        if (machine != null) {
+            MachineSetup setup = MachineSetup.of(machine);
+            if (!setup.isEmpty()) stack.set(ModContent.MACHINE_SETUP.get(), setup);
+        }
+        return stack;
+    }
+
     /** The color a machine item places; items without a color place red machines. */
     public static DyeColor colorOf(ItemStack stack) {
         return stack.getOrDefault(DataComponents.BASE_COLOR, DyeColor.RED);

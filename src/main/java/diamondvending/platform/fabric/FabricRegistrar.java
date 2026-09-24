@@ -4,6 +4,7 @@ import diamondvending.DiamondVending;
 import diamondvending.registry.Registrar;
 import diamondvending.registry.RegistryCompat;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentType;
 //? if >=26.1 {
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 //?}
@@ -42,5 +43,11 @@ final class FabricRegistrar implements Registrar {
         *///?}
         BlockEntityType<T> type = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, DiamondVending.id(name), built);
         return () -> type;
+    }
+
+    @Override
+    public <T> Supplier<DataComponentType<T>> dataComponent(String name, Supplier<DataComponentType<T>> type) {
+        DataComponentType<T> registered = Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, DiamondVending.id(name), type.get());
+        return () -> registered;
     }
 }

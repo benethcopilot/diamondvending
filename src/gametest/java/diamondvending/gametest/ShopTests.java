@@ -3,26 +3,36 @@ package diamondvending.gametest;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import diamondvending.DiamondVending;
+import diamondvending.block.MachineItems;
+import diamondvending.block.MachineSetup;
 import diamondvending.block.VendingMachineBlockEntity;
 import diamondvending.catalog.Catalog;
 import diamondvending.catalog.Catalogs;
 import diamondvending.core.MachineLayout;
 import diamondvending.core.Problem;
 import diamondvending.core.Texts;
+import diamondvending.registry.ModContent;
 import diamondvending.shop.Selection;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.GameType;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -45,7 +55,12 @@ public final class ShopTests {
             Map.entry("an_owned_catalog_machine_sells_from_its_stock", ShopTests::anOwnedCatalogMachineSellsFromItsStock),
             Map.entry("a_missing_catalog_stops_sales_and_says_why", ShopTests::aMissingCatalogStopsSalesAndSaysWhy),
             Map.entry("clearing_the_catalog_brings_back_own_selections", ShopTests::clearingTheCatalogBringsBackOwnSelections),
-            Map.entry("clients_see_what_the_catalog_sells", ShopTests::clientsSeeWhatTheCatalogSells));
+            Map.entry("clients_see_what_the_catalog_sells", ShopTests::clientsSeeWhatTheCatalogSells),
+            Map.entry("breaking_keeps_the_setup_on_the_item", ShopTests::breakingKeepsTheSetupOnTheItem),
+            Map.entry("placing_restores_the_setup_for_the_new_owner", ShopTests::placingRestoresTheSetupForTheNewOwner),
+            Map.entry("infinite_stays_only_for_admin_placers", ShopTests::infiniteStaysOnlyForAdminPlacers),
+            Map.entry("an_unset_machine_drops_a_plain_item", ShopTests::anUnsetMachineDropsAPlainItem),
+            Map.entry("unknown_items_in_a_kept_setup_leave_that_button_empty", ShopTests::unknownItemsInAKeptSetupLeaveThatButtonEmpty));
 
     private ShopTests() {}
 
@@ -210,6 +225,96 @@ public final class ShopTests {
         VendingMachineBlockEntity loaded = BuyingTests.reload(helper, machine, machine.saveWithFullMetadata(BuyingTests.registries(helper)));
         helper.assertTrue(EMERALDS.equals(loaded.catalogId()), "the save keeps the catalog id");
         helper.assertTrue(loaded.ownSelection(0).template().is(Items.BREAD), "and the machine's own button 1");
+        helper.succeed();
+    }
+
+    // ---- the setup kept on the item (spec §5.4) -----------------------------------------------------------------
+
+    /** Breaks the test machine as {@code player} and picks up the machine item it dropped. */
+    static ItemStack breakAndPickUp(GameTestHelper helper, Player player) {
+        MachineTests.breakAsPlayer(helper, MachineTests.MASTER, player);
+        List<ItemEntity> drops = MachineTests.droppedMachines(helper);
+        helper.assertTrue(drops.size() == 1, "breaking should drop one machine item, dropped " + drops.size());
+        ItemStack stack = drops.get(0).getItem().copy();
+        drops.forEach(Entity::discard);
+        return stack;
+    }
+
+    public static void breakingKeepsTheSetupOnTheItem(GameTestHelper helper) {
+        RecordingPlayer owner = new RecordingPlayer(helper, GameType.SURVIVAL);
+        VendingMachineBlockEntity machine = BuyingTests.placeMachine(helper, owner);
+        machine.setSelection(0, Selection.of(new ItemStack(Items.APPLE, 2), 3));
+        machine.setSelection(11, Selection.of(new ItemStack(Items.ARROW, 16), 0));
+        machine.setCurrencySlot(Items.EMERALD);
+        machine.stock().set(0, new ItemStack(Items.APPLE, 10));
+        MachineSetup setup = breakAndPickUp(helper, owner).get(ModContent.MACHINE_SETUP.get());
+        helper.assertTrue(setup != null, "the dropped machine should carry its setup");
+        Selection first = setup.selection(0);
+        helper.assertTrue(first.template().is(Items.APPLE) && first.quantity() == 2 && first.price() == 3, "button 1 is kept, got " + first);
+        helper.assertTrue(setup.selection(11).template().is(Items.ARROW) && setup.selection(11).quantity() == 16, "button 12 is kept");
+        helper.assertTrue(setup.currency() == Items.EMERALD, "the currency slot is kept");
+        helper.assertTrue(BuyingTests.droppedNear(helper, MachineTests.MASTER, Items.APPLE) == 10, "the stock spills instead of riding on the item");
+        helper.succeed();
+    }
+
+    public static void placingRestoresTheSetupForTheNewOwner(GameTestHelper helper) {
+        RecordingPlayer first = new RecordingPlayer(helper, GameType.SURVIVAL);
+        VendingMachineBlockEntity machine = BuyingTests.placeMachine(helper, first);
+        machine.setSelection(0, Selection.of(new ItemStack(Items.APPLE, 2), 3));
+        machine.setCatalog(EMERALDS);
+        machine.setCurrencySlot(Items.GOLD_INGOT);
+        ItemStack item = breakAndPickUp(helper, first);
+        RecordingPlayer second = new RecordingPlayer(helper, GameType.SURVIVAL);
+        MachineTests.placeOn(helper, second, item, MachineTests.FLOOR);
+        VendingMachineBlockEntity placed = MachineTests.machineAt(helper, MachineTests.MASTER);
+        helper.assertTrue(placed != null && second.getUUID().equals(placed.getOwner()), "whoever places it owns it");
+        helper.assertTrue(placed.ownSelection(0).template().is(Items.APPLE) && placed.ownSelection(0).price() == 3, "button 1 comes back");
+        helper.assertTrue(EMERALDS.equals(placed.catalogId()), "the catalog comes back");
+        helper.assertTrue(placed.currencySlot() == Items.GOLD_INGOT, "the currency slot comes back");
+        helper.succeed();
+    }
+
+    /** Spec §5.4: an infinite machine comes back infinite only for an admin. */
+    public static void infiniteStaysOnlyForAdminPlacers(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = BuyingTests.placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        machine.setInfinite(true);
+        ItemStack item = MachineItems.forMachine(DyeColor.RED, machine);
+        MachineTests.breakAsPlayer(helper, MachineTests.MASTER, new RecordingPlayer(helper, GameType.CREATIVE));
+        MachineTests.placeOn(helper, new RecordingPlayer(helper, GameType.SURVIVAL), item.copy(), MachineTests.FLOOR);
+        helper.assertFalse(MachineTests.machineAt(helper, MachineTests.MASTER).isInfinite(), "a player who isn't an admin gets an owned machine");
+        MachineTests.breakAsPlayer(helper, MachineTests.MASTER, new RecordingPlayer(helper, GameType.CREATIVE));
+        MachineTests.placeOn(helper, new RecordingPlayer(helper, GameType.CREATIVE), item.copy(), MachineTests.FLOOR);
+        helper.assertTrue(MachineTests.machineAt(helper, MachineTests.MASTER).isInfinite(), "an admin gets it back infinite");
+        helper.succeed();
+    }
+
+    /** A machine nobody set up drops a plain item, so it stacks with new ones. */
+    public static void anUnsetMachineDropsAPlainItem(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = BuyingTests.placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        ItemStack item = MachineItems.forMachine(DyeColor.RED, machine);
+        helper.assertTrue(ItemStack.isSameItemSameComponents(item, MachineItems.forColor(DyeColor.RED)), "expected a plain machine item, got " + item);
+        helper.succeed();
+    }
+
+    /** Spec §9: a kept setup naming an item from a removed mod still loads; only that button comes back empty. */
+    public static void unknownItemsInAKeptSetupLeaveThatButtonEmpty(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = BuyingTests.placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        machine.setSelection(0, Selection.of(new ItemStack(Items.APPLE), 1));
+        machine.setSelection(1, Selection.of(new ItemStack(Items.BREAD), 2));
+        RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, BuyingTests.registries(helper));
+        MachineSetup setup = MachineSetup.of(machine);
+        helper.assertTrue(setup.equals(MachineSetup.CODEC.parse(ops, MachineSetup.CODEC.encodeStart(ops, setup).getOrThrow()).getOrThrow()),
+                "a setup survives a save unchanged");
+        CompoundTag saved = (CompoundTag) MachineSetup.CODEC.encodeStart(ops, setup).getOrThrow();
+        // Pretend button 1's item came from a mod that has since been removed.
+        //? if >=26.1 {
+        saved.getListOrEmpty("selections").getCompoundOrEmpty(0).getCompoundOrEmpty("item").putString("id", "notamod:gadget");
+        //?} else {
+        /*saved.getList("selections", Tag.TAG_COMPOUND).getCompound(0).getCompound("item").putString("id", "notamod:gadget");
+        *///?}
+        MachineSetup loaded = MachineSetup.CODEC.parse(ops, saved).getOrThrow();
+        helper.assertFalse(loaded.selection(0).isSetUp(), "the unknown item leaves button 1 empty");
+        helper.assertTrue(loaded.selection(1).template().is(Items.BREAD) && loaded.selection(1).price() == 2, "button 2 is untouched");
         helper.succeed();
     }
 }

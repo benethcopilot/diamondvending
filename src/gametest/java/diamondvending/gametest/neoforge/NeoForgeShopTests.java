@@ -79,5 +79,30 @@ public final class NeoForgeShopTests {
     public static void clientsSeeWhatTheCatalogSells(GameTestHelper helper) {
         ShopTests.clientsSeeWhatTheCatalogSells(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void breakingKeepsTheSetupOnTheItem(GameTestHelper helper) {
+        ShopTests.breakingKeepsTheSetupOnTheItem(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void placingRestoresTheSetupForTheNewOwner(GameTestHelper helper) {
+        ShopTests.placingRestoresTheSetupForTheNewOwner(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void infiniteStaysOnlyForAdminPlacers(GameTestHelper helper) {
+        ShopTests.infiniteStaysOnlyForAdminPlacers(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void anUnsetMachineDropsAPlainItem(GameTestHelper helper) {
+        ShopTests.anUnsetMachineDropsAPlainItem(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void unknownItemsInAKeptSetupLeaveThatButtonEmpty(GameTestHelper helper) {
+        ShopTests.unknownItemsInAKeptSetupLeaveThatButtonEmpty(helper);
+    }
     *///?}
 }
