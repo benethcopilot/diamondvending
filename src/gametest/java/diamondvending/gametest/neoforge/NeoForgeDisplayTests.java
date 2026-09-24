@@ -69,5 +69,30 @@ public final class NeoForgeDisplayTests {
     public static void aBoughtItemFallsIntoTheTray(GameTestHelper helper) {
         DisplayTests.aBoughtItemFallsIntoTheTray(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void hoveringAButtonShowsWhatItSells(GameTestHelper helper) {
+        DisplayTests.hoveringAButtonShowsWhatItSells(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void soldOutAndEmptyButtonsSaySo(GameTestHelper helper) {
+        DisplayTests.soldOutAndEmptyButtonsSaySo(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theCoinSlotReturnAndTrayShowCounts(GameTestHelper helper) {
+        DisplayTests.theCoinSlotReturnAndTrayShowCounts(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void problemsAreExplainedAnywhereOnTheFront(GameTestHelper helper) {
+        DisplayTests.problemsAreExplainedAnywhereOnTheFront(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void shopMachinesSaySo(GameTestHelper helper) {
+        DisplayTests.shopMachinesSaySo(helper);
+    }
     *///?}
 }

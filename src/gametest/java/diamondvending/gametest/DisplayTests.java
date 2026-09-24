@@ -4,9 +4,13 @@ import diamondvending.block.VendingMachineBlockEntity;
 import diamondvending.core.Display;
 import diamondvending.core.DropAnimation;
 import diamondvending.core.Flash;
+import diamondvending.core.Hit;
 import diamondvending.core.MachineLayout;
+import diamondvending.core.Problem;
 import diamondvending.core.Rect;
+import diamondvending.core.Region;
 import diamondvending.core.Texts;
+import diamondvending.scene.HoverText;
 import diamondvending.scene.MachineScene;
 import diamondvending.shop.Selection;
 import com.google.gson.JsonParser;
@@ -31,6 +35,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -52,7 +57,12 @@ public final class DisplayTests {
             Map.entry("problems_turn_the_display_red_and_light_the_lamp", DisplayTests::problemsTurnTheDisplayRedAndLightTheLamp),
             Map.entry("flashes_reach_clients_whole", DisplayTests::flashesReachClientsWhole),
             Map.entry("a_flash_shows_for_two_seconds", DisplayTests::aFlashShowsForTwoSeconds),
-            Map.entry("a_bought_item_falls_into_the_tray", DisplayTests::aBoughtItemFallsIntoTheTray));
+            Map.entry("a_bought_item_falls_into_the_tray", DisplayTests::aBoughtItemFallsIntoTheTray),
+            Map.entry("hovering_a_button_shows_what_it_sells", DisplayTests::hoveringAButtonShowsWhatItSells),
+            Map.entry("sold_out_and_empty_buttons_say_so", DisplayTests::soldOutAndEmptyButtonsSaySo),
+            Map.entry("the_coin_slot_return_and_tray_show_counts", DisplayTests::theCoinSlotReturnAndTrayShowCounts),
+            Map.entry("problems_are_explained_anywhere_on_the_front", DisplayTests::problemsAreExplainedAnywhereOnTheFront),
+            Map.entry("shop_machines_say_so", DisplayTests::shopMachinesSaySo));
 
     private DisplayTests() {}
 
@@ -117,6 +127,11 @@ public final class DisplayTests {
 
     static boolean lampLit(MachineScene scene) {
         return scene.glows().stream().anyMatch(g -> g.color() == MachineScene.LAMP);
+    }
+
+    static HoverText.Line line(GameTestHelper helper, List<HoverText.Line> lines, String key) {
+        return lines.stream().filter(l -> l.text().getContents() instanceof TranslatableContents t && t.getKey().equals(key))
+                .findFirst().orElseThrow(() -> new AssertionError("expected a tooltip line " + key + " in " + lines));
     }
 
     // ---- block events --------------------------------------------------------------------------------------------
@@ -219,6 +234,7 @@ public final class DisplayTests {
     }
 
     /** Delivers a block event to {@code client} the way the server does: in a packet, as bytes. */
+    @SuppressWarnings("deprecation") // NeoForge 1.21.1 wants a connection type for the buffer; there's no connection here
     static void overTheNetwork(GameTestHelper helper, VendingMachineBlockEntity client, BlockEventData event) {
         RegistryFriendlyByteBuf bytes = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
         ClientboundBlockEventPacket.STREAM_CODEC.encode(bytes, new ClientboundBlockEventPacket(event.pos(), event.block(), event.paramA(), event.paramB()));
@@ -245,6 +261,73 @@ public final class DisplayTests {
         assertItem(helper, falling, Items.APPLE, at[0], at[1]);
         helper.assertTrue(count(MachineScene.of(client, UUID.randomUUID(), DropAnimation.TICKS, KEYS), Items.APPLE) == 1,
                 "once it lands only the shelf apple is left");
+        helper.succeed();
+    }
+
+    // ---- hover tooltip -------------------------------------------------------------------------------------------
+
+    public static void hoveringAButtonShowsWhatItSells(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = clientView(helper, BuyingTests.appleMachine(helper));
+        List<HoverText.Line> lines = HoverText.lines(machine, Hit.button(0), UUID.randomUUID());
+        HoverText.Line item = line(helper, lines, Texts.HUD_ITEM);
+        helper.assertTrue(item.icon().is(Items.APPLE) && ((TranslatableContents) item.text().getContents()).getArgs()[1].equals(2),
+                "the first line should show the apple and how many one purchase gives");
+        helper.assertTrue(line(helper, lines, Texts.DIAMOND + ".many").icon().is(Items.DIAMOND), "then the price, with the currency's icon");
+        HoverText.Line owner = lines.getLast();
+        BuyingTests.translation(helper, owner.text(), Texts.HUD_OWNED_BY);
+        helper.assertTrue(((TranslatableContents) owner.text().getContents()).getArgs()[0].equals("test-player"), "and who owns the machine");
+        helper.succeed();
+    }
+
+    public static void soldOutAndEmptyButtonsSaySo(GameTestHelper helper) {
+        VendingMachineBlockEntity server = BuyingTests.appleMachine(helper);
+        server.stock().set(0, ItemStack.EMPTY);
+        VendingMachineBlockEntity machine = clientView(helper, server);
+        helper.assertTrue(line(helper, HoverText.lines(machine, Hit.button(0), UUID.randomUUID()), Texts.HUD_SOLD_OUT).alarm(),
+                "an owned machine out of stock shows SOLD OUT in red");
+        line(helper, HoverText.lines(machine, Hit.button(5), UUID.randomUUID()), Texts.HUD_NOTHING);
+        helper.succeed();
+    }
+
+    /** Spec §2.3: the coin slot shows your own credit; coin return and the tray show counts. */
+    public static void theCoinSlotReturnAndTrayShowCounts(GameTestHelper helper) {
+        VendingMachineBlockEntity server = BuyingTests.appleMachine(helper);
+        UUID buyer = UUID.randomUUID();
+        server.creditOf(buyer).set(0, new ItemStack(Items.DIAMOND, 4));
+        server.tray().set(0, new ItemStack(Items.BREAD, 3));
+        VendingMachineBlockEntity machine = clientView(helper, server);
+        List<HoverText.Line> coinSlot = HoverText.lines(machine, Hit.of(Region.COIN_SLOT), buyer);
+        line(helper, coinSlot, Texts.HUD_INSERT);
+        Component credit = (Component) ((TranslatableContents) line(helper, coinSlot, Texts.HUD_YOUR_CREDIT).text().getContents()).getArgs()[0];
+        helper.assertTrue(((TranslatableContents) credit.getContents()).getArgs()[0].equals(4), "the coin slot shows this player's 4 diamonds");
+        HoverText.Line strangerCredit = line(helper, HoverText.lines(machine, Hit.of(Region.COIN_SLOT), UUID.randomUUID()), Texts.HUD_YOUR_CREDIT);
+        Component none = (Component) ((TranslatableContents) strangerCredit.text().getContents()).getArgs()[0];
+        helper.assertTrue(((TranslatableContents) none.getContents()).getArgs()[0].equals(0), "and nobody else's");
+        HoverText.Line giveBack = line(helper, HoverText.lines(machine, Hit.of(Region.COIN_RETURN), buyer), Texts.HUD_RETURN_CREDIT);
+        helper.assertTrue(((TranslatableContents) giveBack.text().getContents()).getArgs()[0].equals(4), "coin return shows 4");
+        HoverText.Line tray = line(helper, HoverText.lines(machine, Hit.of(Region.TRAY), buyer), Texts.HUD_TAKE_ITEMS);
+        helper.assertTrue(((TranslatableContents) tray.text().getContents()).getArgs()[0].equals(3), "the tray shows 3 items");
+        helper.succeed();
+    }
+
+    /** Spec §3.5 b: every problem is explained wherever you look on the front. */
+    public static void problemsAreExplainedAnywhereOnTheFront(GameTestHelper helper) {
+        VendingMachineBlockEntity server = BuyingTests.appleMachine(helper);
+        BuyingTests.fill(server.tray(), Items.COBBLESTONE);
+        BuyingTests.fill(server.cashBox(), Items.COBBLESTONE);
+        List<HoverText.Line> lines = HoverText.lines(clientView(helper, server), Hit.NONE, UUID.randomUUID());
+        helper.assertTrue(line(helper, lines, Texts.explanation(Problem.CASH_BOX_FULL)).alarm()
+                && line(helper, lines, Texts.explanation(Problem.TRAY_FULL)).alarm(), "both problems should be explained, in red");
+        helper.succeed();
+    }
+
+    public static void shopMachinesSaySo(GameTestHelper helper) {
+        VendingMachineBlockEntity server = BuyingTests.appleMachine(helper);
+        server.setInfinite(true);
+        BuyingTests.translation(helper, HoverText.lines(clientView(helper, server), Hit.NONE, UUID.randomUUID()).getLast().text(), Texts.HUD_SHOP_MACHINE);
+        server.setInfinite(false);
+        server.setOwner(null, "");
+        BuyingTests.translation(helper, HoverText.lines(clientView(helper, server), Hit.NONE, UUID.randomUUID()).getLast().text(), Texts.HUD_SHOP_MACHINE);
         helper.succeed();
     }
 }

@@ -17,3 +17,7 @@ All notable changes to Diamond Vending are documented here. Format: [Keep a Chan
 - Coin return gives back exactly what you put in; your item drops into the pickup tray, which anyone can empty.
 - Every refused click tells you why (nothing for sale, sold out, not enough diamonds, tray full, cash box full), with vanilla sounds.
 - Breaking a machine spills its tray, credit, stock and cash box.
+- You can see what a machine sells: items on its shelves with price tags (FREE and SOLD OUT too), and what's waiting in the tray.
+- The display shows SELECT ITEM or your own credit, flashes THANK YOU or what went wrong (NEED 3, SOLD OUT…), and scrolls every problem in red while the warning lamp blinks.
+- Bought items drop from their shelf into the tray.
+- Look at the front of a machine to see a tooltip: what a button sells and costs, your credit, what's in the tray, any problems, and who owns it.

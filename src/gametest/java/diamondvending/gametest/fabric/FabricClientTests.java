@@ -58,6 +58,7 @@ public final class FabricClientTests implements FabricClientGameTest {
             // Crosshair on button 1 (canvas 26, 8 → x 1.625, y -58.5 on the z = 1 face); eyes are 1.62 above the feet.
             server.runCommand("tp @a 1.625 -60 3.5 180 2.75");
             context.waitTicks(5);
+            context.takeScreenshot("hover_button_1");
             context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT); // no diamonds yet
             context.waitTicks(5);
             context.takeScreenshot("need_money");
@@ -76,6 +77,11 @@ public final class FabricClientTests implements FabricClientGameTest {
             context.takeScreenshot("problem_1");
             context.waitTicks(10);
             context.takeScreenshot("problem_2");
+
+            // Crosshair on the tray (canvas 12, 28.25 → x 0.75, y -59.77 on the z = 1 face; eyes at -58.38, 2.5 away).
+            server.runCommand("tp @a 0.75 -60 3.5 180 29.0");
+            context.waitTicks(5);
+            context.takeScreenshot("hover_tray");
 
             // Behind the machine: nothing may float in the air or show through.
             server.runCommand("tp @a 1 -60 -3 0 10");

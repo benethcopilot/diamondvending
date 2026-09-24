@@ -100,4 +100,49 @@ public final class FabricDisplayTests {
     public void aBoughtItemFallsIntoTheTray(GameTestHelper helper) {
         DisplayTests.aBoughtItemFallsIntoTheTray(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void hoveringAButtonShowsWhatItSells(GameTestHelper helper) {
+        DisplayTests.hoveringAButtonShowsWhatItSells(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void soldOutAndEmptyButtonsSaySo(GameTestHelper helper) {
+        DisplayTests.soldOutAndEmptyButtonsSaySo(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void theCoinSlotReturnAndTrayShowCounts(GameTestHelper helper) {
+        DisplayTests.theCoinSlotReturnAndTrayShowCounts(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void problemsAreExplainedAnywhereOnTheFront(GameTestHelper helper) {
+        DisplayTests.problemsAreExplainedAnywhereOnTheFront(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void shopMachinesSaySo(GameTestHelper helper) {
+        DisplayTests.shopMachinesSaySo(helper);
+    }
 }
