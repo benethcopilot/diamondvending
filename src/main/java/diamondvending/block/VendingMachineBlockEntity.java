@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -22,7 +23,9 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -34,6 +37,7 @@ import java.util.Optional;
 //?} else {
 /*import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
 *///?}
 
 import java.util.ArrayList;
@@ -68,6 +72,7 @@ public class VendingMachineBlockEntity extends BlockEntity {
     private static final String OWNER = "owner";
     private static final String OWNER_NAME = "owner_name";
     private static final String INFINITE = "infinite";
+    private static final String CURRENCY = "currency";
     private static final String SELECTIONS = "selections";
     private static final String SLOT = "slot";
     private static final String ITEM = "item";
@@ -85,6 +90,8 @@ public class VendingMachineBlockEntity extends BlockEntity {
     private UUID owner;
     private String ownerName = "";
     private boolean infinite;
+    /** The admin's currency slot (spec §4 Admin tab), or null when it's empty. */
+    private Item currencySlot;
     private final Selection[] selections = new Selection[MachineLayout.SELECTIONS];
     private final NonNullList<ItemStack> stock = NonNullList.withSize(STOCK_SLOTS, ItemStack.EMPTY);
     private final NonNullList<ItemStack> cashBox = NonNullList.withSize(CASH_BOX_SLOTS, ItemStack.EMPTY);
@@ -182,9 +189,20 @@ public class VendingMachineBlockEntity extends BlockEntity {
         return items == null ? List.of() : ItemSlots.takeAll(items);
     }
 
-    /** What this machine takes as money (spec §5.5). Plan 5 adds the admin currency slot and catalog currency. */
+    /** The admin's currency slot, or null when it's empty. */
+    public Item currencySlot() {
+        return currencySlot;
+    }
+
+    /** Sets the currency slot; null (or air) empties it. */
+    public void setCurrencySlot(Item item) {
+        currencySlot = item == Items.AIR ? null : item;
+        changed();
+    }
+
+    /** What this machine takes as money (spec §5.5): the currency slot, else the default. */
     public Currency currency() {
-        return Currency.DEFAULT;
+        return currencySlot != null ? Currency.of(currencySlot) : Currency.DEFAULT;
     }
 
     /** Items in stock that button {@code index} sells; 0 for an empty button. */
@@ -354,6 +372,7 @@ public class VendingMachineBlockEntity extends BlockEntity {
         ItemSlots.clear(cashBox);
         ItemSlots.clear(tray);
         credits.clear();
+        currencySlot = null;
     }
 
     private void warnLostSelection(int slot) {
@@ -368,6 +387,7 @@ public class VendingMachineBlockEntity extends BlockEntity {
         if (owner != null) output.store(OWNER, UUIDUtil.CODEC, owner);
         output.putString(OWNER_NAME, ownerName);
         output.putBoolean(INFINITE, infinite);
+        if (currencySlot != null) output.store(CURRENCY, BuiltInRegistries.ITEM.byNameCodec(), currencySlot);
         ValueOutput.ValueOutputList selectionList = output.childrenList(SELECTIONS);
         for (int i = 0; i < selections.length; i++) {
             if (!selections[i].isSetUp()) continue;
@@ -395,6 +415,7 @@ public class VendingMachineBlockEntity extends BlockEntity {
         owner = input.read(OWNER, UUIDUtil.CODEC).orElse(null);
         ownerName = input.getStringOr(OWNER_NAME, "");
         infinite = input.getBooleanOr(INFINITE, false);
+        currencySlot = input.read(CURRENCY, BuiltInRegistries.ITEM.byNameCodec()).filter(item -> item != Items.AIR).orElse(null);
         for (ValueInput entry : input.childrenListOrEmpty(SELECTIONS)) {
             int slot = entry.getIntOr(SLOT, -1);
             if (slot < 0 || slot >= selections.length) continue;
@@ -426,6 +447,7 @@ public class VendingMachineBlockEntity extends BlockEntity {
         if (owner != null) tag.putUUID(OWNER, owner);
         tag.putString(OWNER_NAME, ownerName);
         tag.putBoolean(INFINITE, infinite);
+        if (currencySlot != null) tag.putString(CURRENCY, BuiltInRegistries.ITEM.getKey(currencySlot).toString());
         ListTag selectionList = new ListTag();
         for (int i = 0; i < selections.length; i++) {
             if (!selections[i].isSetUp()) continue;
@@ -456,6 +478,7 @@ public class VendingMachineBlockEntity extends BlockEntity {
         owner = tag.hasUUID(OWNER) ? tag.getUUID(OWNER) : null;
         ownerName = tag.getString(OWNER_NAME);
         infinite = tag.getBoolean(INFINITE);
+        currencySlot = itemOrNull(tag.getString(CURRENCY));
         ListTag selectionList = tag.getList(SELECTIONS, Tag.TAG_COMPOUND);
         for (int i = 0; i < selectionList.size(); i++) {
             CompoundTag entry = selectionList.getCompound(i);
@@ -482,6 +505,13 @@ public class VendingMachineBlockEntity extends BlockEntity {
         syncedStock = tag.getIntArray(SYNC_STOCK);
         syncedCredits = tag.getIntArray(SYNC_CREDITS);
         syncedProblems = tag.getIntArray(SYNC_PROBLEMS);
+    }
+
+    // An item id as saved, or null when it's missing, air or from a mod that's gone (spec §9).
+    private static Item itemOrNull(String id) {
+        Identifier key = Identifier.tryParse(id);
+        Item item = key == null ? Items.AIR : BuiltInRegistries.ITEM.get(key);
+        return item == Items.AIR ? null : item;
     }
     *///?}
 
