@@ -9,7 +9,8 @@
     "fabric-gametest": [
       "diamondvending.gametest.fabric.FabricGameTests",
       "diamondvending.gametest.fabric.FabricBuyingTests",
-      "diamondvending.gametest.fabric.FabricDisplayTests"
+      "diamondvending.gametest.fabric.FabricDisplayTests",
+      "diamondvending.gametest.fabric.FabricShopTests"
     ]
   },
   "depends": {

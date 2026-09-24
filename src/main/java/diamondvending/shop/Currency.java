@@ -11,24 +11,37 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /**
- * What a machine takes as money (spec §5.5). Plan 3 has only the default: the item tag {@code #diamondvending:currency},
- * which ships with just diamonds and which packs may change by datapack. Items match by type; names, enchantments and
- * other components are ignored.
+ * What a machine takes as money (spec §5.5). The default is the item tag {@code #diamondvending:currency} (just
+ * diamonds unless a datapack changes it); a machine's currency slot or catalog can name one item instead. Items match
+ * by type; names, enchantments and other components are ignored.
  */
 public final class Currency {
     public static final TagKey<Item> TAG = TagKey.create(Registries.ITEM, DiamondVending.id("currency"));
-    public static final Currency DEFAULT = new Currency();
+    /** The default: the tag, which ships with just diamonds and which packs may change by datapack. */
+    public static final Currency DEFAULT = new Currency(null);
 
-    private Currency() {}
+    /** One kind of item, or null for the tag. */
+    private final Item item;
 
-    public boolean matches(ItemStack stack) {
-        return !stack.isEmpty() && stack.is(TAG);
+    private Currency(Item item) {
+        this.item = item;
     }
 
-    /** The item shown on price tags and in messages: the tag's first item, or a diamond if a datapack emptied the tag. */
+    /** Exactly one kind of item: an admin's currency slot or a catalog's currency (spec §5.5). */
+    public static Currency of(Item item) {
+        return new Currency(item);
+    }
+
+    public boolean matches(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        return item != null ? stack.is(item) : stack.is(TAG);
+    }
+
+    /** The item shown on price tags and in messages: the currency's item, else the tag's first item, else a diamond. */
     public Item displayItem() {
-        for (Holder<Item> item : BuiltInRegistries.ITEM.getTagOrEmpty(TAG)) {
-            return item.value();
+        if (item != null) return item;
+        for (Holder<Item> tagged : BuiltInRegistries.ITEM.getTagOrEmpty(TAG)) {
+            return tagged.value();
         }
         return Items.DIAMOND;
     }

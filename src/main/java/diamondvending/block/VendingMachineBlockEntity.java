@@ -1,6 +1,8 @@
 package diamondvending.block;
 
 import diamondvending.DiamondVending;
+import diamondvending.catalog.Catalog;
+import diamondvending.catalog.Catalogs;
 import diamondvending.core.Flash;
 import diamondvending.core.Hit;
 import diamondvending.core.MachineFacts;
@@ -15,15 +17,20 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockEventData;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -68,6 +75,8 @@ public class VendingMachineBlockEntity extends BlockEntity {
     private static final String OWNER = "owner";
     private static final String OWNER_NAME = "owner_name";
     private static final String INFINITE = "infinite";
+    private static final String CURRENCY = "currency";
+    private static final String CATALOG = "catalog";
     private static final String SELECTIONS = "selections";
     private static final String SLOT = "slot";
     private static final String ITEM = "item";
@@ -81,10 +90,20 @@ public class VendingMachineBlockEntity extends BlockEntity {
     private static final String SYNC_STOCK = "sync_stock";
     private static final String SYNC_CREDITS = "sync_credits";
     private static final String SYNC_PROBLEMS = "sync_problems";
+    private static final String SYNC_CATALOG = "sync_catalog";
+    private static final String SYNC_CURRENCY = "sync_currency";
 
     private UUID owner;
     private String ownerName = "";
     private boolean infinite;
+    /** The admin's currency slot (spec §4 Admin tab), or null when it's empty. */
+    private Item currencySlot;
+    /** The catalog this machine sells (spec §5.1), or null for its own selections. Server side. */
+    private Identifier catalogId;
+    /** {@link Catalogs#generation()} when this machine last synced, to re-sync after a /reload. */
+    private int seenCatalogs;
+    /** True while writing the clients' update tag (server thread only): selections are then the effective ones. */
+    private boolean syncing;
     private final Selection[] selections = new Selection[MachineLayout.SELECTIONS];
     private final NonNullList<ItemStack> stock = NonNullList.withSize(STOCK_SLOTS, ItemStack.EMPTY);
     private final NonNullList<ItemStack> cashBox = NonNullList.withSize(CASH_BOX_SLOTS, ItemStack.EMPTY);
@@ -101,6 +120,8 @@ public class VendingMachineBlockEntity extends BlockEntity {
     private int[] syncedStock = new int[0];
     private int[] syncedCredits = new int[0];
     private int[] syncedProblems = new int[0];
+    private String syncedCatalog = "";
+    private Item syncedCurrency;
 
     public VendingMachineBlockEntity(BlockPos pos, BlockState state) {
         super(ModContent.VENDING_MACHINE_BLOCK_ENTITY.get(), pos, state);
@@ -132,7 +153,18 @@ public class VendingMachineBlockEntity extends BlockEntity {
 
     // ---- contents ------------------------------------------------------------------------------------------------
 
+    /**
+     * What button {@code index} sells right now: the catalog's entry when the machine has a catalog (nothing if that
+     * catalog isn't loaded), otherwise the machine's own selection. On clients: what the server last synced.
+     */
     public Selection getSelection(int index) {
+        if (catalogId == null) return selections[index];
+        Catalog catalog = catalog();
+        return catalog != null ? catalog.selection(index) : Selection.EMPTY;
+    }
+
+    /** The machine's own selection for button {@code index}, whether or not a catalog is hiding it. */
+    public Selection ownSelection(int index) {
         return selections[index];
     }
 
@@ -148,6 +180,38 @@ public class VendingMachineBlockEntity extends BlockEntity {
     public void setInfinite(boolean infinite) {
         this.infinite = infinite;
         changed();
+    }
+
+    /** The machine's catalog id, or null. Server side (clients get {@link #catalogLabel()}). */
+    public Identifier catalogId() {
+        return catalogId;
+    }
+
+    /** Assigns a catalog; null goes back to the machine's own selections. */
+    public void setCatalog(Identifier id) {
+        catalogId = id;
+        changed();
+    }
+
+    private Catalog catalog() {
+        return catalogId == null ? null : Catalogs.get(catalogId);
+    }
+
+    /** Whether the machine has a catalog that isn't loaded (spec §3.5 b "Catalog missing"). */
+    public boolean catalogMissing() {
+        return catalogId != null && catalog() == null;
+    }
+
+    /** Whether a catalog decides what this machine sells (on either side). */
+    public boolean usesCatalog() {
+        return catalogId != null || !syncedCatalog.isEmpty();
+    }
+
+    /** The catalog's name for players: its display name, or its id when it has none or isn't loaded; "" without one. */
+    public String catalogLabel() {
+        if (catalogId == null) return syncedCatalog;
+        Catalog catalog = catalog();
+        return catalog != null ? catalog.name(catalogId) : catalogId.toString();
     }
 
     /** The 27 stock slots, live. Call {@link #changed()} after editing. */
@@ -182,14 +246,33 @@ public class VendingMachineBlockEntity extends BlockEntity {
         return items == null ? List.of() : ItemSlots.takeAll(items);
     }
 
-    /** What this machine takes as money (spec §5.5). Plan 5 adds the admin currency slot and catalog currency. */
+    /** The admin's currency slot, or null when it's empty. */
+    public Item currencySlot() {
+        return currencySlot;
+    }
+
+    /** Sets the currency slot; null (or air) empties it. */
+    public void setCurrencySlot(Item item) {
+        currencySlot = item == Items.AIR ? null : item;
+        changed();
+    }
+
+    /** What this machine takes as money (spec §5.5): the currency slot, else the catalog's currency, else the default. */
     public Currency currency() {
-        return Currency.DEFAULT;
+        Item item = syncedCurrency != null ? syncedCurrency : effectiveCurrencyItem();
+        return item != null ? Currency.of(item) : Currency.DEFAULT;
+    }
+
+    /** Server side: the currency slot, else the catalog's currency; null for the default. */
+    private Item effectiveCurrencyItem() {
+        if (currencySlot != null) return currencySlot;
+        Catalog catalog = catalog();
+        return catalog != null ? catalog.currency().orElse(null) : null;
     }
 
     /** Items in stock that button {@code index} sells; 0 for an empty button. */
     public int stockCountFor(int index) {
-        Selection selection = selections[index];
+        Selection selection = getSelection(index);
         return selection.isSetUp() ? ItemSlots.count(stock, selection::sells) : 0;
     }
 
@@ -198,11 +281,12 @@ public class VendingMachineBlockEntity extends BlockEntity {
         int setUp = 0;
         int inStock = 0;
         for (int i = 0; i < selections.length; i++) {
-            if (!selections[i].isSetUp()) continue;
+            Selection selection = getSelection(i);
+            if (!selection.isSetUp()) continue;
             setUp++;
-            if (stockCountFor(i) >= selections[i].quantity()) inStock++;
+            if (stockCountFor(i) >= selection.quantity()) inStock++;
         }
-        return MachineProblems.of(new MachineFacts(infinite, false, setUp, inStock,
+        return MachineProblems.of(new MachineFacts(infinite, catalogMissing(), setUp, inStock,
                 ItemSlots.hasEmptySlot(cashBox), ItemSlots.hasEmptySlot(tray)));
     }
 
@@ -224,6 +308,14 @@ public class VendingMachineBlockEntity extends BlockEntity {
     public boolean isRepeatPress(UUID player, Hit hit, long gameTime) {
         Press last = lastPresses.put(player, new Press(hit, gameTime));
         return last != null && last.hit().equals(hit) && gameTime - last.time() < REPEAT_TICKS;
+    }
+
+    /** Server tick: after a /reload, a machine using a catalog re-syncs so clients see the catalog's new entries (spec §5.1). */
+    public static void serverTick(Level level, BlockPos pos, BlockState state, VendingMachineBlockEntity machine) {
+        if (machine.catalogId != null && machine.seenCatalogs != Catalogs.generation()) {
+            machine.seenCatalogs = Catalogs.generation();
+            machine.changed();
+        }
     }
 
     /**
@@ -269,7 +361,7 @@ public class VendingMachineBlockEntity extends BlockEntity {
             lastFlash = Flash.values()[id - EVENT_FLASH];
             // NEED shows the price of the button that was pressed — a price can be bigger than a block event can carry.
             boolean button = param >= 0 && param < selections.length;
-            lastFlashNumber = lastFlash == Flash.NEED_MONEY && button ? selections[param].price() : 0;
+            lastFlashNumber = lastFlash == Flash.NEED_MONEY && button ? getSelection(param).price() : 0;
             lastFlashTime = now;
             return true;
         }
@@ -354,6 +446,8 @@ public class VendingMachineBlockEntity extends BlockEntity {
         ItemSlots.clear(cashBox);
         ItemSlots.clear(tray);
         credits.clear();
+        currencySlot = null;
+        catalogId = null;
     }
 
     private void warnLostSelection(int slot) {
@@ -368,13 +462,17 @@ public class VendingMachineBlockEntity extends BlockEntity {
         if (owner != null) output.store(OWNER, UUIDUtil.CODEC, owner);
         output.putString(OWNER_NAME, ownerName);
         output.putBoolean(INFINITE, infinite);
+        if (currencySlot != null) output.store(CURRENCY, BuiltInRegistries.ITEM.byNameCodec(), currencySlot);
+        if (catalogId != null) output.store(CATALOG, Identifier.CODEC, catalogId);
         ValueOutput.ValueOutputList selectionList = output.childrenList(SELECTIONS);
         for (int i = 0; i < selections.length; i++) {
-            if (!selections[i].isSetUp()) continue;
+            // Clients get what the machine really sells: the catalog's entries when it has one (spec §8.3).
+            Selection selection = syncing ? getSelection(i) : selections[i];
+            if (!selection.isSetUp()) continue;
             ValueOutput entry = selectionList.addChild();
             entry.putInt(SLOT, i);
-            entry.store(ITEM, ItemStack.CODEC, selections[i].template());
-            entry.putInt(PRICE, selections[i].price());
+            entry.store(ITEM, ItemStack.CODEC, selection.template());
+            entry.putInt(PRICE, selection.price());
         }
         ContainerHelper.saveAllItems(output.child(STOCK), stock);
         ContainerHelper.saveAllItems(output.child(CASH_BOX), cashBox);
@@ -395,6 +493,10 @@ public class VendingMachineBlockEntity extends BlockEntity {
         owner = input.read(OWNER, UUIDUtil.CODEC).orElse(null);
         ownerName = input.getStringOr(OWNER_NAME, "");
         infinite = input.getBooleanOr(INFINITE, false);
+        currencySlot = input.read(CURRENCY, BuiltInRegistries.ITEM.byNameCodec()).filter(item -> item != Items.AIR).orElse(null);
+        catalogId = input.read(CATALOG, Identifier.CODEC).orElse(null);
+        syncedCatalog = input.getStringOr(SYNC_CATALOG, "");
+        syncedCurrency = input.read(SYNC_CURRENCY, BuiltInRegistries.ITEM.byNameCodec()).orElse(null);
         for (ValueInput entry : input.childrenListOrEmpty(SELECTIONS)) {
             int slot = entry.getIntOr(SLOT, -1);
             if (slot < 0 || slot >= selections.length) continue;
@@ -426,13 +528,17 @@ public class VendingMachineBlockEntity extends BlockEntity {
         if (owner != null) tag.putUUID(OWNER, owner);
         tag.putString(OWNER_NAME, ownerName);
         tag.putBoolean(INFINITE, infinite);
+        if (currencySlot != null) tag.putString(CURRENCY, BuiltInRegistries.ITEM.getKey(currencySlot).toString());
+        if (catalogId != null) tag.putString(CATALOG, catalogId.toString());
         ListTag selectionList = new ListTag();
         for (int i = 0; i < selections.length; i++) {
-            if (!selections[i].isSetUp()) continue;
+            // Clients get what the machine really sells: the catalog's entries when it has one (spec §8.3).
+            Selection selection = syncing ? getSelection(i) : selections[i];
+            if (!selection.isSetUp()) continue;
             CompoundTag entry = new CompoundTag();
             entry.putInt(SLOT, i);
-            entry.put(ITEM, selections[i].template().save(registries));
-            entry.putInt(PRICE, selections[i].price());
+            entry.put(ITEM, selection.template().save(registries));
+            entry.putInt(PRICE, selection.price());
             selectionList.add(entry);
         }
         tag.put(SELECTIONS, selectionList);
@@ -456,6 +562,10 @@ public class VendingMachineBlockEntity extends BlockEntity {
         owner = tag.hasUUID(OWNER) ? tag.getUUID(OWNER) : null;
         ownerName = tag.getString(OWNER_NAME);
         infinite = tag.getBoolean(INFINITE);
+        currencySlot = itemOrNull(tag.getString(CURRENCY));
+        catalogId = tag.contains(CATALOG) ? Identifier.tryParse(tag.getString(CATALOG)) : null;
+        syncedCatalog = tag.getString(SYNC_CATALOG);
+        syncedCurrency = itemOrNull(tag.getString(SYNC_CURRENCY));
         ListTag selectionList = tag.getList(SELECTIONS, Tag.TAG_COMPOUND);
         for (int i = 0; i < selectionList.size(); i++) {
             CompoundTag entry = selectionList.getCompound(i);
@@ -483,20 +593,40 @@ public class VendingMachineBlockEntity extends BlockEntity {
         syncedCredits = tag.getIntArray(SYNC_CREDITS);
         syncedProblems = tag.getIntArray(SYNC_PROBLEMS);
     }
+
+    // An item id as saved, or null when it's missing, air or from a mod that's gone (spec §9).
+    private static Item itemOrNull(String id) {
+        Identifier key = Identifier.tryParse(id);
+        Item item = key == null ? Items.AIR : BuiltInRegistries.ITEM.get(key);
+        return item == Items.AIR ? null : item;
+    }
     *///?}
 
     // ---- syncing -------------------------------------------------------------------------------------------------
 
     /**
-     * What clients get (spec §8.3): everything they draw — selections, tray, owner name, infinite — plus stock counts,
-     * each player's credit total and the problems. Never the stock, cash box or credit items themselves.
+     * What clients get (spec §8.3): everything they draw — the selections really sold, tray, owner name, infinite —
+     * plus stock counts, each player's credit total, the problems, the catalog's name and the effective currency.
+     * Never the stock, cash box or credit items themselves.
      */
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        CompoundTag tag = saveCustomOnly(registries);
+        CompoundTag tag;
+        syncing = true;
+        try {
+            tag = saveCustomOnly(registries);
+        } finally {
+            syncing = false;
+        }
         tag.remove(STOCK);
         tag.remove(CASH_BOX);
         tag.remove(CREDITS);
+        // Clients never look catalogs up: they get its entries (above), its name and its currency instead of its id.
+        tag.remove(CATALOG);
+        String catalog = catalogLabel();
+        if (!catalog.isEmpty()) tag.putString(SYNC_CATALOG, catalog);
+        Item money = effectiveCurrencyItem();
+        if (money != null) tag.putString(SYNC_CURRENCY, BuiltInRegistries.ITEM.getKey(money).toString());
         int[] stockCounts = new int[selections.length];
         for (int i = 0; i < selections.length; i++) stockCounts[i] = stockCountFor(i);
         tag.putIntArray(SYNC_STOCK, stockCounts);

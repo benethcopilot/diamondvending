@@ -5,12 +5,14 @@ import diamondvending.Messages;
 import diamondvending.core.Hit;
 import diamondvending.core.Region;
 import diamondvending.core.Texts;
+import diamondvending.registry.ModContent;
 import diamondvending.shop.CoinSlot;
 import diamondvending.shop.PickupTray;
 import diamondvending.shop.Purchase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
@@ -24,6 +26,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -46,8 +50,6 @@ import net.minecraft.world.level.ScheduledTickAccess;
 /*import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.level.LevelAccessor;
 *///?}
-
-import java.util.UUID;
 
 /**
  * The 2×2 vending machine (spec §2). Four block positions share this block; the lower-left part (as seen from the
@@ -106,9 +108,16 @@ public class VendingMachineBlock extends BaseEntityBlock {
         return MachinePart.of(state) == MachinePart.LOWER_LEFT ? new VendingMachineBlockEntity(pos, state) : null;
     }
 
-    /** The machine's owner, read from the master part; null if it has none. */
-    public static UUID ownerOf(BlockGetter level, BlockPos pos, BlockState state) {
-        return level.getBlockEntity(MachinePart.masterOf(pos, state)) instanceof VendingMachineBlockEntity machine ? machine.getOwner() : null;
+    /** Server only: machines using a catalog re-sync after /reload ({@link VendingMachineBlockEntity#serverTick}). */
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return level.isClientSide() ? null
+                : createTickerHelper(type, ModContent.VENDING_MACHINE_BLOCK_ENTITY.get(), VendingMachineBlockEntity::serverTick);
+    }
+
+    /** The machine a part belongs to (its master part's block entity); null if that's missing. */
+    public static VendingMachineBlockEntity machineOf(BlockGetter level, BlockPos pos, BlockState state) {
+        return level.getBlockEntity(MachinePart.masterOf(pos, state)) instanceof VendingMachineBlockEntity machine ? machine : null;
     }
 
     // ---- placing -------------------------------------------------------------------------------------------------
@@ -146,9 +155,12 @@ public class VendingMachineBlock extends BaseEntityBlock {
                 level.setBlock(part.posFrom(pos, facing), part.applyTo(state), Block.UPDATE_ALL);
             }
         }
-        if (placer instanceof Player player && level.getBlockEntity(pos) instanceof VendingMachineBlockEntity machine) {
-            machine.setOwner(player.getUUID(), player.getName().getString());
-        }
+        if (!(level.getBlockEntity(pos) instanceof VendingMachineBlockEntity machine)) return;
+        Player player = placer instanceof Player p ? p : null;
+        if (player != null) machine.setOwner(player.getUUID(), player.getName().getString());
+        // Spec §5.4: an item that kept its setup puts it back; only an admin gets an infinite machine back.
+        MachineSetup setup = stack.get(ModContent.MACHINE_SETUP.get());
+        if (setup != null) setup.applyTo(machine, player != null && MachineAccess.isAdmin(player));
     }
 
     // ---- breaking ------------------------------------------------------------------------------------------------
@@ -160,28 +172,32 @@ public class VendingMachineBlock extends BaseEntityBlock {
     @Override
     @SuppressWarnings("deprecation")
     protected float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
-        if (!MachineAccess.canManage(player, ownerOf(level, pos, state))) return 0.0F;
+        if (!MachineAccess.canManage(player, machineOf(level, pos, state))) return 0.0F;
         int divisor = player.hasCorrectToolForDrops(state) ? 30 : 100;
         return player.getDestroySpeed(state) / OWNER_HARDNESS / divisor;
     }
 
-    /** Tells a non-owner why nothing happens when they start mining. */
+    /** Tells someone who may not break it why nothing happens when they start mining. */
     @Override
     protected void attack(BlockState state, Level level, BlockPos pos, Player player) {
-        if (!level.isClientSide() && !MachineAccess.canManage(player, ownerOf(level, pos, state))) {
-            Messages.actionBar(player, Component.translatable(Texts.OWNER_ONLY));
+        VendingMachineBlockEntity machine = machineOf(level, pos, state);
+        if (!level.isClientSide() && !MachineAccess.canManage(player, machine)) {
+            Messages.actionBar(player, Component.translatable(MachineAccess.refusal(player, machine)));
         }
         super.attack(state, level, pos, player);
     }
 
     /**
-     * Survival breaks drop one machine item in the machine's color. The other parts then remove themselves through
-     * {@link #keepIfWhole}, like a door's other half, so blocks hanging on them (torches, signs…) get their updates too.
+     * Survival breaks drop one machine item in the machine's color, carrying its setup. The other parts then remove
+     * themselves through {@link #keepIfWhole}, like a door's other half, so blocks hanging on them (torches, signs…) get
+     * their updates too.
      */
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && !player.isCreative()) {
-            popResource(level, MachinePart.masterOf(pos, state), MachineItems.forColor(state.getValue(COLOR)));
+            BlockPos master = MachinePart.masterOf(pos, state);
+            VendingMachineBlockEntity machine = level.getBlockEntity(master) instanceof VendingMachineBlockEntity found ? found : null;
+            popResource(level, master, MachineItems.forMachine(state.getValue(COLOR), machine));
         }
         return super.playerWillDestroy(level, pos, state, player);
     }
@@ -222,8 +238,13 @@ public class VendingMachineBlock extends BaseEntityBlock {
     private void use(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!(level.getBlockEntity(MachinePart.masterOf(pos, state)) instanceof VendingMachineBlockEntity machine)) return;
         machine.refreshOwnerName(player);
+        if (player.isSecondaryUseActive()) {
+            // Spec §3.2 rule 1: the game only lets a sneak-click reach a block when both hands are empty.
+            openSetup(machine, player);
+            return;
+        }
         DyeColor dye = MachineItems.dyeColorOf(stack);
-        if (dye != null && MachineAccess.canManage(player, machine.getOwner())) {
+        if (dye != null && MachineAccess.canManage(player, machine)) {
             dye(stack, state, level, pos, player, dye);
             return;
         }
@@ -237,9 +258,20 @@ public class VendingMachineBlock extends BaseEntityBlock {
             case COIN_RETURN -> CoinSlot.giveBack(machine, player);
             case TRAY -> PickupTray.collect(machine, player);
             default -> {
-                // Spec §3.5 c: someone who isn't the owner tried to dye it.
-                if (dye != null) Messages.actionBar(player, Component.translatable(Texts.OWNER_ONLY));
+                // Spec §3.5 c: someone who may not change it tried to dye it.
+                if (dye != null) Messages.actionBar(player, Component.translatable(MachineAccess.refusal(player, machine)));
             }
+        }
+    }
+
+    /** Opens the setup screen for the owner or an admin (spec §4); anyone else is told why not. */
+    private static void openSetup(VendingMachineBlockEntity machine, Player player) {
+        if (!MachineAccess.canManage(player, machine)) {
+            Messages.actionBar(player, Component.translatable(MachineAccess.refusal(player, machine)));
+            return;
+        }
+        if (player instanceof ServerPlayer serverPlayer) {
+            ModContent.SETUP_MENU.open(serverPlayer, Component.translatable(Texts.SETUP_TITLE), machine.getBlockPos());
         }
     }
 

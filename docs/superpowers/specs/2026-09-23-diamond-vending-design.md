@@ -382,9 +382,10 @@ Unlocked in the recipe book when the player first obtains a diamond.
   - Breaking your machine keeps its setup on the item, but stock, cash box, tray, and credit
     pop out.
   - Dye the machine by right-clicking it with a dye.
-  - Admins: infinite machines never run out and the diamonds vanish; switching to infinite needs
-    empty Stock and Cash Box; an infinite machine stays infinite only when an admin places it;
-    catalogs and the currency slot.
+  - Admins: infinite machines never run out and the diamonds vanish; only admins can change or
+    break an infinite machine, even its owner can't; switching to infinite needs empty Stock and
+    Cash Box; an infinite machine stays infinite only when an admin places it; catalogs and the
+    currency slot.
 - Pages (about 8–10, one idea per page): Welcome, new Franchise Owner! · Build your machine ·
   How customers buy (buttons, credit, tray) · Set up your shop (empty hands!) · Stock and the
   cash box · Uh-oh! What the red warnings mean · Keep it safe & make it pretty · Moving your
