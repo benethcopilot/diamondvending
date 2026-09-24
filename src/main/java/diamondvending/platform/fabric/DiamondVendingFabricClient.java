@@ -2,9 +2,11 @@ package diamondvending.platform.fabric;
 
 import diamondvending.DiamondVending;
 import diamondvending.client.HoverHud;
+import diamondvending.client.VendingSetupScreen;
 import diamondvending.client.VendingMachineRenderer;
 import diamondvending.registry.ModContent;
 import net.fabricmc.api.ClientModInitializer;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 //? if >=26.1 {
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
@@ -24,5 +26,7 @@ public final class DiamondVendingFabricClient implements ClientModInitializer {
         //?} else {
         /*HudRenderCallback.EVENT.register(HoverHud::render);
         *///?}
+        // Vanilla's registration, opened up by Fabric API's transitive access wideners on both versions.
+        MenuScreens.register(ModContent.SETUP_MENU.type(), VendingSetupScreen::new);
     }
 }
