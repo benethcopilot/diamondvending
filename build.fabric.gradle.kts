@@ -70,6 +70,18 @@ loom {
             runDirectory = file("build/gametest")
             generateRunConfig = false
         }
+        // A real game window that takes screenshots (26.1 only: older Fabric API has no client tests). Local only —
+        // CI runners have no display. See docs/dev-setup.md.
+        if (sc.current.parsed >= "26.1") {
+            register("clientGametest") {
+                client()
+                displayName = "Client Game Test"
+                sourceSet = gametest.name
+                systemProperties.put("fabric.client.gametest", "true")
+                runDirectory = file("build/clientgametest")
+                generateRunConfig = false
+            }
+        }
     }
 }
 

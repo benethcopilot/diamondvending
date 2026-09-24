@@ -2,6 +2,7 @@ package diamondvending.shop;
 
 import diamondvending.Messages;
 import diamondvending.block.VendingMachineBlockEntity;
+import diamondvending.core.Flash;
 import diamondvending.core.Texts;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -25,6 +26,7 @@ public final class CoinSlot {
         if (hand == null) {
             MachineSounds.error(level, pos);
             Messages.actionBar(player, Component.translatable(Texts.WRONG_CURRENCY, currency.name()));
+            machine.sendFlash(Flash.WRONG_COIN, 0);
             return;
         }
         ItemStack held = player.getItemInHand(hand);
@@ -38,6 +40,7 @@ public final class CoinSlot {
         if (!left.isEmpty()) {
             if (accepted == 0) MachineSounds.error(level, pos);
             Messages.actionBar(player, Component.translatable(Texts.CREDIT_FULL));
+            machine.sendFlash(Flash.CREDIT_FULL, 0);
         }
     }
 

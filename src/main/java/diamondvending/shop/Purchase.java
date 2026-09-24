@@ -3,6 +3,7 @@ package diamondvending.shop;
 import diamondvending.Messages;
 import diamondvending.block.VendingMachineBlockEntity;
 import diamondvending.core.DenyReason;
+import diamondvending.core.Flash;
 import diamondvending.core.Problem;
 import diamondvending.core.PurchaseDecision;
 import diamondvending.core.PurchaseInput;
@@ -48,12 +49,12 @@ public final class Purchase {
                 inCredit,
                 inWallet);
         switch (PurchaseRules.decide(input)) {
-            case PurchaseDecision.Approved approved -> complete(machine, player, selection, approved);
+            case PurchaseDecision.Approved approved -> complete(machine, player, index, selection, approved);
             case PurchaseDecision.Denied denied -> refuse(machine, player, index, denied.reason(), inCredit + inWallet);
         }
     }
 
-    private static void complete(VendingMachineBlockEntity machine, Player player, Selection selection, PurchaseDecision.Approved approved) {
+    private static void complete(VendingMachineBlockEntity machine, Player player, int index, Selection selection, PurchaseDecision.Approved approved) {
         Currency currency = machine.currency();
         List<ItemStack> paid = new ArrayList<>(ItemSlots.take(machine.credit(player.getUUID()), currency::matches, approved.fromCredit()));
         paid.addAll(ItemSlots.take(PlayerItems.paySlots(player), currency::matches, approved.fromInventory()));
@@ -67,6 +68,7 @@ public final class Purchase {
         MachineSounds.vend(machine.getLevel(), machine.getBlockPos());
         MachineSounds.thankYou(machine.getLevel(), machine.getBlockPos());
         machine.changed();
+        machine.sendVend(index);
     }
 
     /** Spec §3.5 c: tells the buyer what's wrong and who can fix it, with an error buzz. */
@@ -84,5 +86,6 @@ public final class Purchase {
         };
         MachineSounds.error(machine.getLevel(), machine.getBlockPos());
         Messages.actionBar(player, message);
+        machine.sendFlash(Flash.of(reason), index);
     }
 }

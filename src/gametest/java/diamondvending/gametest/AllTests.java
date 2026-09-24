@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 
 /** Every game test by name, for loaders that register tests from a list (NeoForge 26.1). */
 public final class AllTests {
-    public static final Map<String, Consumer<GameTestHelper>> ALL = combine(List.of(MachineTests.ALL, BuyingTests.ALL));
+    public static final Map<String, Consumer<GameTestHelper>> ALL = combine(List.of(MachineTests.ALL, BuyingTests.ALL, DisplayTests.ALL));
 
     private AllTests() {}
 
