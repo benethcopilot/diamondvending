@@ -37,4 +37,58 @@ public final class FabricDisplayTests {
     public void theCoinSlotFlashesWrongCoin(GameTestHelper helper) {
         DisplayTests.theCoinSlotFlashesWrongCoin(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void shelvesShowWhatEachButtonSells(GameTestHelper helper) {
+        DisplayTests.shelvesShowWhatEachButtonSells(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void theTrayShowsWhatsWaiting(GameTestHelper helper) {
+        DisplayTests.theTrayShowsWhatsWaiting(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void theDisplaySaysSelectItemThenYourCredit(GameTestHelper helper) {
+        DisplayTests.theDisplaySaysSelectItemThenYourCredit(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void problemsTurnTheDisplayRedAndLightTheLamp(GameTestHelper helper) {
+        DisplayTests.problemsTurnTheDisplayRedAndLightTheLamp(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void aFlashShowsForTwoSeconds(GameTestHelper helper) {
+        DisplayTests.aFlashShowsForTwoSeconds(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void aBoughtItemFallsIntoTheTray(GameTestHelper helper) {
+        DisplayTests.aBoughtItemFallsIntoTheTray(helper);
+    }
 }

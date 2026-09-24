@@ -34,5 +34,35 @@ public final class NeoForgeDisplayTests {
     public static void theCoinSlotFlashesWrongCoin(GameTestHelper helper) {
         DisplayTests.theCoinSlotFlashesWrongCoin(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void shelvesShowWhatEachButtonSells(GameTestHelper helper) {
+        DisplayTests.shelvesShowWhatEachButtonSells(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theTrayShowsWhatsWaiting(GameTestHelper helper) {
+        DisplayTests.theTrayShowsWhatsWaiting(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theDisplaySaysSelectItemThenYourCredit(GameTestHelper helper) {
+        DisplayTests.theDisplaySaysSelectItemThenYourCredit(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void problemsTurnTheDisplayRedAndLightTheLamp(GameTestHelper helper) {
+        DisplayTests.problemsTurnTheDisplayRedAndLightTheLamp(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void aFlashShowsForTwoSeconds(GameTestHelper helper) {
+        DisplayTests.aFlashShowsForTwoSeconds(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void aBoughtItemFallsIntoTheTray(GameTestHelper helper) {
+        DisplayTests.aBoughtItemFallsIntoTheTray(helper);
+    }
     *///?}
 }
