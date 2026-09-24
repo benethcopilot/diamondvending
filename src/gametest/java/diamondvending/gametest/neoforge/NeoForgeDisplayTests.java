@@ -56,6 +56,11 @@ public final class NeoForgeDisplayTests {
     }
 
     @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void flashesReachClientsWhole(GameTestHelper helper) {
+        DisplayTests.flashesReachClientsWhole(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
     public static void aFlashShowsForTwoSeconds(GameTestHelper helper) {
         DisplayTests.aFlashShowsForTwoSeconds(helper);
     }

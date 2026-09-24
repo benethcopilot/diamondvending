@@ -79,6 +79,15 @@ public final class FabricDisplayTests {
     //?} else {
     /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
     *///?}
+    public void flashesReachClientsWhole(GameTestHelper helper) {
+        DisplayTests.flashesReachClientsWhole(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
     public void aFlashShowsForTwoSeconds(GameTestHelper helper) {
         DisplayTests.aFlashShowsForTwoSeconds(helper);
     }

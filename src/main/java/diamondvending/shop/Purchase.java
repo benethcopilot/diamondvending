@@ -86,6 +86,6 @@ public final class Purchase {
         };
         MachineSounds.error(machine.getLevel(), machine.getBlockPos());
         Messages.actionBar(player, message);
-        machine.sendFlash(Flash.of(reason), reason == DenyReason.NOT_ENOUGH_MONEY ? machine.getSelection(index).price() : 0);
+        machine.sendFlash(Flash.of(reason), index);
     }
 }

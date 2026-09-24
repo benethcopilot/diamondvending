@@ -23,6 +23,7 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -55,10 +56,13 @@ public class VendingMachineBlockEntity extends BlockEntity {
     public static final int CREDIT_SLOTS = 9;
     /** How long a button has to be let go before pressing it again counts as a new press (0.5 s). */
     public static final int REPEAT_TICKS = 10;
-    /** Block event: button {@code param}'s item was sold — it drops on screen and the display says THANK YOU. */
+    /**
+     * Block event: button {@code param}'s item was sold — it drops on screen and the display says THANK YOU. Block
+     * event ids and params reach clients as single bytes (0–255), so they carry small numbers only.
+     */
     public static final int EVENT_VEND = 1;
-    /** Block event: the display flashes {@code Flash.values()[param & 0xFF]} with the number {@code param >>> 8}. */
-    public static final int EVENT_FLASH = 2;
+    /** Block events {@code EVENT_FLASH + n}: the display flashes {@code Flash.values()[n]}; {@code param} is the button pressed. */
+    public static final int EVENT_FLASH = 16;
 
     // Saved keys — also what map makers write with /data, so keep them stable.
     private static final String OWNER = "owner";
@@ -222,14 +226,31 @@ public class VendingMachineBlockEntity extends BlockEntity {
         return last != null && last.hit().equals(hit) && gameTime - last.time() < REPEAT_TICKS;
     }
 
-    /** Server side: makes every nearby display flash (spec §3.5 c); {@code number} fills texts like "NEED %s". */
-    public void sendFlash(Flash flash, int number) {
-        if (level != null) level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_FLASH, flash.ordinal() | (number << 8));
+    /**
+     * Server side: makes every nearby display flash (spec §3.5 c). {@code button} is the button that was pressed, or 0
+     * when there wasn't one: NEED shows its price.
+     */
+    public void sendFlash(Flash flash, int button) {
+        send(flashEvent(flash, button));
     }
 
     /** Server side: button {@code selection}'s item drops into the tray on every nearby screen (spec §2.3). */
     public void sendVend(int selection) {
-        if (level != null) level.blockEvent(worldPosition, getBlockState().getBlock(), EVENT_VEND, selection);
+        send(vendEvent(selection));
+    }
+
+    /** The block event {@link #sendFlash} sends. */
+    public BlockEventData flashEvent(Flash flash, int button) {
+        return new BlockEventData(worldPosition, getBlockState().getBlock(), EVENT_FLASH + flash.ordinal(), button);
+    }
+
+    /** The block event {@link #sendVend} sends. */
+    public BlockEventData vendEvent(int selection) {
+        return new BlockEventData(worldPosition, getBlockState().getBlock(), EVENT_VEND, selection);
+    }
+
+    private void send(BlockEventData event) {
+        if (level != null) level.blockEvent(event.pos(), event.block(), event.paramA(), event.paramB());
     }
 
     /** Remembers the machine's block events, on the server and on each client (the client draws from them). */
@@ -244,11 +265,11 @@ public class VendingMachineBlockEntity extends BlockEntity {
             lastFlashTime = now;
             return true;
         }
-        if (id == EVENT_FLASH) {
-            int ordinal = param & 0xFF;
-            if (ordinal >= Flash.values().length) return false;
-            lastFlash = Flash.values()[ordinal];
-            lastFlashNumber = param >>> 8;
+        if (id >= EVENT_FLASH && id < EVENT_FLASH + Flash.values().length) {
+            lastFlash = Flash.values()[id - EVENT_FLASH];
+            // NEED shows the price of the button that was pressed — a price can be bigger than a block event can carry.
+            boolean button = param >= 0 && param < selections.length;
+            lastFlashNumber = lastFlash == Flash.NEED_MONEY && button ? selections[param].price() : 0;
             lastFlashTime = now;
             return true;
         }

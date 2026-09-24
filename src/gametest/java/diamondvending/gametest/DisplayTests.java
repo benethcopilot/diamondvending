@@ -5,22 +5,32 @@ import diamondvending.core.Display;
 import diamondvending.core.DropAnimation;
 import diamondvending.core.Flash;
 import diamondvending.core.MachineLayout;
-import diamondvending.core.Problem;
 import diamondvending.core.Rect;
 import diamondvending.core.Texts;
 import diamondvending.scene.MachineScene;
 import diamondvending.shop.Selection;
+import com.google.gson.JsonParser;
+import io.netty.buffer.Unpooled;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.GameType;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -40,6 +50,7 @@ public final class DisplayTests {
             Map.entry("the_tray_shows_whats_waiting", DisplayTests::theTrayShowsWhatsWaiting),
             Map.entry("the_display_says_select_item_then_your_credit", DisplayTests::theDisplaySaysSelectItemThenYourCredit),
             Map.entry("problems_turn_the_display_red_and_light_the_lamp", DisplayTests::problemsTurnTheDisplayRedAndLightTheLamp),
+            Map.entry("flashes_reach_clients_whole", DisplayTests::flashesReachClientsWhole),
             Map.entry("a_flash_shows_for_two_seconds", DisplayTests::aFlashShowsForTwoSeconds),
             Map.entry("a_bought_item_falls_into_the_tray", DisplayTests::aBoughtItemFallsIntoTheTray));
 
@@ -57,6 +68,24 @@ public final class DisplayTests {
     /** Words for scenes in tests: a translation's key and arguments, so tests don't depend on a language being loaded. */
     static final Function<Component, String> KEYS = component -> component.getContents() instanceof TranslatableContents t
             ? t.getKey() + Arrays.toString(t.getArgs()) : component.getString();
+
+    /**
+     * Words for the display in tests: the mod's own English, read from its en_us.json. The display shows only 7
+     * characters at a time, so display checks need the real, short words — keys would all start "display".
+     */
+    static final Function<Component, String> ENGLISH = englishWords();
+
+    private static Function<Component, String> englishWords() {
+        Map<String, String> english = new HashMap<>();
+        try (InputStream in = VendingMachineBlockEntity.class.getResourceAsStream("/assets/diamondvending/lang/en_us.json")) {
+            JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject()
+                    .entrySet().forEach(entry -> english.put(entry.getKey(), entry.getValue().getAsString()));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return component -> component.getContents() instanceof TranslatableContents t
+                ? String.format(english.getOrDefault(t.getKey(), t.getKey()), t.getArgs()) : component.getString();
+    }
 
     static boolean near(double a, double b) {
         return Math.abs(a - b) < 0.01;
@@ -77,9 +106,10 @@ public final class DisplayTests {
                 .orElseThrow(() -> new AssertionError("the scene has no display text: " + scene.texts()));
     }
 
-    static void assertLed(GameTestHelper helper, MachineScene scene, Component says, long ticks, int color) {
+    /** Checks the display of a scene built with {@link #ENGLISH} at {@code ticks}. */
+    static void assertLed(GameTestHelper helper, MachineScene scene, String says, long ticks, int color) {
         MachineScene.Text led = led(helper, scene);
-        String expected = Display.window(KEYS.apply(says), ticks);
+        String expected = Display.window(says, ticks);
         helper.assertTrue(led.text().equals(expected) && led.color() == color,
                 "the display should show \"" + expected + "\" in " + Integer.toHexString(color) + ", but shows \"" + led.text()
                         + "\" in " + Integer.toHexString(led.color()));
@@ -157,8 +187,8 @@ public final class DisplayTests {
         UUID buyer = UUID.randomUUID();
         machine.creditOf(buyer).set(0, new ItemStack(Items.DIAMOND, 4));
         VendingMachineBlockEntity client = clientView(helper, machine);
-        assertLed(helper, MachineScene.of(client, UUID.randomUUID(), 0, KEYS), Component.translatable(Texts.SELECT_ITEM, 0), 0, MachineScene.LED_OK);
-        assertLed(helper, MachineScene.of(client, buyer, 0, KEYS), Component.translatable(Texts.CREDIT, 4), 0, MachineScene.LED_OK);
+        assertLed(helper, MachineScene.of(client, UUID.randomUUID(), 0, ENGLISH), "SELECT ITEM", 0, MachineScene.LED_OK);
+        assertLed(helper, MachineScene.of(client, buyer, 0, ENGLISH), "CREDIT 4", 0, MachineScene.LED_OK);
         helper.succeed();
     }
 
@@ -166,21 +196,43 @@ public final class DisplayTests {
         VendingMachineBlockEntity machine = BuyingTests.appleMachine(helper);
         BuyingTests.fill(machine.tray(), Items.COBBLESTONE);
         VendingMachineBlockEntity client = clientView(helper, machine);
-        MachineScene lit = MachineScene.of(client, UUID.randomUUID(), 0, KEYS);
-        assertLed(helper, lit, Component.translatable(Texts.problemDisplay(Problem.TRAY_FULL), 0), 0, MachineScene.LED_ALARM);
+        MachineScene lit = MachineScene.of(client, UUID.randomUUID(), 0, ENGLISH);
+        assertLed(helper, lit, "TRAY FULL - TAKE YOUR ITEMS", 0, MachineScene.LED_ALARM);
         helper.assertTrue(lampLit(lit), "the lamp should be lit at the start of a blink");
         helper.assertFalse(lampLit(MachineScene.of(client, UUID.randomUUID(), Display.BLINK_TICKS, KEYS)), "and dark half a second later");
         helper.succeed();
     }
 
+    /** Block events cross the network as single bytes; the client test once showed NEED 0 for a 3-diamond button. */
+    public static void flashesReachClientsWhole(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = BuyingTests.appleMachine(helper); // button 1 costs 3
+        VendingMachineBlockEntity client = clientView(helper, machine);
+        for (Flash flash : Flash.values()) {
+            overTheNetwork(helper, client, machine.flashEvent(flash, 0));
+            helper.assertTrue(client.lastFlash() == flash, "a client should get " + flash + ", not " + client.lastFlash());
+        }
+        overTheNetwork(helper, client, machine.flashEvent(Flash.NEED_MONEY, 0)); // at game time 0
+        assertLed(helper, MachineScene.of(client, UUID.randomUUID(), 0, ENGLISH), "NEED 3", 0, MachineScene.LED_ALARM);
+        overTheNetwork(helper, client, machine.vendEvent(MachineLayout.SELECTIONS - 1));
+        helper.assertTrue(client.lastVendSelection() == MachineLayout.SELECTIONS - 1, "a client should see button 12's item drop");
+        helper.succeed();
+    }
+
+    /** Delivers a block event to {@code client} the way the server does: in a packet, as bytes. */
+    static void overTheNetwork(GameTestHelper helper, VendingMachineBlockEntity client, BlockEventData event) {
+        RegistryFriendlyByteBuf bytes = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
+        ClientboundBlockEventPacket.STREAM_CODEC.encode(bytes, new ClientboundBlockEventPacket(event.pos(), event.block(), event.paramA(), event.paramB()));
+        ClientboundBlockEventPacket received = ClientboundBlockEventPacket.STREAM_CODEC.decode(bytes);
+        client.triggerEvent(received.getB0(), received.getB1());
+    }
+
     public static void aFlashShowsForTwoSeconds(GameTestHelper helper) {
-        VendingMachineBlockEntity client = clientView(helper, BuyingTests.appleMachine(helper));
-        client.triggerEvent(VendingMachineBlockEntity.EVENT_FLASH, Flash.NEED_MONEY.ordinal() | 3 << 8); // at game time 0
-        assertLed(helper, MachineScene.of(client, UUID.randomUUID(), 5, KEYS),
-                Component.translatable(Texts.flash(Flash.NEED_MONEY), 3), 5, MachineScene.LED_ALARM);
+        VendingMachineBlockEntity machine = BuyingTests.appleMachine(helper);
+        VendingMachineBlockEntity client = clientView(helper, machine);
+        overTheNetwork(helper, client, machine.flashEvent(Flash.NEED_MONEY, 0)); // at game time 0
+        assertLed(helper, MachineScene.of(client, UUID.randomUUID(), 5, ENGLISH), "NEED 3", 5, MachineScene.LED_ALARM);
         long later = Display.FLASH_TICKS + 5;
-        assertLed(helper, MachineScene.of(client, UUID.randomUUID(), later, KEYS),
-                Component.translatable(Texts.SELECT_ITEM, 0), later, MachineScene.LED_OK);
+        assertLed(helper, MachineScene.of(client, UUID.randomUUID(), later, ENGLISH), "SELECT ITEM", later, MachineScene.LED_OK);
         helper.succeed();
     }
 
