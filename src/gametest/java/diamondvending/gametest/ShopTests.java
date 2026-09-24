@@ -10,6 +10,7 @@ import diamondvending.catalog.Catalog;
 import diamondvending.catalog.Catalogs;
 import diamondvending.core.MachineLayout;
 import diamondvending.core.Problem;
+import diamondvending.core.Rect;
 import diamondvending.core.SetupButtons;
 import diamondvending.core.SetupTab;
 import diamondvending.core.Texts;
@@ -25,6 +26,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -34,6 +36,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 //? if >=26.1 {
 import net.minecraft.world.inventory.ContainerInput;
@@ -85,7 +88,9 @@ public final class ShopTests {
             Map.entry("sneaking_with_empty_hands_opens_setup", ShopTests::sneakingWithEmptyHandsOpensSetup),
             Map.entry("two_open_screens_share_one_machine", ShopTests::twoOpenScreensShareOneMachine),
             Map.entry("breaking_the_machine_closes_its_setup", ShopTests::breakingTheMachineClosesItsSetup),
-            Map.entry("shift_click_only_stocks_on_the_stock_tab", ShopTests::shiftClickOnlyStocksOnTheStockTab));
+            Map.entry("shift_click_only_stocks_on_the_stock_tab", ShopTests::shiftClickOnlyStocksOnTheStockTab),
+            Map.entry("sneaking_with_an_item_shows_the_empty_hands_hint", ShopTests::sneakingWithAnItemShowsTheEmptyHandsHint),
+            Map.entry("strangers_sneaking_with_blocks_place_them_as_usual", ShopTests::strangersSneakingWithBlocksPlaceThemAsUsual));
 
     private ShopTests() {}
 
@@ -605,6 +610,38 @@ public final class ShopTests {
                 "on the Stock tab it stocks the machine");
         shiftClickSlot(menu, VendingSetupMenu.FIRST_STOCK, owner);
         helper.assertTrue(BuyingTests.countHeld(owner, Items.APPLE) == 10 && ItemSlots.isEmpty(machine.stock()), "and shift-clicking stock takes it back");
+        helper.succeed();
+    }
+
+    // ---- the empty-hands hint (spec §3.2 rule 1) ----------------------------------------------------------------
+
+    /** Right-clicks the front the way a real client's click arrives: through the server's click handling, loader events included. */
+    static void useAsServer(GameTestHelper helper, ServerPlayer player, Rect region) {
+        BuyingTests.FrontHit at = BuyingTests.frontHit(helper, region.centerU(), region.centerV());
+        player.gameMode.useItemOn(player, helper.getLevel(), player.getMainHandItem(), InteractionHand.MAIN_HAND, at.hit());
+    }
+
+    public static void sneakingWithAnItemShowsTheEmptyHandsHint(GameTestHelper helper) {
+        RecordingServerPlayer owner = RecordingServerPlayer.create(helper, GameType.SURVIVAL);
+        BuyingTests.placeMachine(helper, owner);
+        owner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STONE, 5));
+        owner.setShiftKeyDown(true);
+        useAsServer(helper, owner, MachineLayout.TRAY);
+        helper.assertTrue(owner.getMainHandItem().getCount() == 5, "nothing is used up");
+        helper.assertTrue(helper.getBlockState(MachineTests.MASTER.north()).isAir(), "and nothing is placed against the machine");
+        helper.assertTrue(owner.lastMessage() != null, "the owner should be told how to open setup");
+        BuyingTests.translation(helper, owner.lastMessage(), Texts.EMPTY_HANDS);
+        helper.succeed();
+    }
+
+    public static void strangersSneakingWithBlocksPlaceThemAsUsual(GameTestHelper helper) {
+        BuyingTests.placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
+        RecordingServerPlayer stranger = RecordingServerPlayer.create(helper, GameType.SURVIVAL);
+        stranger.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STONE, 5));
+        stranger.setShiftKeyDown(true);
+        useAsServer(helper, stranger, MachineLayout.TRAY);
+        helper.assertTrue(helper.getBlockState(MachineTests.MASTER.north()).is(Blocks.STONE), "a stranger's sneak-click places the block, like vanilla");
+        helper.assertTrue(stranger.lastMessage() == null, "and tells them nothing");
         helper.succeed();
     }
 }

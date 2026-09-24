@@ -298,4 +298,22 @@ public final class FabricShopTests {
     public void shiftClickOnlyStocksOnTheStockTab(GameTestHelper helper) {
         ShopTests.shiftClickOnlyStocksOnTheStockTab(helper);
     }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void sneakingWithAnItemShowsTheEmptyHandsHint(GameTestHelper helper) {
+        ShopTests.sneakingWithAnItemShowsTheEmptyHandsHint(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void strangersSneakingWithBlocksPlaceThemAsUsual(GameTestHelper helper) {
+        ShopTests.strangersSneakingWithBlocksPlaceThemAsUsual(helper);
+    }
 }

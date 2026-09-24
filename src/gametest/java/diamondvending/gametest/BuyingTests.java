@@ -140,8 +140,10 @@ public final class BuyingTests {
                 "expected problems " + List.of(expected) + " but got " + machine.problems());
     }
 
-    /** Right-clicks canvas point (u, v) on the front, like a player looking at the machine. */
-    static void click(GameTestHelper helper, Player player, double u, double v) {
+    /** Where a player looking at canvas point (u, v) on the front hits it: the part it's on (test-relative) and the hit. */
+    record FrontHit(BlockPos part, BlockHitResult hit) {}
+
+    static FrontHit frontHit(GameTestHelper helper, double u, double v) {
         boolean right = u >= 16;
         boolean upper = v < 16;
         BlockPos part = upper ? (right ? MachineTests.UPPER_RIGHT : MachineTests.UPPER_LEFT)
@@ -151,7 +153,13 @@ public final class BuyingTests {
         BlockPos at = helper.absolutePos(part);
         // Facing north, the front is each block's z = 0 side, and u runs from east (x + 1) to west (x).
         Vec3 point = new Vec3(at.getX() + 1 - faceU, at.getY() + 1 - faceV, at.getZ());
-        helper.useBlock(part, player, new BlockHitResult(point, Direction.NORTH, at, false));
+        return new FrontHit(part, new BlockHitResult(point, Direction.NORTH, at, false));
+    }
+
+    /** Right-clicks canvas point (u, v) on the front, like a player looking at the machine. */
+    static void click(GameTestHelper helper, Player player, double u, double v) {
+        FrontHit at = frontHit(helper, u, v);
+        helper.useBlock(at.part(), player, at.hit());
     }
 
     static void click(GameTestHelper helper, Player player, Rect region) {

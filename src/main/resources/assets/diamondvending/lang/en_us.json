@@ -6,6 +6,7 @@
   "message.diamondvending.need_money": "Button %s costs %s. You have %s.",
   "message.diamondvending.wrong_currency": "This machine takes %s.",
   "message.diamondvending.credit_full": "You can't put in any more. Buy something or press coin return.",
+  "message.diamondvending.empty_hands": "Empty both hands, then sneak + right-click to open setup.",
   "problem.diamondvending.catalog_missing.explanation": "This machine's catalog is missing. An admin needs to pick a new one.",
   "problem.diamondvending.not_set_up.explanation": "Nothing is for sale yet. The owner can empty both hands, then sneak + right-click to set it up.",
   "problem.diamondvending.cash_box_full.explanation": "The cash box is full of %s! The owner needs to take them out.",

@@ -179,5 +179,15 @@ public final class NeoForgeShopTests {
     public static void shiftClickOnlyStocksOnTheStockTab(GameTestHelper helper) {
         ShopTests.shiftClickOnlyStocksOnTheStockTab(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void sneakingWithAnItemShowsTheEmptyHandsHint(GameTestHelper helper) {
+        ShopTests.sneakingWithAnItemShowsTheEmptyHandsHint(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void strangersSneakingWithBlocksPlaceThemAsUsual(GameTestHelper helper) {
+        ShopTests.strangersSneakingWithBlocksPlaceThemAsUsual(helper);
+    }
     *///?}
 }

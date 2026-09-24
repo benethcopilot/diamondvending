@@ -1,9 +1,12 @@
 package diamondvending.platform.fabric;
 
 import diamondvending.DiamondVending;
+import diamondvending.block.SneakHint;
 import diamondvending.catalog.CatalogLoader;
 import diamondvending.registry.ModContent;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.CreativeModeTabs;
 //? if >=26.1 {
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
@@ -32,6 +35,9 @@ public final class DiamondVendingFabric implements ModInitializer {
                 .register(entries -> entries.accept(ModContent.VENDING_MACHINE_ITEM.get()));
         ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(CatalogLoader.ID, FabricCatalogLoader::new);
         *///?}
+        // SUCCESS stops the click here; on the client it still goes to the server, which sends the hint.
+        UseBlockCallback.EVENT.register((player, level, hand, hit) ->
+                SneakHint.cancels(player, level, hit) ? InteractionResult.SUCCESS : InteractionResult.PASS);
     }
 
     //? if <26.1 {

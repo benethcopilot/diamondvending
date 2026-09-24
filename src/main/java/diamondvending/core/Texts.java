@@ -14,6 +14,7 @@ public final class Texts {
     public static final String BUTTON_EMPTY = "message.diamondvending.button_empty";
     public static final String SOLD_OUT = "message.diamondvending.sold_out";
     public static final String NEED_MONEY = "message.diamondvending.need_money";
+    public static final String EMPTY_HANDS = "message.diamondvending.empty_hands";
     /** Prefix of the keys that name the default currency: {@code .one}, {@code .many}, {@code .name} (see shop/Currency). */
     public static final String DIAMOND = "currency.diamondvending.minecraft.diamond";
     // The display (spec §3.5 a) and the price tags under the shelves.
@@ -75,7 +76,7 @@ public final class Texts {
 
     /** Every key a player can see. */
     public static List<String> all() {
-        List<String> keys = new ArrayList<>(List.of(OWNER_ONLY, WRONG_CURRENCY, CREDIT_FULL, BUTTON_EMPTY, SOLD_OUT, NEED_MONEY,
+        List<String> keys = new ArrayList<>(List.of(OWNER_ONLY, WRONG_CURRENCY, CREDIT_FULL, BUTTON_EMPTY, SOLD_OUT, NEED_MONEY, EMPTY_HANDS,
                 SELECT_ITEM, CREDIT, TAG_FREE, TAG_SOLD_OUT));
         keys.addAll(List.of(HUD_ITEM, HUD_FREE, HUD_SOLD_OUT, HUD_NOTHING, HUD_INSERT, HUD_YOUR_CREDIT, HUD_RETURN_CREDIT,
                 HUD_TAKE_ITEMS, HUD_OWNED_BY, HUD_SHOP_MACHINE));
