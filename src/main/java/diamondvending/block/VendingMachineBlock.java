@@ -2,6 +2,12 @@ package diamondvending.block;
 
 import com.mojang.serialization.MapCodec;
 import diamondvending.Messages;
+import diamondvending.core.Hit;
+import diamondvending.core.Region;
+import diamondvending.core.Texts;
+import diamondvending.shop.CoinSlot;
+import diamondvending.shop.PickupTray;
+import diamondvending.shop.Purchase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -163,7 +169,7 @@ public class VendingMachineBlock extends BaseEntityBlock {
     @Override
     protected void attack(BlockState state, Level level, BlockPos pos, Player player) {
         if (!level.isClientSide() && !MachineAccess.canManage(player, ownerOf(level, pos, state))) {
-            Messages.actionBar(player, Component.translatable(Messages.OWNER_ONLY));
+            Messages.actionBar(player, Component.translatable(Texts.OWNER_ONLY));
         }
         super.attack(state, level, pos, player);
     }
@@ -180,34 +186,66 @@ public class VendingMachineBlock extends BaseEntityBlock {
         return super.playerWillDestroy(level, pos, state, player);
     }
 
-    // ---- dyeing --------------------------------------------------------------------------------------------------
+    //? if <26.1 {
+    /*// 1.21.1: spill when the master is really removed — a repaint keeps the same block, so it must not spill.
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+        if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof VendingMachineBlockEntity machine) {
+            machine.spillContents();
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
+    }
+    *///?}
+
+    // ---- using ---------------------------------------------------------------------------------------------------
 
     //? if >=26.1 {
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, BlockHitResult hit) {
-        return tryDye(stack, state, level, pos, player) ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!level.isClientSide()) use(stack, state, level, pos, player, hit);
+        return InteractionResult.SUCCESS;
     }
     //?} else {
     /*@Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
                                               InteractionHand hand, BlockHitResult hit) {
-        return tryDye(stack, state, level, pos, player)
-                ? ItemInteractionResult.sidedSuccess(level.isClientSide())
-                : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        if (!level.isClientSide()) use(stack, state, level, pos, player, hit);
+        return ItemInteractionResult.sidedSuccess(level.isClientSide());
     }
     *///?}
 
-    /** Spec §3.2 rule 2: owners and admins repaint the whole machine. Returns false if the stack isn't a dye. */
-    private boolean tryDye(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player) {
-        DyeColor color = MachineItems.dyeColorOf(stack);
-        if (color == null) return false;
-        if (level.isClientSide()) return true;
-        if (!MachineAccess.canManage(player, ownerOf(level, pos, state))) {
-            Messages.actionBar(player, Component.translatable(Messages.OWNER_ONLY));
-            return true;
+    /**
+     * Spec §3.2, on the server. Owners and admins holding a dye repaint the machine; otherwise the spot clicked on the
+     * front decides. Every click is used up (see {@link #useItemOn}), so blocks in hand are never placed against it.
+     */
+    private void use(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!(level.getBlockEntity(MachinePart.masterOf(pos, state)) instanceof VendingMachineBlockEntity machine)) return;
+        machine.refreshOwnerName(player);
+        DyeColor dye = MachineItems.dyeColorOf(stack);
+        if (dye != null && MachineAccess.canManage(player, machine.getOwner())) {
+            dye(stack, state, level, pos, player, dye);
+            return;
         }
-        if (state.getValue(COLOR) == color) return true;
+        Hit target = FrontFace.hit(state, pos, hit);
+        // Holding right-click repeats the click every 4 ticks: one press buys (or inserts) once.
+        boolean pressable = target.region() == Region.BUTTON || target.region() == Region.COIN_SLOT;
+        if (pressable && machine.isRepeatPress(player.getUUID(), target, level.getGameTime())) return;
+        switch (target.region()) {
+            case BUTTON -> Purchase.pressButton(machine, player, target.button());
+            case COIN_SLOT -> CoinSlot.insert(machine, player);
+            case COIN_RETURN -> CoinSlot.giveBack(machine, player);
+            case TRAY -> PickupTray.collect(machine, player);
+            default -> {
+                // Spec §3.5 c: someone who isn't the owner tried to dye it.
+                if (dye != null) Messages.actionBar(player, Component.translatable(Texts.OWNER_ONLY));
+            }
+        }
+    }
+
+    /** Spec §3.2 rule 2: repaints the whole machine, using one dye unless in creative. The same color changes nothing. */
+    private void dye(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, DyeColor color) {
+        if (state.getValue(COLOR) == color) return;
         Direction facing = state.getValue(FACING);
         BlockPos master = MachinePart.masterOf(pos, state);
         for (MachinePart part : MachinePart.values()) {
@@ -221,7 +259,6 @@ public class VendingMachineBlock extends BaseEntityBlock {
             stack.shrink(1);
         }
         level.playSound(null, pos, SoundEvents.DYE_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
-        return true;
     }
 
     // ---- integrity -----------------------------------------------------------------------------------------------

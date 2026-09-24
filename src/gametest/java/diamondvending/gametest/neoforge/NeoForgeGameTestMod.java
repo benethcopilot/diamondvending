@@ -1,6 +1,7 @@
 package diamondvending.gametest.neoforge;
 
 import diamondvending.DiamondVending;
+import diamondvending.gametest.AllTests;
 import diamondvending.gametest.MachineTests;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -17,17 +18,17 @@ import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 //?}
 
-/** The test-only mod. On 26.1 it registers each {@link MachineTests#ALL} entry as a test function and a test instance. */
+/** The test-only mod. On 26.1 it registers each {@link AllTests#ALL} entry as a test function and a test instance. */
 @Mod("diamondvending_gametest")
 public final class NeoForgeGameTestMod {
     public NeoForgeGameTestMod(IEventBus modBus) {
         //? if >=26.1 {
         DeferredRegister<Consumer<GameTestHelper>> functions = DeferredRegister.create(Registries.TEST_FUNCTION, DiamondVending.MOD_ID);
-        MachineTests.ALL.forEach((name, test) -> functions.register(name, () -> test));
+        AllTests.ALL.forEach((name, test) -> functions.register(name, () -> test));
         functions.register(modBus);
         modBus.addListener(RegisterGameTestsEvent.class, event -> {
             Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(DiamondVending.id("default"));
-            MachineTests.ALL.keySet().forEach(name -> event.registerTest(DiamondVending.id(name), new FunctionGameTestInstance(
+            AllTests.ALL.keySet().forEach(name -> event.registerTest(DiamondVending.id(name), new FunctionGameTestInstance(
                     ResourceKey.create(Registries.TEST_FUNCTION, DiamondVending.id(name)),
                     new TestData<>(environment, DiamondVending.id(MachineTests.STRUCTURE_NAME), MachineTests.MAX_TICKS, 0, true))));
         });
