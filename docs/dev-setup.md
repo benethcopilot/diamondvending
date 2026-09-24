@@ -65,6 +65,12 @@ It builds a stocked machine with commands, clicks it, and saves screenshots to
 a display, so it only runs locally (CI runners have none), and only on 26.1 — 1.21.1's Fabric API has no client tests. The
 1.21.1 renderer shares `FrontCanvas` and `MachineScene` with 26.1; only the draw calls differ.
 
+The test leaves its world in `versions/26.1-fabric/build/clientgametest/saves/`, so the same scene can be opened in the
+NeoForge client, which culls differently: copy the newest world to `run/26.1-neoforge/saves/<name>`, set `allowCommands`
+to 1 in its `level.dat` (to use `/tp`), and start straight into it with
+`./gradlew :26.1-neoforge:runClient "--args=@<repo>/versions/26.1-neoforge/build/moddev/clientRunProgramArgs.txt --quickPlaySingleplayer <name>"`
+(`--args` replaces the run's own arguments, so pass its argument file first).
+
 ## Generated art
 Textures, block/item models, the blockstate, the mod icon and the GameTest platform are generated from
 `core/MachineLayout` by `src/test/java/diamondvending/art/`. Never edit them by hand — change the generator and run:

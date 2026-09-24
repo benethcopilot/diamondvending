@@ -33,7 +33,7 @@ public final class Display {
      * @param credit          the viewing player's credit
      */
     public static Line line(List<Problem> problems, Flash flash, int flashNumber, long ticksSinceFlash, int credit) {
-        if (flash != null && ticksSinceFlash >= 0 && ticksSinceFlash < FLASH_TICKS) {
+        if (flashing(flash, ticksSinceFlash)) {
             return new Line(List.of(Texts.flash(flash)), flashNumber, flash.alarm());
         }
         if (!problems.isEmpty()) {
@@ -43,6 +43,11 @@ public final class Display {
         }
         if (credit > 0) return new Line(List.of(Texts.CREDIT), credit, false);
         return new Line(List.of(Texts.SELECT_ITEM), 0, false);
+    }
+
+    /** Whether a flash from {@code ticksSinceFlash} ago is still up (null: there hasn't been one). */
+    public static boolean flashing(Flash flash, long ticksSinceFlash) {
+        return flash != null && ticksSinceFlash >= 0 && ticksSinceFlash < FLASH_TICKS;
     }
 
     /** The part of {@code text} on the display now: text that fits stays still; longer text scrolls left and loops, like an LED sign. */

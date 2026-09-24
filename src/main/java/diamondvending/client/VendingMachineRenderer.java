@@ -1,6 +1,7 @@
 package diamondvending.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import diamondvending.block.MachinePart;
 import diamondvending.block.VendingMachineBlock;
 import diamondvending.block.VendingMachineBlockEntity;
 import diamondvending.scene.MachineScene;
@@ -11,6 +12,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 //? if >=26.1 {
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -109,6 +111,12 @@ public final class VendingMachineRenderer implements BlockEntityRenderer<Vending
         return true;
     }
 
+    // NeoForge culls by this box instead (its default is the master block alone, which hid the whole front up close).
+    // Not an @Override: Fabric has no such method, and there this is simply unused.
+    public AABB getRenderBoundingBox(VendingMachineBlockEntity machine) {
+        return MachinePart.bounds(machine.getBlockPos(), machine.getBlockState().getValue(VendingMachineBlock.FACING));
+    }
+
     @Override
     public int getViewDistance() {
         return FrontCanvas.VIEW_DISTANCE;
@@ -156,6 +164,12 @@ public final class VendingMachineRenderer implements BlockEntityRenderer<Vending
     @Override
     public boolean shouldRenderOffScreen(VendingMachineBlockEntity machine) {
         return true;
+    }
+
+    // NeoForge culls by this box instead (its default is the master block alone, which hid the whole front up close).
+    // Not an @Override: Fabric has no such method, and there this is simply unused.
+    public AABB getRenderBoundingBox(VendingMachineBlockEntity machine) {
+        return MachinePart.bounds(machine.getBlockPos(), machine.getBlockState().getValue(VendingMachineBlock.FACING));
     }
 
     @Override

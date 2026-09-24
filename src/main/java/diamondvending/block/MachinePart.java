@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.phys.AABB;
 
 /** The four block positions of a machine. {@link #LOWER_LEFT} is the master. */
 public enum MachinePart {
@@ -54,5 +55,10 @@ public enum MachinePart {
 
     public static BlockPos masterOf(BlockPos pos, BlockState state) {
         return of(state).masterFrom(pos, state.getValue(VendingMachineBlock.FACING));
+    }
+
+    /** A box around the whole machine and the items drawn just in front of its glass, for deciding whether it's in view. */
+    public static AABB bounds(BlockPos master, Direction facing) {
+        return AABB.encapsulatingFullBlocks(master, UPPER_RIGHT.posFrom(master, facing)).inflate(0.1);
     }
 }

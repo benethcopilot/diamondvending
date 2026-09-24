@@ -97,6 +97,33 @@ public final class FabricDisplayTests {
     //?} else {
     /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
     *///?}
+    public void theDrawingBoxHoldsTheWholeMachine(GameTestHelper helper) {
+        DisplayTests.theDrawingBoxHoldsTheWholeMachine(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void theDisplayKeepsScrollingOnOldWorlds(GameTestHelper helper) {
+        DisplayTests.theDisplayKeepsScrollingOnOldWorlds(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void aFlashScrollsFromItsStart(GameTestHelper helper) {
+        DisplayTests.aFlashScrollsFromItsStart(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
     public void aBoughtItemFallsIntoTheTray(GameTestHelper helper) {
         DisplayTests.aBoughtItemFallsIntoTheTray(helper);
     }

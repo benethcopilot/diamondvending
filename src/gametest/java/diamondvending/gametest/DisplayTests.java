@@ -1,5 +1,6 @@
 package diamondvending.gametest;
 
+import diamondvending.block.MachinePart;
 import diamondvending.block.VendingMachineBlockEntity;
 import diamondvending.core.Display;
 import diamondvending.core.DropAnimation;
@@ -15,6 +16,8 @@ import diamondvending.scene.MachineScene;
 import diamondvending.shop.Selection;
 import com.google.gson.JsonParser;
 import io.netty.buffer.Unpooled;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -27,6 +30,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,6 +62,9 @@ public final class DisplayTests {
             Map.entry("problems_turn_the_display_red_and_light_the_lamp", DisplayTests::problemsTurnTheDisplayRedAndLightTheLamp),
             Map.entry("flashes_reach_clients_whole", DisplayTests::flashesReachClientsWhole),
             Map.entry("a_flash_shows_for_two_seconds", DisplayTests::aFlashShowsForTwoSeconds),
+            Map.entry("the_drawing_box_holds_the_whole_machine", DisplayTests::theDrawingBoxHoldsTheWholeMachine),
+            Map.entry("the_display_keeps_scrolling_on_old_worlds", DisplayTests::theDisplayKeepsScrollingOnOldWorlds),
+            Map.entry("a_flash_scrolls_from_its_start", DisplayTests::aFlashScrollsFromItsStart),
             Map.entry("a_bought_item_falls_into_the_tray", DisplayTests::aBoughtItemFallsIntoTheTray),
             Map.entry("hovering_a_button_shows_what_it_sells", DisplayTests::hoveringAButtonShowsWhatItSells),
             Map.entry("sold_out_and_empty_buttons_say_so", DisplayTests::soldOutAndEmptyButtonsSaySo),
@@ -249,6 +257,46 @@ public final class DisplayTests {
         assertLed(helper, MachineScene.of(client, UUID.randomUUID(), 5, ENGLISH), "NEED 3", 5, MachineScene.LED_ALARM);
         long later = Display.FLASH_TICKS + 5;
         assertLed(helper, MachineScene.of(client, UUID.randomUUID(), later, ENGLISH), "SELECT ITEM", later, MachineScene.LED_OK);
+        helper.succeed();
+    }
+
+    /**
+     * NeoForge skips drawing a machine whose box is out of view, and its default box is only the master block, so up
+     * close the whole front vanished. The box must hold all four parts and the items that stick out in front.
+     */
+    public static void theDrawingBoxHoldsTheWholeMachine(GameTestHelper helper) {
+        BlockPos master = new BlockPos(10, 64, 10);
+        for (Direction facing : Direction.Plane.HORIZONTAL) {
+            AABB box = MachinePart.bounds(master, facing);
+            for (MachinePart part : MachinePart.values()) {
+                helper.assertTrue(box.contains(Vec3.atCenterOf(part.posFrom(master, facing))), facing + ": the box should hold the " + part);
+            }
+            Vec3 itemsInFront = Vec3.atCenterOf(master).relative(facing, 0.5 + 0.06);
+            helper.assertTrue(box.contains(itemsInFront), facing + ": the box should hold the items in front of the glass");
+        }
+        helper.succeed();
+    }
+
+    /** A world's clock counts every tick since it was made; the display must still scroll smoothly on an old world. */
+    public static void theDisplayKeepsScrollingOnOldWorlds(GameTestHelper helper) {
+        VendingMachineBlockEntity client = clientView(helper, BuyingTests.appleMachine(helper));
+        long old = 200_000_000L; // about 115 days of play
+        for (long ticks = old; ticks < old + 3 * Display.TICKS_PER_CHARACTER; ticks += Display.TICKS_PER_CHARACTER) {
+            assertLed(helper, MachineScene.of(client, UUID.randomUUID(), ticks, ENGLISH), "SELECT ITEM", ticks, MachineScene.LED_OK);
+        }
+        helper.succeed();
+    }
+
+    /** A flash is up for 2 seconds, so it scrolls from its first letter, not from wherever the display's scroll was. */
+    public static void aFlashScrollsFromItsStart(GameTestHelper helper) {
+        VendingMachineBlockEntity machine = BuyingTests.appleMachine(helper);
+        VendingMachineBlockEntity client = clientView(helper, machine);
+        client.setLevel(helper.getLevel()); // the flash is timed by the game's clock, like on a real client
+        long flashed = helper.getLevel().getGameTime();
+        overTheNetwork(helper, client, machine.flashEvent(Flash.THANK_YOU, 0));
+        for (long since = 0; since < 3 * Display.TICKS_PER_CHARACTER; since += Display.TICKS_PER_CHARACTER) {
+            assertLed(helper, MachineScene.of(client, UUID.randomUUID(), flashed + since, ENGLISH), "THANK YOU", since, MachineScene.LED_OK);
+        }
         helper.succeed();
     }
 

@@ -42,7 +42,7 @@ final class FrontCanvas {
     static MachineScene scene(VendingMachineBlockEntity machine, float partialTicks) {
         Player player = Minecraft.getInstance().player;
         UUID viewer = player != null ? player.getUUID() : new UUID(0, 0);
-        return MachineScene.of(machine, viewer, machine.getLevel().getGameTime() + partialTicks, Component::getString);
+        return MachineScene.of(machine, viewer, machine.getLevel().getGameTime() + (double) partialTicks, Component::getString);
     }
 
     /**
@@ -58,8 +58,9 @@ final class FrontCanvas {
 
     static void placeItem(PoseStack pose, MachineScene.Item item) {
         pose.translate(item.u(), item.v(), ITEM_DEPTH);
-        // Item models are y-up and face +z; the canvas is y-down with z into the machine.
-        pose.mulPose(Axis.XP.rotationDegrees(180));
+        // The canvas is y-down: turn items upright. Around z, like an item frame does — around x, they showed their backs
+        // (swords pointed the wrong way).
+        pose.mulPose(Axis.ZP.rotationDegrees(180));
         pose.scale(item.size(), item.size(), item.size() * ITEM_THICKNESS);
     }
 

@@ -54,10 +54,11 @@ public record MachineScene(List<Item> items, List<Text> texts, List<Glow> glows)
      *
      * @param machine what the client knows about the machine (its synced block entity)
      * @param viewer  whose credit the display shows (spec §3.5 a)
-     * @param time    game time, with the fraction of the current tick
+     * @param time    game time, with the fraction of the current tick — a double: a float can't count single ticks on a
+     *                world that has run for more than about ten days
      * @param words   turns a translation into words: {@code Component::getString} on the client
      */
-    public static MachineScene of(VendingMachineBlockEntity machine, UUID viewer, float time, Function<Component, String> words) {
+    public static MachineScene of(VendingMachineBlockEntity machine, UUID viewer, double time, Function<Component, String> words) {
         List<Item> items = new ArrayList<>();
         List<Text> texts = new ArrayList<>();
         List<Glow> glows = new ArrayList<>();
@@ -99,14 +100,17 @@ public record MachineScene(List<Item> items, List<Text> texts, List<Glow> glows)
 
         // The LED display and the warning lamp (spec §3.5).
         List<Problem> problems = machine.syncedProblems();
-        Display.Line line = Display.line(problems, machine.lastFlash(), machine.lastFlashNumber(), ticks - machine.lastFlashTime(),
+        long sinceFlash = ticks - machine.lastFlashTime();
+        Display.Line line = Display.line(problems, machine.lastFlash(), machine.lastFlashNumber(), sinceFlash,
                 machine.syncedCredit(viewer));
         String full = line.keys().stream()
                 .map(key -> words.apply(Component.translatable(key, line.number())))
                 .collect(Collectors.joining(Display.GAP));
         boolean scrolls = full.length() > Display.WINDOW;
+        // A flash is only up for 2 seconds, so it scrolls from its first letter.
+        long scrolled = Display.flashing(machine.lastFlash(), sinceFlash) ? sinceFlash : ticks;
         Rect display = MachineLayout.DISPLAY;
-        texts.add(new Text(Display.window(full, ticks),
+        texts.add(new Text(Display.window(full, scrolled),
                 scrolls ? (float) display.u0() + 0.2F : (float) display.centerU(), (float) display.centerV(),
                 LED_TEXT_HEIGHT, line.alarm() ? LED_ALARM : LED_OK, scrolls ? Align.LEFT : Align.CENTER));
         if (Display.lampLit(!problems.isEmpty(), ticks)) {

@@ -66,6 +66,21 @@ public final class NeoForgeDisplayTests {
     }
 
     @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theDrawingBoxHoldsTheWholeMachine(GameTestHelper helper) {
+        DisplayTests.theDrawingBoxHoldsTheWholeMachine(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theDisplayKeepsScrollingOnOldWorlds(GameTestHelper helper) {
+        DisplayTests.theDisplayKeepsScrollingOnOldWorlds(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void aFlashScrollsFromItsStart(GameTestHelper helper) {
+        DisplayTests.aFlashScrollsFromItsStart(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
     public static void aBoughtItemFallsIntoTheTray(GameTestHelper helper) {
         DisplayTests.aBoughtItemFallsIntoTheTray(helper);
     }

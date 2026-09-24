@@ -87,6 +87,12 @@ public final class FabricClientTests implements FabricClientGameTest {
             server.runCommand("tp @a 1 -60 -3 0 10");
             context.waitTicks(10);
             context.takeScreenshot("machine_back");
+
+            // Up against the front, looking up at the display: the lower-left block is out of view, so a renderer culled
+            // by that block's box alone (NeoForge's default) would hide the whole front. The world is left saved here.
+            server.runCommand("tp @a 1.6 -60 1.3 180 -21");
+            context.waitTicks(10);
+            context.takeScreenshot("close_up");
         }
     }
 }
