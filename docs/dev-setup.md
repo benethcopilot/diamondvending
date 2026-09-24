@@ -46,12 +46,24 @@ Game tests live in `src/gametest/` and build a separate test-only mod, so they n
 ./gradlew :26.1-fabric:runGametest
 ```
 
-Add a test in three places: a `public static void` method in `gametest/MachineTests.java` or `gametest/BuyingTests.java`
-(+ its `ALL` entry), a method in the matching `gametest/fabric/Fabric*Tests.java`, and one in the 1.21.1 block of the
+Add a test in three places: a `public static void` method in `gametest/MachineTests.java`, `BuyingTests.java` or
+`DisplayTests.java` (+ its `ALL` entry), a method in the matching `gametest/fabric/Fabric*Tests.java`, and one in the 1.21.1 block of the
 matching `gametest/neoforge/NeoForge*Tests.java`. A new test class also goes into `AllTests` and the test mod's
 `fabric.mod.json` entrypoints. Use `MachineTests.platform(x, y, z)` for fixed positions: 1.21.1 and 26.1 measure test
 coordinates from different origins. Put items in the mock player's hand before `placeAt`/`useBlock` — placement reads
 the item in hand. `RecordingPlayer` is a mock player that remembers its action-bar messages.
+
+## Client game test (26.1 Fabric)
+Rendering can't be checked by a server, so one test runs in a real game window and takes screenshots:
+
+```bash
+./gradlew :26.1-fabric:runClientGametest
+```
+
+It builds a stocked machine with commands, clicks it, and saves screenshots to
+`versions/26.1-fabric/build/clientgametest/screenshots/`. Look at them after any change to `client/` or `scene/`. It needs
+a display, so it only runs locally (CI runners have none), and only on 26.1 — 1.21.1's Fabric API has no client tests. The
+1.21.1 renderer shares `FrontCanvas` and `MachineScene` with 26.1; only the draw calls differ.
 
 ## Generated art
 Textures, block/item models, the blockstate, the mod icon and the GameTest platform are generated from

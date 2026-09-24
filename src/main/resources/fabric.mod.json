@@ -9,7 +9,8 @@
   "icon": "assets/diamondvending/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": ["diamondvending.platform.fabric.DiamondVendingFabric"]
+    "main": ["diamondvending.platform.fabric.DiamondVendingFabric"],
+    "client": ["diamondvending.platform.fabric.DiamondVendingFabricClient"]
   },
   "depends": {
     "fabricloader": ">=${fabric_loader}",

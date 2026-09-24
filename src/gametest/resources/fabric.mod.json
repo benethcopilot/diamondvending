@@ -5,6 +5,7 @@
   "name": "Diamond Vending game tests",
   "environment": "*",
   "entrypoints": {
+    "fabric-client-gametest": ["diamondvending.gametest.fabric.FabricClientTests"],
     "fabric-gametest": [
       "diamondvending.gametest.fabric.FabricGameTests",
       "diamondvending.gametest.fabric.FabricBuyingTests",
