@@ -32,6 +32,8 @@ public final class Texts {
     public static final String HUD_TAKE_ITEMS = "hud.diamondvending.take_items";
     public static final String HUD_OWNED_BY = "hud.diamondvending.owned_by";
     public static final String HUD_SHOP_MACHINE = "hud.diamondvending.shop_machine";
+    // The setup screen (spec §4).
+    public static final String SETUP_TITLE = "setup.diamondvending.title";
 
     private Texts() {}
 
@@ -56,6 +58,7 @@ public final class Texts {
                 SELECT_ITEM, CREDIT, TAG_FREE, TAG_SOLD_OUT));
         keys.addAll(List.of(HUD_ITEM, HUD_FREE, HUD_SOLD_OUT, HUD_NOTHING, HUD_INSERT, HUD_YOUR_CREDIT, HUD_RETURN_CREDIT,
                 HUD_TAKE_ITEMS, HUD_OWNED_BY, HUD_SHOP_MACHINE));
+        keys.add(SETUP_TITLE);
         for (Problem problem : Problem.values()) {
             keys.add(explanation(problem));
             keys.add(problemDisplay(problem));

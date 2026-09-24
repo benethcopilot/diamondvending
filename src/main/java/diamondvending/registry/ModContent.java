@@ -3,6 +3,7 @@ package diamondvending.registry;
 import diamondvending.block.MachineSetup;
 import diamondvending.block.VendingMachineBlock;
 import diamondvending.block.VendingMachineBlockEntity;
+import diamondvending.menu.VendingSetupMenu;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.item.BlockItem;
@@ -16,6 +17,7 @@ public final class ModContent {
     public static Supplier<VendingMachineBlock> VENDING_MACHINE;
     public static Supplier<BlockItem> VENDING_MACHINE_ITEM;
     public static Supplier<BlockEntityType<VendingMachineBlockEntity>> VENDING_MACHINE_BLOCK_ENTITY;
+    public static MenuHandle<VendingSetupMenu> SETUP_MENU;
 
     private ModContent() {}
 
@@ -28,5 +30,6 @@ public final class ModContent {
         VENDING_MACHINE_ITEM = registrar.item("vending_machine",
                 properties -> new BlockItem(VENDING_MACHINE.get(), properties), RegistryCompat.blockItemProperties());
         VENDING_MACHINE_BLOCK_ENTITY = registrar.blockEntity("vending_machine", VendingMachineBlockEntity::new, VENDING_MACHINE);
+        SETUP_MENU = registrar.menu("setup", VendingSetupMenu::new);
     }
 }

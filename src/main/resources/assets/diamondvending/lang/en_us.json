@@ -39,6 +39,7 @@
   "hud.diamondvending.take_items": "Take items (%s)",
   "hud.diamondvending.owned_by": "Owned by %s",
   "hud.diamondvending.shop_machine": "Shop machine",
+  "setup.diamondvending.title": "Vending Machine Setup",
   "currency.diamondvending.minecraft.diamond.one": "%s diamond",
   "currency.diamondvending.minecraft.diamond.many": "%s diamonds",
   "currency.diamondvending.minecraft.diamond.name": "diamonds"

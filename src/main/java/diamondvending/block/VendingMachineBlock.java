@@ -12,6 +12,7 @@ import diamondvending.shop.Purchase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
@@ -238,6 +239,11 @@ public class VendingMachineBlock extends BaseEntityBlock {
     private void use(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!(level.getBlockEntity(MachinePart.masterOf(pos, state)) instanceof VendingMachineBlockEntity machine)) return;
         machine.refreshOwnerName(player);
+        if (player.isSecondaryUseActive()) {
+            // Spec §3.2 rule 1: the game only lets a sneak-click reach a block when both hands are empty.
+            openSetup(machine, player);
+            return;
+        }
         DyeColor dye = MachineItems.dyeColorOf(stack);
         if (dye != null && MachineAccess.canManage(player, machine.getOwner())) {
             dye(stack, state, level, pos, player, dye);
@@ -256,6 +262,17 @@ public class VendingMachineBlock extends BaseEntityBlock {
                 // Spec §3.5 c: someone who isn't the owner tried to dye it.
                 if (dye != null) Messages.actionBar(player, Component.translatable(Texts.OWNER_ONLY));
             }
+        }
+    }
+
+    /** Opens the setup screen for the owner or an admin (spec §4); anyone else is told it's not theirs. */
+    private static void openSetup(VendingMachineBlockEntity machine, Player player) {
+        if (!MachineAccess.canManage(player, machine.getOwner())) {
+            Messages.actionBar(player, Component.translatable(Texts.OWNER_ONLY));
+            return;
+        }
+        if (player instanceof ServerPlayer serverPlayer) {
+            ModContent.SETUP_MENU.open(serverPlayer, Component.translatable(Texts.SETUP_TITLE), machine.getBlockPos());
         }
     }
 

@@ -104,5 +104,80 @@ public final class NeoForgeShopTests {
     public static void unknownItemsInAKeptSetupLeaveThatButtonEmpty(GameTestHelper helper) {
         ShopTests.unknownItemsInAKeptSetupLeaveThatButtonEmpty(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void ghostSlotsCopyWithoutTaking(GameTestHelper helper) {
+        ShopTests.ghostSlotsCopyWithoutTaking(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theEditorButtonsChangeAmountAndPrice(GameTestHelper helper) {
+        ShopTests.theEditorButtonsChangeAmountAndPrice(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void strangersCannotChangeAnything(GameTestHelper helper) {
+        ShopTests.strangersCannotChangeAnything(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theStockTabStocksTheMachine(GameTestHelper helper) {
+        ShopTests.theStockTabStocksTheMachine(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theCashBoxIsTakeOnly(GameTestHelper helper) {
+        ShopTests.theCashBoxIsTakeOnly(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void withdrawEmptiesTheCashBoxIntoTheOwnersInventory(GameTestHelper helper) {
+        ShopTests.withdrawEmptiesTheCashBoxIntoTheOwnersInventory(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void onlyAdminsSeeAndUseTheAdminTab(GameTestHelper helper) {
+        ShopTests.onlyAdminsSeeAndUseTheAdminTab(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void infiniteNeedsAnEmptyStockAndCashBox(GameTestHelper helper) {
+        ShopTests.infiniteNeedsAnEmptyStockAndCashBox(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theCatalogPickerCyclesThroughEveryCatalog(GameTestHelper helper) {
+        ShopTests.theCatalogPickerCyclesThroughEveryCatalog(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void catalogSelectionsAreReadOnly(GameTestHelper helper) {
+        ShopTests.catalogSelectionsAreReadOnly(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theCurrencySlotIsForAdmins(GameTestHelper helper) {
+        ShopTests.theCurrencySlotIsForAdmins(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void sneakingWithEmptyHandsOpensSetup(GameTestHelper helper) {
+        ShopTests.sneakingWithEmptyHandsOpensSetup(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void twoOpenScreensShareOneMachine(GameTestHelper helper) {
+        ShopTests.twoOpenScreensShareOneMachine(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void breakingTheMachineClosesItsSetup(GameTestHelper helper) {
+        ShopTests.breakingTheMachineClosesItsSetup(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void shiftClickOnlyStocksOnTheStockTab(GameTestHelper helper) {
+        ShopTests.shiftClickOnlyStocksOnTheStockTab(helper);
+    }
     *///?}
 }

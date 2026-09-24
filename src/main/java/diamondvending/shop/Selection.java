@@ -1,5 +1,6 @@
 package diamondvending.shop;
 
+import diamondvending.core.SetupButtons;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -7,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
  * purchase and its components (names, enchantments…) are part of what's sold. Never modify the template — copy it.
  */
 public record Selection(ItemStack template, int price) {
-    public static final int MAX_PRICE = 999;
+    public static final int MAX_PRICE = SetupButtons.MAX_PRICE;
     public static final Selection EMPTY = new Selection(ItemStack.EMPTY, 0);
 
     /** A valid selection: quantity kept to 1..max stack size and price to 0..999. An empty stack gives {@link #EMPTY}. */
