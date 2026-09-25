@@ -60,10 +60,16 @@ Rendering can't be checked by a server, so one test runs in a real game window a
 ./gradlew :26.1-fabric:runClientGametest
 ```
 
-It builds a stocked machine with commands, clicks it, opens its setup screen (pressing one of its buttons for real), and
-saves screenshots to `versions/26.1-fabric/build/clientgametest/screenshots/`. Look at them after any change to `client/`
-or `scene/`. It needs a display, so it only runs locally (CI runners have none), and only on 26.1 — 1.21.1's Fabric API
-has no client tests. The 1.21.1 renderer shares `FrontCanvas` and `MachineScene` with 26.1; only the draw calls differ.
+It builds a stocked machine with commands, clicks it, opens its setup screen (pressing one of its buttons for real),
+reads the manual (failing if a page is too long for the book), and saves screenshots to
+`versions/26.1-fabric/build/clientgametest/screenshots/`. Look at them after any change to `client/` or `scene/`. It
+needs a display, so it only runs locally (CI runners have none), and only on 26.1 — 1.21.1's Fabric API has no client
+tests. The 1.21.1 renderer shares `FrontCanvas` and `MachineScene` with 26.1; only the draw calls differ.
+
+The manual's pages are translation keys (`Texts.MANUAL_PAGES`) in `en_us.json`, and the recipe that makes the book is
+per version (`src/main/resources-*/data/diamondvending/recipe/manual.json`: 1.21.1 writes each page as a JSON string).
+After changing a page's text, run `./gradlew :26.1-neoforge:test` (`ManualTest` checks every rule in spec §6.2 is still
+explained) and this client test (every page must fit the book's 14 lines).
 
 The test leaves its world in `versions/26.1-fabric/build/clientgametest/saves/`, so the same scene can be opened in the
 NeoForge client, which culls differently: copy the newest world to `run/26.1-neoforge/saves/<name>`, set `allowCommands`

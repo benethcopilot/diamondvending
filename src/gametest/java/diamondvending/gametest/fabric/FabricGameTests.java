@@ -162,6 +162,24 @@ public final class FabricGameTests {
     //?} else {
     /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
     *///?}
+    public void theManualRecipeMakesTheManual(GameTestHelper helper) {
+        MachineTests.theManualRecipeMakesTheManual(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
+    public void aFirstDiamondUnlocksTheMachineAndTheManual(GameTestHelper helper) {
+        MachineTests.aFirstDiamondUnlocksTheMachineAndTheManual(helper);
+    }
+
+    //? if >=26.1 {
+    @GameTest(structure = MachineTests.STRUCTURE, maxTicks = MachineTests.MAX_TICKS)
+    //?} else {
+    /*@GameTest(template = MachineTests.STRUCTURE, timeoutTicks = MachineTests.MAX_TICKS)
+    *///?}
     public void attachedBlocksFallWhenTheMachineIsBroken(GameTestHelper helper) {
         MachineTests.attachedBlocksFallWhenTheMachineIsBroken(helper);
     }
