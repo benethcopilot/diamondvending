@@ -117,5 +117,20 @@ machine that never runs out and destroys what it's paid. The other saved fields 
 NeoForge's patched Minecraft sources widen some access (e.g. `BlockEntityType`'s constructor is public there but
 private in vanilla 26.1). When checking an API, confirm it in vanilla too — Fabric builds see vanilla.
 
+## Releasing
+1. Set `mod.version` in `stonecutter.properties.toml`, give the changes a `## [<version>] - <date>` section in
+   `CHANGELOG.md`, and run the [release QA checklist](qa-checklist.md) on all four jars.
+2. Merge, then tag the merge commit `v<version>` and push the tag. `.github/workflows/release.yml` builds and tests each
+   jar again and uploads it with the Mod Publish Plugin: the file, "Diamond Vending <version> for <loader> <minecraft>",
+   the changelog section for that version, the Minecraft versions in `mod.mc_releases`, and Fabric API as a required
+   dependency of the Fabric jars.
+3. Create the GitHub release by hand for now: `./gradlew :<node>:buildAndCollect` for each node (one at a time), then
+   `gh release create v<version>` with the four jars from `build/libs/<version>/`.
+
+A site is only used once the repository has its project id as a **variable** (`MODRINTH_PROJECT_ID`,
+`CURSEFORGE_PROJECT_ID`) and its token as a **secret** (`MODRINTH_TOKEN`, `CURSEFORGE_TOKEN`). Locally,
+`./gradlew :<node>:publishMods` is a dry run that prints what would be uploaded; set those two ids (any value) to see
+both sites, and `PUBLISH=true` plus the tokens to upload for real.
+
 ## Workflow
 Branch → PR (fill in the checklist) → CI green → squash-merge.
