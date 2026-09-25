@@ -103,7 +103,7 @@ JSON that differs between Minecraft versions lives in `src/main/resources-1.21.1
 code needs a newer API, so packs on older loaders keep working. `MetadataFloorsTest` checks both.
 
 ## Stocking a machine by command
-Until the setup screen exists (Plan 5), stock a machine with `/data`. Look at its lower-left part and run, for example:
+In game, the setup screen does this. For a scripted world (tests, QA scenes), use `/data` on the machine's lower-left part, for example:
 
 ```
 /data merge block <x> <y> <z> {selections:[{slot:0,item:{id:"minecraft:apple",count:2},price:3}],stock:{Items:[{Slot:0b,id:"minecraft:apple",count:64}]}}

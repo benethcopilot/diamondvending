@@ -12,13 +12,18 @@ machine and sells items for **diamonds** — with a physical button for each of 
 - Targets Minecraft **1.21.1** and **26.1.x** on **NeoForge** and **Fabric**. No extra library
   dependencies.
 
-> Status: in development — see the [roadmap](docs/superpowers/plans/2026-09-23-roadmap.md). Building from source: [dev setup](docs/dev-setup.md).
+> **1.0.0 is out.** Download the jar for your game from the [releases page](../../releases):
+> `diamondvending-neoforge-…` for NeoForge or `diamondvending-fabric-…` for Fabric (Fabric also needs Fabric API), built
+> for Minecraft 1.21.1 or 26.1.x. Put it in your `mods` folder, on the server and on every player's game. In game,
+> craft a book with a gold nugget to get the manual. Building from source: [dev setup](docs/dev-setup.md).
 
 ## Docs
 
 - [Design spec](docs/superpowers/specs/2026-09-23-diamond-vending-design.md)
 - [Research notes](docs/research.md)
 - [Backlog (deferred ideas)](docs/backlog.md)
+- [Datapack catalogs for pack makers](docs/catalogs.md)
+- [Release QA checklist](docs/qa-checklist.md)
 
 ## License
 

@@ -16,3 +16,14 @@ Each entry notes why it was deferred and what it would take. Every entry is also
 | [#8](https://github.com/benethcopilot/diamondvending/issues/8) | **Sales log & owner notifications** | "Steve bought 16 arrows for 1 diamond" in a log tab; optional chat ping to an online owner. |
 | [#9](https://github.com/benethcopilot/diamondvending/issues/9) | **Publishing to CurseForge / Modrinth** | The template includes the Mod Publish Plugin; needs project pages, icons, and API tokens. The Java package does not appear on these pages. |
 | [#10](https://github.com/benethcopilot/diamondvending/issues/10) | **Currency slot for non-admin owners** | Currently admin-only to keep one diamond economy. Opening it up is a one-line permission change plus a manual-page update. |
+
+## Small known issues (v1.0)
+
+Found in Plan 5's review and left for later — none loses or duplicates items.
+
+- A catalog entry whose `count` is above the item's stack size is quietly lowered to the stack size (e.g. 64 ender
+  pearls sell 16). 26.1 can't check this while datapacks load; a warning when the catalog is first used would help pack
+  makers.
+- A machine placed from a creative player's machine item shares its button templates with that item (nothing changes
+  templates today, so nothing shows). Copying them in `MachineSetup.applyTo` would remove the risk.
+- "An item from a removed mod in a kept setup" is tested at the component level, not by placing such an item.

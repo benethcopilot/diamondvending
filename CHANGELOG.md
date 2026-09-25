@@ -4,6 +4,8 @@ All notable changes to Diamond Vending are documented here. Format: [Keep a Chan
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-25
+
 ### Added
 - Project skeleton building for Minecraft 1.21.1 and 26.1.2 on NeoForge and Fabric.
 - Core rules (not yet wired into the game): front-face click regions, purchase decisions with credit-first payment, and machine problem detection — all unit-tested.
@@ -27,3 +29,4 @@ All notable changes to Diamond Vending are documented here. Format: [Keep a Chan
 - Datapack catalogs, with an example (`diamondvending:example_snacks`) and a pack-maker guide in `docs/catalogs.md`.
 - A broken machine keeps its setup on the item; it comes back infinite only when an admin places it.
 - Sneaking at your own machine with something in your hand tells you to empty your hands first.
+- The Diamond Vending Manual: craft a book with a gold nugget (it unlocks with your first diamond). Eleven short pages explain everything a player could trip on.
