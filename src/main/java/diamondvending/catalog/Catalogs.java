@@ -30,14 +30,15 @@ public final class Catalogs {
 
     /**
      * The Admin tab's picker (spec §4): "None" (null), then every catalog in order, and round again. {@code step} is
-     * +1 or −1; a catalog that isn't loaded counts as "None".
+     * +1 or −1. A catalog that isn't loaded any more sits just before "None", so ▶ clears it in one press (spec §5.1:
+     * an admin picks another catalog or clears it) and ◀ picks the last catalog.
      */
     public static Identifier cycle(Identifier current, int step) {
         List<Identifier> choices = new ArrayList<>();
         choices.add(null);
         choices.addAll(ids());
-        int at = Math.max(choices.indexOf(current), 0);
-        return choices.get(Math.floorMod(at + step, choices.size()));
+        if (current != null && !choices.contains(current)) return step > 0 ? null : choices.getLast();
+        return choices.get(Math.floorMod(choices.indexOf(current) + step, choices.size()));
     }
 
     static void replace(Map<Identifier, Catalog> catalogs) {

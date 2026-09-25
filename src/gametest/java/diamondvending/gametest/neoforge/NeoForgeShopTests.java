@@ -194,5 +194,25 @@ public final class NeoForgeShopTests {
     public static void anInfiniteMachineIsAdminOnlyEvenForItsOwner(GameTestHelper helper) {
         ShopTests.anInfiniteMachineIsAdminOnlyEvenForItsOwner(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void doubleClickGatheringSkipsHiddenSlots(GameTestHelper helper) {
+        ShopTests.doubleClickGatheringSkipsHiddenSlots(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void draggingAndNumberKeysSkipHiddenSlots(GameTestHelper helper) {
+        ShopTests.draggingAndNumberKeysSkipHiddenSlots(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void spectatorsGetNoEmptyHandsHint(GameTestHelper helper) {
+        ShopTests.spectatorsGetNoEmptyHandsHint(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void aMissingCatalogIsOnePressFromNone(GameTestHelper helper) {
+        ShopTests.aMissingCatalogIsOnePressFromNone(helper);
+    }
     *///?}
 }

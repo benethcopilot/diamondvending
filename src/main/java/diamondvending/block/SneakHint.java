@@ -20,6 +20,7 @@ public final class SneakHint {
 
     /** Whether to cancel this click; on the server, the player is told why. */
     public static boolean cancels(Player player, Level level, BlockHitResult hit) {
+        if (player.isSpectator()) return false; // spectators can't place or use anything, so there's nothing to warn about
         if (!player.isSecondaryUseActive()) return false;
         if (player.getMainHandItem().isEmpty() && player.getOffhandItem().isEmpty()) return false;
         BlockState state = level.getBlockState(hit.getBlockPos());
