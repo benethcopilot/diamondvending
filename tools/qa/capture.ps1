@@ -24,7 +24,7 @@ $game = Get-Process java, javaw -ErrorAction SilentlyContinue |
     Where-Object { $_.MainWindowTitle -like "Minecraft*" } | Select-Object -First 1
 if ($null -eq $game) { Write-Output "no Minecraft window"; exit 1 }
 $hwnd = $game.MainWindowHandle
-if ([QaWindow]::GetForegroundWindow() -ne $hwnd) {
+for ($try = 0; $try -lt 3 -and [QaWindow]::GetForegroundWindow() -ne $hwnd; $try++) {
     [QaWindow]::ShowWindow($hwnd, 6) | Out-Null
     [QaWindow]::ShowWindow($hwnd, 9) | Out-Null
     [QaWindow]::keybd_event(0x12, 0, 0, [UIntPtr]::Zero)
@@ -32,6 +32,8 @@ if ([QaWindow]::GetForegroundWindow() -ne $hwnd) {
     [QaWindow]::SetForegroundWindow($hwnd) | Out-Null
     Start-Sleep -Milliseconds 1500
 }
+# Never save a picture of some other window that happens to be on top
+if ([QaWindow]::GetForegroundWindow() -ne $hwnd) { Write-Output "could not bring the game window to the front"; exit 1 }
 # The window's visible frame (DWMWA_EXTENDED_FRAME_BOUNDS): GetWindowRect also counts an invisible border, which would
 # capture a strip of whatever window is behind the game.
 $rect = New-Object QaWindow+RECT
