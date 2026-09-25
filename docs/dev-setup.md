@@ -77,6 +77,11 @@ to 1 in its `level.dat` (to use `/tp`), and start straight into it with
 `./gradlew :26.1-neoforge:runClient "--args=@<repo>/versions/26.1-neoforge/build/moddev/clientRunProgramArgs.txt --quickPlaySingleplayer <name>"`
 (`--args` replaces the run's own arguments, so pass its argument file first).
 
+## Release QA
+Before a release, every jar gets a short scripted play session against a real dedicated server: see
+[docs/qa-checklist.md](qa-checklist.md). `./gradlew :<node>:runServer` uses its own folder, `run/<node>-server/`, and
+`./gradlew :<node>:runClient -Pdiamondvending.join=127.0.0.1` joins it straight away as player `Dev`.
+
 ## Generated art
 Textures, block/item models, the blockstate, the mod icon and the GameTest platform are generated from
 `core/MachineLayout` by `src/test/java/diamondvending/art/`. Never edit them by hand — change the generator and run:

@@ -49,10 +49,15 @@ neoForge {
         register("client") {
             gameDirectory = file("../../run/${sc.current.project}")
             client()
+            // Release QA (docs/qa-checklist.md): -Pdiamondvending.join=127.0.0.1 joins that server at once
+            providers.gradleProperty("diamondvending.join").orNull?.let { programArguments.addAll("--quickPlayMultiplayer", it) }
         }
         register("server") {
-            gameDirectory = file("../../run/${sc.current.project}")
+            // Its own folder, so a client and a server can run at the same time without sharing logs
+            gameDirectory = file("../../run/${sc.current.project}-server")
             server()
+            programArgument("--nogui")
+            jvmArgument("-Xmx1G")
         }
         register("gameTestServer") {
             type = "gameTestServer"
