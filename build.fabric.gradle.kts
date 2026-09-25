@@ -1,5 +1,6 @@
 plugins {
     id("dev.kikugie.loom-back-compat")
+    id("me.modmuss50.mod-publish-plugin")
 }
 
 // DO NOT set group = ...!
@@ -167,5 +168,44 @@ tasks {
         inputs.property("version", project.property("mod.version"))
         from(loomx.modJar.flatMap { it.archiveFile }, loomx.modSourcesJar.flatMap { it.archiveFile })
         into(rootProject.layout.buildDirectory.file("libs/${project.property("mod.version")}"))
+    }
+}
+
+// Uploads this jar to Modrinth and CurseForge (.github/workflows/release.yml, "Releasing" in docs/dev-setup.md). A site
+// is used only when its project id is in the environment, and nothing is uploaded unless PUBLISH=true.
+publishMods {
+    // This version's section of CHANGELOG.md, from "## [<version>]" to the next "## ["
+    val releaseNotes = rootProject.file("CHANGELOG.md").readText()
+        .substringAfter("## [${property("mod.version")}]", "")
+        .substringAfter("\n")
+        .substringBefore("\n## [")
+        .trim()
+    val minecraftReleases = sc.properties.rawOrNull("mod", "mc_releases")?.to<List<String>>() ?: listOf(sc.current.version)
+
+    file = loomx.modJar.flatMap { it.archiveFile }
+    version = project.version.toString()
+    displayName = "${property("mod.name")} ${property("mod.version")} for Fabric ${sc.current.version}"
+    changelog = releaseNotes
+    type = STABLE
+    modLoaders.add("fabric")
+    dryRun = providers.environmentVariable("PUBLISH").orNull != "true"
+
+    providers.environmentVariable("MODRINTH_PROJECT_ID").orNull?.let { id ->
+        modrinth {
+            projectId = id
+            accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+            minecraftVersions.addAll(minecraftReleases)
+            requires("fabric-api")
+        }
+    }
+    providers.environmentVariable("CURSEFORGE_PROJECT_ID").orNull?.let { id ->
+        curseforge {
+            projectId = id
+            accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
+            client = true // the mod is needed on both sides
+            server = true
+            minecraftVersions.addAll(minecraftReleases)
+            requires("fabric-api")
+        }
     }
 }

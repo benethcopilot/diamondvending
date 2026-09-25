@@ -1,0 +1,50 @@
+name: Release
+
+# Pushing a tag like v1.0.1 builds and tests each jar again and uploads it to Modrinth and CurseForge.
+# A site is used once its project id is set as a repository variable (MODRINTH_PROJECT_ID, CURSEFORGE_PROJECT_ID)
+# and its token as a secret (MODRINTH_TOKEN, CURSEFORGE_TOKEN); see "Releasing" in docs/dev-setup.md.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [1.21.1-fabric, 1.21.1-neoforge, 26.1-fabric, 26.1-neoforge]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: The tag matches mod.version
+        run: grep -q "^mod.version = \"${GITHUB_REF_NAME#v}\"$" stonecutter.properties.toml
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: |
+            21
+            25
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Build and test
+        run: ./gradlew :${{ matrix.target }}:build --stacktrace
+
+      - name: Jar contains only this loader's code
+        run: bash .github/scripts/check-jar-contents.sh ${{ matrix.target }}
+
+      - name: Upload to Modrinth and CurseForge
+        if: vars.MODRINTH_PROJECT_ID != '' || vars.CURSEFORGE_PROJECT_ID != ''
+        env:
+          PUBLISH: "true"
+          MODRINTH_PROJECT_ID: ${{ vars.MODRINTH_PROJECT_ID }}
+          CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+        run: ./gradlew :${{ matrix.target }}:publishMods --stacktrace

@@ -7,6 +7,10 @@ pluginManagement {
         maven("https://maven.kikugie.dev/releases") { name = "KikuGie Releases" }
         maven("https://maven.kikugie.dev/snapshots") { name = "KikuGie Snapshots" }
     }
+    plugins {
+        // Uploads releases to Modrinth and CurseForge (see "Releasing" in docs/dev-setup.md)
+        id("me.modmuss50.mod-publish-plugin") version "2.2.1"
+    }
 }
 
 plugins {
