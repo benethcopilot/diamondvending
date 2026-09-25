@@ -8,7 +8,8 @@ result (✅ or what was wrong) in the release PR. Needs Windows (the window scri
 
 Replace `<node>` with `26.1-neoforge`, `26.1-fabric`, `1.21.1-neoforge` or `1.21.1-fabric`. One jar at a time.
 
-1. `python tools/qa/prepare_server.py <node>` — a fresh flat world in `run/<node>-server/`, RCON on (this accepts the
+1. `python tools/qa/prepare_server.py <node>` — a fresh flat world, `qa-world`, in `run/<node>-server/` (any other
+   world there is left alone), RCON on (this accepts the
    [Minecraft EULA](https://aka.ms/MinecraftEULA) for that local test server).
 2. Start the server and wait for `Done (` in `run/<node>-server/logs/latest.log`: `./gradlew :<node>:runServer`
 3. Start the client, wait for `Dev joined the game` in the same log, then a few seconds more (a teleport straight after

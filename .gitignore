@@ -26,6 +26,10 @@ bin/
 .DS_Store
 Thumbs.db
 
+# Python caches (tools/qa)
+__pycache__/
+*.pyc
+
 # Brainstorming companion mockups
 .superpowers/
 
