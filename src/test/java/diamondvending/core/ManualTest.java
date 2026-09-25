@@ -30,6 +30,8 @@ class ManualTest {
         RULES.put("only the owner or an admin can set up, dye or break the machine",
                 List.of("Only you or an admin can set up, dye or break"));
         RULES.put("stock sells out; a full cash box stops sales until emptied", List.of("sold out", "stops selling", "Withdraw all"));
+        RULES.put("stock counts only the exact item the button sells (a worn or enchanted copy is different)",
+                List.of("exact same item"));
         RULES.put("breaking keeps the setup on the item, but contents pop out",
                 List.of("keeps its items and prices", "Stock, Cash Box, tray and credit all pop out"));
         RULES.put("dye the machine by right-clicking it with a dye", List.of("Right-click it with any dye"));
