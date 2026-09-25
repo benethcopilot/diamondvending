@@ -4,16 +4,26 @@ package diamondvending.gametest.fabric;
 import diamondvending.block.VendingMachineBlockEntity;
 import diamondvending.client.VendingSetupScreen;
 import diamondvending.core.SetupTab;
+import diamondvending.core.Texts;
 import diamondvending.shop.Selection;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.inventory.BookViewScreen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeType;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.List;
 import java.util.Locale;
 //?}
 
@@ -129,6 +139,34 @@ public final class FabricClientTests implements FabricClientGameTest {
             context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
             context.waitTicks(3);
             server.runCommand("gamemode survival @a");
+
+            // The manual (spec §6.2): crafted by its real recipe, every page fits a book page, and a person can read it.
+            server.runOnServer(s -> {
+                CraftingInput input = CraftingInput.of(2, 1, List.of(new ItemStack(Items.BOOK), new ItemStack(Items.GOLD_NUGGET)));
+                ItemStack manual = s.overworld().recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, s.overworld())
+                        .orElseThrow(() -> new AssertionError("a book and a gold nugget should craft the manual")).value().assemble(input);
+                s.getPlayerList().getPlayers().getFirst().setItemInHand(InteractionHand.MAIN_HAND, manual);
+            });
+            server.runCommand("tp @a 1 -60 6 0 -45"); // facing away from the machine, at the sky, so right-click reads the book
+            context.waitTicks(5);
+            context.runOnClient(client -> {
+                List<Component> pages = client.player.getMainHandItem().get(DataComponents.WRITTEN_BOOK_CONTENT).getPages(false);
+                for (int i = 0; i < pages.size(); i++) {
+                    // BookViewScreen: 114 px wide, 128 px tall = 14 lines of 9 px
+                    int lines = client.font.split(pages.get(i), 114).size();
+                    if (lines > 14) throw new AssertionError("manual page " + (i + 1) + " needs " + lines + " lines; a book page shows 14");
+                }
+            });
+            context.getInput().pressMouse(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+            context.waitForScreen(BookViewScreen.class);
+            for (int page = 1; page <= Texts.MANUAL_PAGES.size(); page++) {
+                context.waitTicks(2);
+                context.takeScreenshot("manual_" + page);
+                context.getInput().pressKey(GLFW.GLFW_KEY_PAGE_DOWN);
+            }
+            context.getInput().pressKey(GLFW.GLFW_KEY_ESCAPE);
+            context.waitTicks(3);
+            server.runCommand("clear @a");
 
             // Behind the machine: nothing may float in the air or show through.
             server.runCommand("tp @a 1 -60 -3 0 10");

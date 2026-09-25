@@ -249,6 +249,12 @@ public class VendingSetupMenu extends AbstractContainerMenu {
         return before;
     }
 
+    /** Double-click gathering takes from shown slots only — never from a hidden tab's Stock or Cash Box (spec §4). */
+    @Override
+    public boolean canTakeItemForPickAll(ItemStack carried, Slot slot) {
+        return slot.isActive() && super.canTakeItemForPickAll(carried, slot);
+    }
+
     @Override
     public boolean stillValid(Player player) {
         return Container.stillValidBlockEntity(machine, player) && MachineAccess.canManage(player, machine);

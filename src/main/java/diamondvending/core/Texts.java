@@ -57,6 +57,9 @@ public final class Texts {
     public static final String SETUP_NO_CATALOG = "setup.diamondvending.no_catalog";
     public static final String SETUP_CURRENCY = "setup.diamondvending.currency";
     public static final String SETUP_CURRENCY_DEFAULT = "setup.diamondvending.currency_default";
+    // The manual (spec §6.2): one entry per page, in order; each page is a bold title and its text.
+    public static final List<String> MANUAL_PAGES = List.of("welcome", "build", "buy", "credit", "setup", "stock", "warnings",
+            "safe", "moving", "infinite", "tools");
 
     private Texts() {}
 
@@ -75,6 +78,16 @@ public final class Texts {
         return "display.diamondvending." + flash.key();
     }
 
+    /** A manual page's title, e.g. "Welcome, New Franchise Owner!". */
+    public static String manualTitle(String page) {
+        return "book.diamondvending.manual." + page + ".title";
+    }
+
+    /** A manual page's text. */
+    public static String manualText(String page) {
+        return "book.diamondvending.manual." + page + ".text";
+    }
+
     /** Every key a player can see. */
     public static List<String> all() {
         List<String> keys = new ArrayList<>(List.of(OWNER_ONLY, INFINITE_ADMIN_ONLY, WRONG_CURRENCY, CREDIT_FULL, BUTTON_EMPTY, SOLD_OUT, NEED_MONEY, EMPTY_HANDS,
@@ -91,6 +104,10 @@ public final class Texts {
         }
         for (Flash flash : Flash.values()) keys.add(flash(flash));
         for (String form : List.of(".one", ".many", ".name")) keys.add(DIAMOND + form);
+        for (String page : MANUAL_PAGES) {
+            keys.add(manualTitle(page));
+            keys.add(manualText(page));
+        }
         return keys;
     }
 }

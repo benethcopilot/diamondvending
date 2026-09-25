@@ -31,6 +31,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -91,7 +92,11 @@ public final class ShopTests {
             Map.entry("shift_click_only_stocks_on_the_stock_tab", ShopTests::shiftClickOnlyStocksOnTheStockTab),
             Map.entry("sneaking_with_an_item_shows_the_empty_hands_hint", ShopTests::sneakingWithAnItemShowsTheEmptyHandsHint),
             Map.entry("strangers_sneaking_with_blocks_place_them_as_usual", ShopTests::strangersSneakingWithBlocksPlaceThemAsUsual),
-            Map.entry("an_infinite_machine_is_admin_only_even_for_its_owner", ShopTests::anInfiniteMachineIsAdminOnlyEvenForItsOwner));
+            Map.entry("an_infinite_machine_is_admin_only_even_for_its_owner", ShopTests::anInfiniteMachineIsAdminOnlyEvenForItsOwner),
+            Map.entry("double_click_gathering_skips_hidden_slots", ShopTests::doubleClickGatheringSkipsHiddenSlots),
+            Map.entry("dragging_and_number_keys_skip_hidden_slots", ShopTests::draggingAndNumberKeysSkipHiddenSlots),
+            Map.entry("spectators_get_no_empty_hands_hint", ShopTests::spectatorsGetNoEmptyHandsHint),
+            Map.entry("a_missing_catalog_is_one_press_from_none", ShopTests::aMissingCatalogIsOnePressFromNone));
 
     private ShopTests() {}
 
@@ -666,6 +671,98 @@ public final class ShopTests {
         useAsServer(helper, stranger, MachineLayout.TRAY);
         helper.assertTrue(helper.getBlockState(MachineTests.MASTER.north()).is(Blocks.STONE), "a stranger's sneak-click places the block, like vanilla");
         helper.assertTrue(stranger.lastMessage() == null, "and tells them nothing");
+        helper.succeed();
+    }
+
+    // ---- hidden tabs, spectators and a missing catalog (Plan 5 review, fixed in Plan 6) --------------------------
+
+    /** A double-click on a menu slot while holding something: gathers matching items from the other slots. */
+    static void pickAll(VendingSetupMenu menu, int slot, Player player) {
+        //? if >=26.1 {
+        menu.clicked(slot, 0, ContainerInput.PICKUP_ALL, player);
+        //?} else {
+        /*menu.clicked(slot, 0, ClickType.PICKUP_ALL, player);
+        *///?}
+    }
+
+    /** Number key {@code hotbar + 1} over a menu slot: swaps it with that hotbar slot. */
+    static void swapWithHotbar(VendingSetupMenu menu, int slot, int hotbar, Player player) {
+        //? if >=26.1 {
+        menu.clicked(slot, hotbar, ContainerInput.SWAP, player);
+        //?} else {
+        /*menu.clicked(slot, hotbar, ClickType.SWAP, player);
+        *///?}
+    }
+
+    /** A left-button drag of the cursor's stack over these slots (spread evenly). */
+    static void drag(VendingSetupMenu menu, Player player, int... slots) {
+        //? if >=26.1 {
+        menu.clicked(-999, AbstractContainerMenu.getQuickcraftMask(0, 0), ContainerInput.QUICK_CRAFT, player);
+        for (int slot : slots) menu.clicked(slot, AbstractContainerMenu.getQuickcraftMask(1, 0), ContainerInput.QUICK_CRAFT, player);
+        menu.clicked(-999, AbstractContainerMenu.getQuickcraftMask(2, 0), ContainerInput.QUICK_CRAFT, player);
+        //?} else {
+        /*menu.clicked(-999, AbstractContainerMenu.getQuickcraftMask(0, 0), ClickType.QUICK_CRAFT, player);
+        for (int slot : slots) menu.clicked(slot, AbstractContainerMenu.getQuickcraftMask(1, 0), ClickType.QUICK_CRAFT, player);
+        menu.clicked(-999, AbstractContainerMenu.getQuickcraftMask(2, 0), ClickType.QUICK_CRAFT, player);
+        *///?}
+    }
+
+    /** Spec §4: slots on hidden tabs are inactive — double-click gathering on the Items tab must leave the Stock alone. */
+    public static void doubleClickGatheringSkipsHiddenSlots(GameTestHelper helper) {
+        RecordingPlayer owner = new RecordingPlayer(helper, GameType.SURVIVAL);
+        VendingMachineBlockEntity machine = appleMachineOwnedBy(helper, owner);
+        machine.stock().set(0, new ItemStack(Items.APPLE, 10));
+        owner.getInventory().setItem(9, new ItemStack(Items.APPLE, 5)); // menu slot FIRST_PLAYER
+        VendingSetupMenu menu = setupMenu(owner, machine);
+        menu.setCarried(new ItemStack(Items.APPLE));
+        pickAll(menu, VendingSetupMenu.FIRST_PLAYER + 1, owner);
+        int stocked = BuyingTests.countIn(machine.stock(), Items.APPLE);
+        helper.assertTrue(stocked == 10, "the hidden Stock keeps its 10 apples, it has " + stocked);
+        helper.assertTrue(menu.getCarried().getCount() == 6, "the cursor gathers the inventory's 5 apples, it holds " + menu.getCarried().getCount());
+        helper.succeed();
+    }
+
+    /** The same for dragging a stack and for the number keys (already safe: the menu ignores clicks on hidden slots). */
+    public static void draggingAndNumberKeysSkipHiddenSlots(GameTestHelper helper) {
+        RecordingPlayer owner = new RecordingPlayer(helper, GameType.SURVIVAL);
+        VendingMachineBlockEntity machine = BuyingTests.placeMachine(helper, owner);
+        VendingSetupMenu menu = setupMenu(owner, machine);
+        menu.setCarried(new ItemStack(Items.APPLE, 4));
+        drag(menu, owner, VendingSetupMenu.FIRST_STOCK, VendingSetupMenu.FIRST_PLAYER + 1);
+        helper.assertTrue(ItemSlots.isEmpty(machine.stock()), "a drag across the hidden Stock puts nothing in it");
+        helper.assertTrue(owner.getInventory().getItem(10).getCount() == 4, "the whole stack lands in the inventory slot");
+        machine.stock().set(0, new ItemStack(Items.BREAD, 10));
+        owner.getInventory().setItem(0, new ItemStack(Items.APPLE, 5));
+        swapWithHotbar(menu, VendingSetupMenu.FIRST_STOCK, 0, owner);
+        helper.assertTrue(machine.stock().get(0).is(Items.BREAD) && owner.getInventory().getItem(0).is(Items.APPLE),
+                "number key 1 over the hidden Stock swaps nothing");
+        helper.succeed();
+    }
+
+    /** Spec §3.2 rule 1's hint is for a sneak-click that would place or use something; a spectator's can't, so no hint. */
+    public static void spectatorsGetNoEmptyHandsHint(GameTestHelper helper) {
+        RecordingServerPlayer owner = RecordingServerPlayer.create(helper, GameType.SURVIVAL);
+        BuyingTests.placeMachine(helper, owner);
+        owner.setGameMode(GameType.SPECTATOR);
+        owner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.STONE, 5));
+        owner.setShiftKeyDown(true);
+        useAsServer(helper, owner, MachineLayout.TRAY);
+        helper.assertTrue(owner.lastMessage() == null, "a spectator's sneak-click should say nothing, got " + owner.lastMessage());
+        helper.succeed();
+    }
+
+    /** Spec §5.1: with CATALOG MISSING an admin picks another catalog or clears it — ▶ clears it in one press. */
+    public static void aMissingCatalogIsOnePressFromNone(GameTestHelper helper) {
+        RecordingPlayer admin = new RecordingPlayer(helper, GameType.CREATIVE);
+        VendingMachineBlockEntity machine = BuyingTests.placeMachine(helper, admin);
+        VendingSetupMenu menu = setupMenu(admin, machine);
+        machine.setCatalog(DiamondVending.id("no_such_catalog"));
+        menu.clickMenuButton(admin, SetupButtons.cycleCatalog(1));
+        helper.assertTrue(machine.catalogId() == null, "▶ from a missing catalog should pick None, got " + machine.catalogId());
+        machine.setCatalog(DiamondVending.id("no_such_catalog"));
+        menu.clickMenuButton(admin, SetupButtons.cycleCatalog(-1));
+        helper.assertTrue(Catalogs.ids().getLast().equals(machine.catalogId()),
+                "◀ from a missing catalog should pick the last catalog, got " + machine.catalogId());
         helper.succeed();
     }
 }

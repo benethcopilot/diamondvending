@@ -5,10 +5,15 @@ import diamondvending.block.MachineItems;
 import diamondvending.block.MachinePart;
 import diamondvending.block.VendingMachineBlock;
 import diamondvending.block.VendingMachineBlockEntity;
+import diamondvending.core.Texts;
 import diamondvending.registry.ModContent;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
@@ -17,6 +22,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.WrittenBookContent;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WallTorchBlock;
@@ -27,8 +37,10 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 //?}
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -60,6 +72,8 @@ public final class MachineTests {
             Map.entry("dyeing_the_same_color_uses_no_dye", MachineTests::dyeingTheSameColorUsesNoDye),
             Map.entry("creative_dyeing_keeps_the_dye", MachineTests::creativeDyeingKeepsTheDye),
             Map.entry("machine_recipe_loads", MachineTests::machineRecipeLoads),
+            Map.entry("the_manual_recipe_makes_the_manual", MachineTests::theManualRecipeMakesTheManual),
+            Map.entry("a_first_diamond_unlocks_the_machine_and_the_manual", MachineTests::aFirstDiamondUnlocksTheMachineAndTheManual),
             Map.entry("attached_blocks_fall_when_the_machine_is_broken", MachineTests::attachedBlocksFallWhenTheMachineIsBroken),
             Map.entry("cannot_be_placed_inside_creatures", MachineTests::cannotBePlacedInsideCreatures));
 
@@ -323,6 +337,57 @@ public final class MachineTests {
         /*boolean found = helper.getLevel().getRecipeManager().byKey(DiamondVending.id("vending_machine")).isPresent();
         *///?}
         helper.assertTrue(found, "the vending machine recipe did not load (check the log for recipe parse errors)");
+        helper.succeed();
+    }
+
+    /** Spec §6.2: a book and a gold nugget craft the manual — a written book whose pages are the manual's lang keys. */
+    public static void theManualRecipeMakesTheManual(GameTestHelper helper) {
+        CraftingInput input = CraftingInput.of(2, 1, List.of(new ItemStack(Items.BOOK), new ItemStack(Items.GOLD_NUGGET)));
+        //? if >=26.1 {
+        Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+        ItemStack book = recipe.map(holder -> holder.value().assemble(input)).orElse(ItemStack.EMPTY);
+        //?} else {
+        /*Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
+        ItemStack book = recipe.map(holder -> holder.value().assemble(input, helper.getLevel().registryAccess())).orElse(ItemStack.EMPTY);
+        *///?}
+        helper.assertTrue(book.is(Items.WRITTEN_BOOK), "a book and a gold nugget should craft the manual, got " + book);
+        WrittenBookContent content = book.get(DataComponents.WRITTEN_BOOK_CONTENT);
+        helper.assertTrue(content != null && content.title().raw().equals("Diamond Vending Manual")
+                && content.author().equals("Diamond Vending HQ"), "the manual's title and author, got " + content);
+        List<Component> pages = content.getPages(false);
+        helper.assertTrue(pages.size() == Texts.MANUAL_PAGES.size(),
+                "the manual should have " + Texts.MANUAL_PAGES.size() + " pages, it has " + pages.size());
+        for (int i = 0; i < pages.size(); i++) {
+            String page = Texts.MANUAL_PAGES.get(i);
+            List<String> keys = translationKeys(pages.get(i));
+            helper.assertTrue(keys.equals(List.of(Texts.manualTitle(page), Texts.manualText(page))),
+                    "page " + (i + 1) + " should be the " + page + " page, it shows " + keys);
+        }
+        helper.succeed();
+    }
+
+    /** Every translation key in a text component, in reading order. */
+    private static List<String> translationKeys(Component component) {
+        List<String> keys = new ArrayList<>();
+        if (component.getContents() instanceof TranslatableContents translatable) keys.add(translatable.getKey());
+        for (Component sibling : component.getSiblings()) keys.addAll(translationKeys(sibling));
+        return keys;
+    }
+
+    /** Spec §6.1–6.2: a player's first diamond puts both the machine and the manual in their recipe book. */
+    public static void aFirstDiamondUnlocksTheMachineAndTheManual(GameTestHelper helper) {
+        RecordingServerPlayer player = RecordingServerPlayer.create(helper, GameType.SURVIVAL);
+        ItemStack diamond = new ItemStack(Items.DIAMOND);
+        player.getInventory().add(diamond.copy());
+        CriteriaTriggers.INVENTORY_CHANGED.trigger(player, player.getInventory(), diamond);
+        for (String recipe : List.of("vending_machine", "manual")) {
+            //? if >=26.1 {
+            boolean unlocked = player.getRecipeBook().contains(ResourceKey.create(Registries.RECIPE, DiamondVending.id(recipe)));
+            //?} else {
+            /*boolean unlocked = player.getRecipeBook().contains(DiamondVending.id(recipe));
+            *///?}
+            helper.assertTrue(unlocked, "a first diamond should unlock the " + recipe + " recipe");
+        }
         helper.succeed();
     }
 

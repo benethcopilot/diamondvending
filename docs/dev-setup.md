@@ -60,16 +60,27 @@ Rendering can't be checked by a server, so one test runs in a real game window a
 ./gradlew :26.1-fabric:runClientGametest
 ```
 
-It builds a stocked machine with commands, clicks it, opens its setup screen (pressing one of its buttons for real), and
-saves screenshots to `versions/26.1-fabric/build/clientgametest/screenshots/`. Look at them after any change to `client/`
-or `scene/`. It needs a display, so it only runs locally (CI runners have none), and only on 26.1 — 1.21.1's Fabric API
-has no client tests. The 1.21.1 renderer shares `FrontCanvas` and `MachineScene` with 26.1; only the draw calls differ.
+It builds a stocked machine with commands, clicks it, opens its setup screen (pressing one of its buttons for real),
+reads the manual (failing if a page is too long for the book), and saves screenshots to
+`versions/26.1-fabric/build/clientgametest/screenshots/`. Look at them after any change to `client/` or `scene/`. It
+needs a display, so it only runs locally (CI runners have none), and only on 26.1 — 1.21.1's Fabric API has no client
+tests. The 1.21.1 renderer shares `FrontCanvas` and `MachineScene` with 26.1; only the draw calls differ.
+
+The manual's pages are translation keys (`Texts.MANUAL_PAGES`) in `en_us.json`, and the recipe that makes the book is
+per version (`src/main/resources-*/data/diamondvending/recipe/manual.json`: 1.21.1 writes each page as a JSON string).
+After changing a page's text, run `./gradlew :26.1-neoforge:test` (`ManualTest` checks every rule in spec §6.2 is still
+explained) and this client test (every page must fit the book's 14 lines).
 
 The test leaves its world in `versions/26.1-fabric/build/clientgametest/saves/`, so the same scene can be opened in the
 NeoForge client, which culls differently: copy the newest world to `run/26.1-neoforge/saves/<name>`, set `allowCommands`
 to 1 in its `level.dat` (to use `/tp`), and start straight into it with
 `./gradlew :26.1-neoforge:runClient "--args=@<repo>/versions/26.1-neoforge/build/moddev/clientRunProgramArgs.txt --quickPlaySingleplayer <name>"`
 (`--args` replaces the run's own arguments, so pass its argument file first).
+
+## Release QA
+Before a release, every jar gets a short scripted play session against a real dedicated server: see
+[docs/qa-checklist.md](qa-checklist.md). `./gradlew :<node>:runServer` uses its own folder, `run/<node>-server/`, and
+`./gradlew :<node>:runClient -Pdiamondvending.join=127.0.0.1` joins it straight away as player `Dev`.
 
 ## Generated art
 Textures, block/item models, the blockstate, the mod icon and the GameTest platform are generated from
@@ -92,7 +103,7 @@ JSON that differs between Minecraft versions lives in `src/main/resources-1.21.1
 code needs a newer API, so packs on older loaders keep working. `MetadataFloorsTest` checks both.
 
 ## Stocking a machine by command
-Until the setup screen exists (Plan 5), stock a machine with `/data`. Look at its lower-left part and run, for example:
+In game, the setup screen does this. For a scripted world (tests, QA scenes), use `/data` on the machine's lower-left part, for example:
 
 ```
 /data merge block <x> <y> <z> {selections:[{slot:0,item:{id:"minecraft:apple",count:2},price:3}],stock:{Items:[{Slot:0b,id:"minecraft:apple",count:64}]}}

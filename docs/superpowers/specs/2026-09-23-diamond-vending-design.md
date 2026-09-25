@@ -379,6 +379,8 @@ Unlocked in the recipe book when the player first obtains a diamond.
   - To open setup: **empty both hands**, then sneak + right-click.
   - Only the owner (or an admin) can set up, dye, or break the machine.
   - Stock sells out; the cash box can fill up and stop sales until you empty it.
+  - Stock only counts if it is exactly the item the button sells (a worn, enchanted or renamed copy
+    is a different item).
   - Breaking your machine keeps its setup on the item, but stock, cash box, tray, and credit
     pop out.
   - Dye the machine by right-clicking it with a dye.

@@ -18,7 +18,7 @@ class TextsTest {
             "src/main/resources/assets/diamondvending/lang/en_us.json");
     private static final Pattern ENTRY = Pattern.compile("\"([^\"]+)\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
 
-    private static Map<String, String> english() throws IOException {
+    static Map<String, String> english() throws IOException {
         Map<String, String> entries = new HashMap<>();
         Matcher matcher = ENTRY.matcher(Files.readString(LANG));
         while (matcher.find()) entries.put(matcher.group(1), matcher.group(2));

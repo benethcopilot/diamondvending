@@ -61,6 +61,17 @@ loom {
     }
 
     runs {
+        // Release QA (docs/qa-checklist.md): the dev player is "Dev" as on NeoForge, and
+        // -Pdiamondvending.join=127.0.0.1 joins that server at once
+        named("client") {
+            programArgs("--username", "Dev")
+            providers.gradleProperty("diamondvending.join").orNull?.let { programArgs("--quickPlayMultiplayer", it) }
+        }
+        // Its own folder, so a client and a server can run at the same time without sharing logs
+        named("server") {
+            runDirectory = rootProject.file("run/${sc.current.project}-server")
+            vmArg("-Xmx1G")
+        }
         register("gametest") {
             server()
             displayName = "Game Test"

@@ -100,6 +100,16 @@ public final class NeoForgeGameTests {
     }
 
     @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void theManualRecipeMakesTheManual(GameTestHelper helper) {
+        MachineTests.theManualRecipeMakesTheManual(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void aFirstDiamondUnlocksTheMachineAndTheManual(GameTestHelper helper) {
+        MachineTests.aFirstDiamondUnlocksTheMachineAndTheManual(helper);
+    }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
     public static void attachedBlocksFallWhenTheMachineIsBroken(GameTestHelper helper) {
         MachineTests.attachedBlocksFallWhenTheMachineIsBroken(helper);
     }

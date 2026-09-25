@@ -1,6 +1,6 @@
 mod.id = "diamondvending"
 mod.name = "Diamond Vending"
-mod.version = "0.1.0"
+mod.version = "1.0.0"
 mod.description = "A real-looking 2x2 vending machine that sells items for diamonds."
 mod.authors = "Diamond Vending Team"
 
