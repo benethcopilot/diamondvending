@@ -2,6 +2,7 @@ package diamondvending.catalog;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import diamondvending.core.MachineLayout;
@@ -48,6 +49,10 @@ public final class Catalog {
             optional(Codec.intRange(1, 99), "count", 1).forGetter(Stack::count),
             optional(DataComponentPatch.CODEC, "components", DataComponentPatch.EMPTY).forGetter(Stack::components)
     ).apply(stack, Stack::new));
+
+    // A catalog written for Minecraft 1.20.1 must not quietly sell plain items here (Forge 1.20.1 spec §5.5).
+    private static final String OTHER_VERSION_FIELD = "nbt";
+    private static final String OTHER_VERSION_ERROR = "nbt is for Minecraft 1.20.1; on this version use \"components\"";
     //?} else {
     /*// An entry's item on 1.20.1: id, count and the item's NBT written as a string, the way /give takes it.
     private record Stack(Holder<Item> item, int count, Optional<CompoundTag> nbt) {
@@ -66,6 +71,10 @@ public final class Catalog {
             optional(SNBT, "nbt").forGetter(Stack::nbt)
     ).apply(stack, Stack::new));
 
+    // A catalog written for a newer Minecraft must not quietly sell plain items here (Forge 1.20.1 spec §5.5).
+    private static final String OTHER_VERSION_FIELD = "components";
+    private static final String OTHER_VERSION_ERROR = "item components need Minecraft 1.20.5 or newer; on 1.20.1 write the item's NBT as \"nbt\"";
+
     private static DataResult<CompoundTag> parseSnbt(String snbt) {
         try {
             return DataResult.success(TagParser.parseTag(snbt));
@@ -75,10 +84,13 @@ public final class Catalog {
     }
     *///?}
 
+    private static final Codec<Stack> STACK = Codec.PASSTHROUGH.flatXmap(Catalog::readStack,
+            stack -> DataResult.error(() -> "catalogs are only read, never written"));
+
     /** One entry: its item (the count is the amount per purchase) and a price. */
     private record Entry(Stack item, int price) {
         static final Codec<Entry> CODEC = RecordCodecBuilder.create(entry -> entry.group(
-                STACK_FIELDS.codec().fieldOf("item").forGetter(Entry::item),
+                STACK.fieldOf("item").forGetter(Entry::item),
                 Codec.intRange(0, Selection.MAX_PRICE).fieldOf("price").forGetter(Entry::price)
         ).apply(entry, Entry::new));
     }
@@ -114,6 +126,11 @@ public final class Catalog {
         return entries.isEmpty() || entries.size() > MachineLayout.SELECTIONS
                 ? DataResult.error(() -> "a catalog needs 1 to " + MachineLayout.SELECTIONS + " entries, this one has " + entries.size())
                 : DataResult.success(entries);
+    }
+
+    private static DataResult<Stack> readStack(Dynamic<?> item) {
+        if (item.get(OTHER_VERSION_FIELD).result().isPresent()) return DataResult.error(() -> OTHER_VERSION_ERROR);
+        return STACK_FIELDS.codec().parse(item);
     }
 
     /**

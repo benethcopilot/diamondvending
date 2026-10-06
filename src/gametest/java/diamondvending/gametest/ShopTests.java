@@ -97,6 +97,7 @@ public final class ShopTests {
             //? if <1.20.5 {
             /*Map.entry("an_unreadable_kept_setup_places_an_empty_machine", ShopTests::anUnreadableKeptSetupPlacesAnEmptyMachine),
             *///?}
+            Map.entry("a_catalog_for_the_other_version_is_skipped", ShopTests::aCatalogForTheOtherVersionIsSkipped),
             Map.entry("a_missing_catalog_is_one_press_from_none", ShopTests::aMissingCatalogIsOnePressFromNone));
 
     private ShopTests() {}
@@ -765,6 +766,39 @@ public final class ShopTests {
         helper.assertTrue(Catalogs.ids().get(Catalogs.ids().size() - 1).equals(machine.catalogId()),
                 "◀ from a missing catalog should pick the last catalog, got " + machine.catalogId());
         helper.succeed();
+    }
+
+    /**
+     * Forge 1.20.1 spec §5.5: the two test catalogs sell the same enchanted book, one written with components (1.20.5 and
+     * newer) and one with nbt (1.20.1). The one for this version loads; the other is skipped with an error saying how to
+     * fix it, instead of quietly selling a plain book.
+     */
+    public static void aCatalogForTheOtherVersionIsSkipped(GameTestHelper helper) {
+        //? if >=1.20.5 {
+        Identifier mine = DiamondVending.id("test_book_components");
+        Identifier other = DiamondVending.id("test_book_nbt");
+        String otherItem = "{\"id\":\"minecraft:enchanted_book\",\"nbt\":\"{}\"}";
+        String fix = "nbt is for Minecraft 1.20.1; on this version use \"components\"";
+        //?} else {
+        /*Identifier mine = DiamondVending.id("test_book_nbt");
+        Identifier other = DiamondVending.id("test_book_components");
+        String otherItem = "{\"id\":\"minecraft:enchanted_book\",\"components\":{}}";
+        String fix = "item components need Minecraft 1.20.5 or newer; on 1.20.1 write the item's NBT as \"nbt\"";
+        *///?}
+        Catalog catalog = Catalogs.get(mine);
+        helper.assertTrue(catalog != null, mine + " is written for this version and should load; loaded: " + Catalogs.ids());
+        ItemStack book = catalog.selection(0).template();
+        helper.assertTrue(book.is(Items.ENCHANTED_BOOK) && TestCompat.hasStoredEnchantments(book), "it sells the enchanted book, got " + book);
+        helper.assertTrue(Catalogs.get(other) == null, other + " is written for the other version, so it must be skipped");
+        String error = parseError(helper, "{\"entries\":[{\"item\":" + otherItem + ",\"price\":1}]}");
+        helper.assertTrue(error.contains(fix), "the log should say how to fix it, got: " + error);
+        helper.succeed();
+    }
+
+    /** The error a catalog's JSON gives, or "" if it parses. */
+    private static String parseError(GameTestHelper helper, String json) {
+        return Catalog.CODEC.parse(RegistryOps.create(JsonOps.INSTANCE, BuyingTests.registries(helper)), JsonParser.parseString(json))
+                .error().map(error -> error.message()).orElse("");
     }
 
     //? if <1.20.5 {

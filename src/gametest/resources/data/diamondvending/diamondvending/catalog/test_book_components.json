@@ -1,0 +1,5 @@
+{
+  "entries": [
+    { "item": { "id": "minecraft:enchanted_book", "components": { "minecraft:stored_enchantments": { "minecraft:mending": 1 } } }, "price": 12 }
+  ]
+}

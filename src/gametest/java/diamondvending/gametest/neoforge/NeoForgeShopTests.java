@@ -214,5 +214,10 @@ public final class NeoForgeShopTests {
     public static void aMissingCatalogIsOnePressFromNone(GameTestHelper helper) {
         ShopTests.aMissingCatalogIsOnePressFromNone(helper);
     }
+
+    @GameTest(template = MachineTests.STRUCTURE_NAME, timeoutTicks = MachineTests.MAX_TICKS)
+    public static void aCatalogForTheOtherVersionIsSkipped(GameTestHelper helper) {
+        ShopTests.aCatalogForTheOtherVersionIsSkipped(helper);
+    }
     *///?}
 }
