@@ -52,7 +52,7 @@ public final class RecordingServerPlayer extends ServerPlayer {
 
     /** The latest action-bar message, or null if there was none. */
     public Component lastMessage() {
-        return messages.isEmpty() ? null : messages.getLast();
+        return messages.isEmpty() ? null : messages.get(messages.size() - 1);
     }
 
     // The test connection never agreed on the loaders' own packets, so NeoForge refuses to send its "open screen with

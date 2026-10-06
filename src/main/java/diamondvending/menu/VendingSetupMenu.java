@@ -175,15 +175,13 @@ public class VendingSetupMenu extends AbstractContainerMenu {
         // Everything else is the server's to decide; the client only asks (spec §4).
         if (player.level().isClientSide()) return true;
         if (!MachineAccess.canManage(player, machine)) return false;
-        return switch (press) {
-            case SetupButtons.ShowTab show -> showTab(show.tab());
-            case SetupButtons.Withdraw ignored -> withdraw(player);
-            case SetupButtons.ToggleInfinite ignored -> toggleInfinite(player);
-            case SetupButtons.CycleCatalog cycle -> cycleCatalog(player, cycle.step());
-            case SetupButtons.Clear clear -> edit(clear.index(), selection -> Selection.EMPTY);
-            case SetupButtons.ChangeQuantity change -> edit(change.index(), selection -> withQuantity(selection, change.by()));
-            case SetupButtons.SetPrice price -> edit(price.index(), selection -> withPrice(selection, price.price()));
-        };
+        if (press instanceof SetupButtons.Withdraw) return withdraw(player);
+        if (press instanceof SetupButtons.ToggleInfinite) return toggleInfinite(player);
+        if (press instanceof SetupButtons.CycleCatalog cycle) return cycleCatalog(player, cycle.step());
+        if (press instanceof SetupButtons.Clear clear) return edit(clear.index(), selection -> Selection.EMPTY);
+        if (press instanceof SetupButtons.ChangeQuantity change) return edit(change.index(), selection -> withQuantity(selection, change.by()));
+        if (press instanceof SetupButtons.SetPrice price) return edit(price.index(), selection -> withPrice(selection, price.price()));
+        return false;
     }
 
     private boolean showTab(SetupTab wanted) {

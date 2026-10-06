@@ -41,7 +41,7 @@ public final class RecordingPlayer extends Player {
 
     /** The latest action-bar message, or null if there was none. */
     public Component lastMessage() {
-        return messages.isEmpty() ? null : messages.getLast();
+        return messages.isEmpty() ? null : messages.get(messages.size() - 1);
     }
 
     // gameType is still null while the Player constructor runs, so these must cope with that.

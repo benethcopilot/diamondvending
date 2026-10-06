@@ -250,6 +250,10 @@ public final class DisplayTests {
         client.triggerEvent(received.getB0(), received.getB1());
     }
 
+    private static <T> T last(List<T> list) {
+        return list.get(list.size() - 1);
+    }
+
     public static void aFlashShowsForTwoSeconds(GameTestHelper helper) {
         VendingMachineBlockEntity machine = BuyingTests.appleMachine(helper);
         VendingMachineBlockEntity client = clientView(helper, machine);
@@ -321,7 +325,7 @@ public final class DisplayTests {
         helper.assertTrue(item.icon().is(Items.APPLE) && ((TranslatableContents) item.text().getContents()).getArgs()[1].equals(2),
                 "the first line should show the apple and how many one purchase gives");
         helper.assertTrue(line(helper, lines, Texts.DIAMOND + ".many").icon().is(Items.DIAMOND), "then the price, with the currency's icon");
-        HoverText.Line owner = lines.getLast();
+        HoverText.Line owner = last(lines);
         BuyingTests.translation(helper, owner.text(), Texts.HUD_OWNED_BY);
         helper.assertTrue(((TranslatableContents) owner.text().getContents()).getArgs()[0].equals("test-player"), "and who owns the machine");
         helper.succeed();
@@ -372,10 +376,10 @@ public final class DisplayTests {
     public static void shopMachinesSaySo(GameTestHelper helper) {
         VendingMachineBlockEntity server = BuyingTests.appleMachine(helper);
         server.setInfinite(true);
-        BuyingTests.translation(helper, HoverText.lines(clientView(helper, server), Hit.NONE, UUID.randomUUID()).getLast().text(), Texts.HUD_SHOP_MACHINE);
+        BuyingTests.translation(helper, last(HoverText.lines(clientView(helper, server), Hit.NONE, UUID.randomUUID())).text(), Texts.HUD_SHOP_MACHINE);
         server.setInfinite(false);
         server.setOwner(null, "");
-        BuyingTests.translation(helper, HoverText.lines(clientView(helper, server), Hit.NONE, UUID.randomUUID()).getLast().text(), Texts.HUD_SHOP_MACHINE);
+        BuyingTests.translation(helper, last(HoverText.lines(clientView(helper, server), Hit.NONE, UUID.randomUUID())).text(), Texts.HUD_SHOP_MACHINE);
         helper.succeed();
     }
 }

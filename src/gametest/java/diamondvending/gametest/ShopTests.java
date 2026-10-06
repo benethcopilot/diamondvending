@@ -761,7 +761,7 @@ public final class ShopTests {
         helper.assertTrue(machine.catalogId() == null, "▶ from a missing catalog should pick None, got " + machine.catalogId());
         machine.setCatalog(DiamondVending.id("no_such_catalog"));
         menu.clickMenuButton(admin, SetupButtons.cycleCatalog(-1));
-        helper.assertTrue(Catalogs.ids().getLast().equals(machine.catalogId()),
+        helper.assertTrue(Catalogs.ids().get(Catalogs.ids().size() - 1).equals(machine.catalogId()),
                 "◀ from a missing catalog should pick the last catalog, got " + machine.catalogId());
         helper.succeed();
     }

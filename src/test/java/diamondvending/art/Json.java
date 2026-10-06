@@ -24,14 +24,11 @@ final class Json {
     }
 
     private static void write(StringBuilder out, Object value, int depth) {
-        switch (value) {
-            case String s -> out.append('"').append(s.replace("\\", "\\\\").replace("\"", "\\\"")).append('"');
-            case Number n -> out.append(n);
-            case Boolean b -> out.append(b);
-            case List<?> list -> writeList(out, list, depth);
-            case Map<?, ?> map -> writeMap(out, map, depth);
-            default -> throw new IllegalArgumentException("unsupported JSON value: " + value);
-        }
+        if (value instanceof String s) out.append('"').append(s.replace("\\", "\\\\").replace("\"", "\\\"")).append('"');
+        else if (value instanceof Number || value instanceof Boolean) out.append(value);
+        else if (value instanceof List<?> list) writeList(out, list, depth);
+        else if (value instanceof Map<?, ?> map) writeMap(out, map, depth);
+        else throw new IllegalArgumentException("unsupported JSON value: " + value);
     }
 
     private static void writeList(StringBuilder out, List<?> list, int depth) {

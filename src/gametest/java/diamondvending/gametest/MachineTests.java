@@ -216,9 +216,9 @@ public final class MachineTests {
         breakAsPlayer(helper, UPPER_RIGHT, owner);
         assertAir(helper, MASTER, LOWER_RIGHT, UPPER_LEFT, UPPER_RIGHT);
         List<ItemEntity> drops = droppedMachines(helper);
-        helper.assertTrue(drops.size() == 1 && drops.getFirst().getItem().getCount() == 1,
+        helper.assertTrue(drops.size() == 1 && drops.get(0).getItem().getCount() == 1,
                 "expected exactly one machine item, found " + drops.size());
-        helper.assertTrue(MachineItems.colorOf(drops.getFirst().getItem()) == DyeColor.LIME, "the dropped machine should stay lime");
+        helper.assertTrue(MachineItems.colorOf(drops.get(0).getItem()) == DyeColor.LIME, "the dropped machine should stay lime");
         helper.succeed();
     }
 
