@@ -1,29 +1,28 @@
 plugins {
-    id("net.neoforged.moddev") version "2.0.141"
+    id("net.neoforged.moddev.legacyforge") version "2.0.141"
     id("neoforge-mutex")
     id("me.modmuss50.mod-publish-plugin")
 }
 
 version = "${property("mod.version")}+${sc.current.version}"
-base.archivesName = "${property("mod.id") as String}-neoforge"
+base.archivesName = "${property("mod.id") as String}-forge"
 
-val requiredJava = when {
-    sc.current.parsed >= "26.1" -> JavaVersion.VERSION_25
-    else -> JavaVersion.VERSION_21
-}
+// Forge 1.20.1 runs on Java 17, so every file this node compiles must be Java 17 (docs/dev-setup.md).
+val requiredJava = JavaVersion.VERSION_17
 
-// Only NeoForge's own classes compile into the NeoForge jar.
+// Only Forge's own classes compile into the Forge jar.
 sourceSets.main {
-    java.exclude("diamondvending/platform/fabric/**", "diamondvending/platform/forge/**")
-    // JSON that differs between Minecraft versions (recipes, item models)
-    resources.srcDir(rootProject.file("src/main/resources-" + if (sc.current.parsed >= "26.1") "26.1" else "1.21.1"))
+    java.exclude("diamondvending/platform/fabric/**", "diamondvending/platform/neoforge/**")
+    // What differs on 1.20.1: the mod metadata, pack.mcmeta, recipes and the example catalog
+    resources.srcDir(rootProject.file("src/main/resources-1.20.1"))
 }
 
 // Game tests live in their own source set and test mod, so no test code ships in the release jar.
 val gametest: SourceSet = sourceSets.create("gametest") {
     compileClasspath += sourceSets.main.get().output
     runtimeClasspath += sourceSets.main.get().output
-    java.exclude("diamondvending/gametest/fabric/**", "diamondvending/gametest/forge/**")
+    java.exclude("diamondvending/gametest/fabric/**", "diamondvending/gametest/neoforge/**")
+    resources.srcDir(rootProject.file("src/gametest/resources-1.20.1"))
 }
 
 dependencies {
@@ -32,8 +31,8 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-neoForge {
-    version = property("deps.neo_loader") as String
+legacyForge {
+    version = "${sc.current.version}-${property("deps.forge_loader")}"
     addModdingDependenciesTo(gametest)
 
     mods {
@@ -46,7 +45,7 @@ neoForge {
     }
 
     runs {
-        // One run folder per node: worlds from 26.1 must never be opened by 1.21.1
+        // One run folder per node: worlds from newer versions must never be opened by 1.20.1
         register("client") {
             gameDirectory = file("../../run/${sc.current.project}")
             client()
@@ -64,7 +63,7 @@ neoForge {
             type = "gameTestServer"
             sourceSet = gametest
             gameDirectory = file("build/gametest")
-            systemProperty("neoforge.enabledGameTestNamespaces", property("mod.id") as String)
+            systemProperty("forge.enabledGameTestNamespaces", property("mod.id") as String)
         }
     }
 }
@@ -96,11 +95,19 @@ tasks {
             register("authors", "mod.authors")
             register("minecraft", "mod.mc_compat")
             // Players need the floor, not the version we build against
-            register("neoforge", "deps.neo_loader_min")
+            register("forge", "deps.forge_loader_min")
         }
 
-        filesMatching("META-INF/neoforge.mods.toml") { expand(props) }
-        exclude("fabric.mod.json")
+        filesMatching("META-INF/mods.toml") { expand(props) }
+        exclude("fabric.mod.json", "META-INF/neoforge.mods.toml")
+        // 1.20.1 reads 1.21.1's item model format (custom_model_data overrides)
+        from(rootProject.file("src/main/resources-1.21.1/assets")) { into("assets") }
+        eachFile { path = DataFolders.for1201(path) }
+    }
+
+    named<ProcessResources>("processGametestResources") {
+        exclude("fabric.mod.json", "META-INF/neoforge.mods.toml")
+        eachFile { path = DataFolders.for1201(path) }
     }
 
     named("createMinecraftArtifacts") {
@@ -119,14 +126,6 @@ tasks {
         systemProperty("diamondvending.node", sc.current.project)
     }
 
-    register<JavaExec>("generateArt") {
-        group = "diamondvending"
-        description = "Regenerates textures, models and test structures from MachineLayout"
-        classpath = sourceSets.test.get().runtimeClasspath
-        mainClass = "diamondvending.art.ArtGenerator"
-        args(rootProject.projectDir.absolutePath)
-    }
-
     // Includes the license file in the built mod
     withType<Jar> {
         val name = project.property("mod.id")
@@ -139,44 +138,9 @@ tasks {
         description = "Builds mod jars and copies results to `build/libs/{mod version}/`"
 
         inputs.property("version", project.property("mod.version"))
-        from(jar.flatMap { it.archiveFile }, named<Jar>("sourcesJar").flatMap { it.archiveFile })
+        // The reobfuscated jar: the one that runs in a real Forge install (the plain jar goes to build/devlibs)
+        from(named<net.neoforged.moddevgradle.legacyforge.tasks.RemapJar>("reobfJar").flatMap { it.archiveFile },
+            named<Jar>("sourcesJar").flatMap { it.archiveFile })
         into(rootProject.layout.buildDirectory.file("libs/${project.property("mod.version")}"))
-    }
-}
-
-// Uploads this jar to Modrinth and CurseForge (.github/workflows/release.yml, "Releasing" in docs/dev-setup.md). A site
-// is used only when its project id is in the environment, and nothing is uploaded unless PUBLISH=true.
-publishMods {
-    // This version's section of CHANGELOG.md, from "## [<version>]" to the next "## ["
-    val releaseNotes = rootProject.file("CHANGELOG.md").readText()
-        .substringAfter("## [${property("mod.version")}]", "")
-        .substringAfter("\n")
-        .substringBefore("\n## [")
-        .trim()
-    val minecraftReleases = sc.properties.rawOrNull("mod", "mc_releases")?.to<List<String>>() ?: listOf(sc.current.version)
-
-    file = tasks.jar.flatMap { it.archiveFile }
-    version = project.version.toString()
-    displayName = "${property("mod.name")} ${property("mod.version")} for NeoForge ${sc.current.version}"
-    changelog = releaseNotes
-    type = STABLE
-    modLoaders.add("neoforge")
-    dryRun = providers.environmentVariable("PUBLISH").orNull != "true"
-
-    providers.environmentVariable("MODRINTH_PROJECT_ID").orNull?.let { id ->
-        modrinth {
-            projectId = id
-            accessToken = providers.environmentVariable("MODRINTH_TOKEN")
-            minecraftVersions.addAll(minecraftReleases)
-        }
-    }
-    providers.environmentVariable("CURSEFORGE_PROJECT_ID").orNull?.let { id ->
-        curseforge {
-            projectId = id
-            accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
-            client = true // the mod is needed on both sides
-            server = true
-            minecraftVersions.addAll(minecraftReleases)
-        }
     }
 }

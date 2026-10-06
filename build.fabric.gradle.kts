@@ -12,9 +12,9 @@ val requiredJava: JavaVersion = when {
     else -> JavaVersion.VERSION_21
 }
 
-// NeoForge-only classes never compile into the Fabric jar.
+// Only Fabric's own classes compile into the Fabric jar.
 sourceSets.main {
-    java.exclude("diamondvending/platform/neoforge/**")
+    java.exclude("diamondvending/platform/neoforge/**", "diamondvending/platform/forge/**")
     // JSON that differs between Minecraft versions (recipes, item models)
     resources.srcDir(rootProject.file("src/main/resources-" + if (sc.current.parsed >= "26.1") "26.1" else "1.21.1"))
 }
@@ -23,7 +23,7 @@ sourceSets.main {
 val gametest: SourceSet = sourceSets.create("gametest") {
     compileClasspath += sourceSets.main.get().compileClasspath + sourceSets.main.get().output
     runtimeClasspath += sourceSets.main.get().runtimeClasspath + sourceSets.main.get().output
-    java.exclude("diamondvending/gametest/neoforge/**")
+    java.exclude("diamondvending/gametest/neoforge/**", "diamondvending/gametest/forge/**")
 }
 
 dependencies {
