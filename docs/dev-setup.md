@@ -94,7 +94,10 @@ Textures, block/item models, the blockstate, the mod icon and the GameTest platf
 
 ## Version-specific resources
 JSON that differs between Minecraft versions lives in `src/main/resources-1.21.1/` and `src/main/resources-26.1/`
-(recipes, item models). Everything else goes in `src/main/resources/`.
+(recipes, item models, the example catalog) and `src/main/resources-1.20.1/` (Forge's `META-INF/mods.toml`,
+`pack.mcmeta`, recipes, the example catalog with `nbt`). The example catalog lives in each version folder because its
+enchanted book is written differently. Everything else goes in `src/main/resources/`. The 1.20.1 build reuses 1.21.1's
+item model, and renames shared data folders to 1.20.1's plural names (`buildSrc/src/main/kotlin/DataFolders.kt`).
 
 ## Loader versions players need
 `stonecutter.properties.toml` has two kinds of dependency versions. `deps.fabric_api`, `deps.fabric_loader` and

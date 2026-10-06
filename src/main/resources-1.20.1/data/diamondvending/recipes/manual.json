@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:book"
+    },
+    {
+      "item": "minecraft:gold_nugget"
+    }
+  ],
+  "result": {
+    "item": "minecraft:written_book",
+    "count": 1,
+    "nbt": {
+      "title": "Diamond Vending Manual",
+      "author": "Diamond Vending HQ",
+      "resolved": 1,
+      "pages": [
+        "[\"\",{\"translate\":\"book.diamondvending.manual.welcome.title\",\"bold\":true},\"\\n\",{\"translate\":\"book.diamondvending.manual.welcome.text\"}]",
+        "[\"\",{\"translate\":\"book.diamondvending.manual.build.title\",\"bold\":true},\"\\n\",{\"translate\":\"book.diamondvending.manual.build.text\"}]",
+        "[\"\",{\"translate\":\"book.diamondvending.manual.buy.title\",\"bold\":true},\"\\n\",{\"translate\":\"book.diamondvending.manual.buy.text\"}]",
+        "[\"\",{\"translate\":\"book.diamondvending.manual.credit.title\",\"bold\":true},\"\\n\",{\"translate\":\"book.diamondvending.manual.credit.text\"}]",
+        "[\"\",{\"translate\":\"book.diamondvending.manual.setup.title\",\"bold\":true},\"\\n\",{\"translate\":\"book.diamondvending.manual.setup.text\"}]",
+        "[\"\",{\"translate\":\"book.diamondvending.manual.stock.title\",\"bold\":true},\"\\n\",{\"translate\":\"book.diamondvending.manual.stock.text\"}]",
+        "[\"\",{\"translate\":\"book.diamondvending.manual.warnings.title\",\"bold\":true},\"\\n\",{\"translate\":\"book.diamondvending.manual.warnings.text\"}]",
+        "[\"\",{\"translate\":\"book.diamondvending.manual.safe.title\",\"bold\":true},\"\\n\",{\"translate\":\"book.diamondvending.manual.safe.text\"}]",
+        "[\"\",{\"translate\":\"book.diamondvending.manual.moving.title\",\"bold\":true},\"\\n\",{\"translate\":\"book.diamondvending.manual.moving.text\"}]",
+        "[\"\",{\"translate\":\"book.diamondvending.manual.infinite.title\",\"bold\":true},\"\\n\",{\"translate\":\"book.diamondvending.manual.infinite.text\"}]",
+        "[\"\",{\"translate\":\"book.diamondvending.manual.tools.title\",\"bold\":true},\"\\n\",{\"translate\":\"book.diamondvending.manual.tools.text\"}]"
+      ]
+    }
+  }
+}

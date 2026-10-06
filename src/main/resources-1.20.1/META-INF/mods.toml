@@ -1,0 +1,25 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+license = "MIT"
+
+[[mods]]
+modId = "${id}"
+displayName = "${name}"
+version = "${version}"
+authors = "${authors}"
+description = '''${description}'''
+logoFile = "assets/diamondvending/icon.png"
+
+[[dependencies.${id}]]
+modId = "forge"
+mandatory = true
+versionRange = "[${forge},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.${id}]]
+modId = "minecraft"
+mandatory = true
+versionRange = "${minecraft}"
+ordering = "NONE"
+side = "BOTH"
