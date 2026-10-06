@@ -6,8 +6,8 @@ import java.util.Map;
 
 /** Structure templates used by the GameTests. */
 final class Structures {
-    /** Minecraft 1.21.1's data version; newer versions upgrade the structure when loading it. */
-    private static final int DATA_VERSION_1_21_1 = 3955;
+    /** Minecraft 1.20.1's data version, the oldest we target; newer versions upgrade the structure when loading it. */
+    private static final int DATA_VERSION_1_20_1 = 3465;
 
     private Structures() {}
 
@@ -33,7 +33,7 @@ final class Structures {
         air.put("Name", "minecraft:air");
 
         Map<String, Object> root = NbtWriter.compound();
-        root.put("DataVersion", DATA_VERSION_1_21_1);
+        root.put("DataVersion", DATA_VERSION_1_20_1);
         root.put("size", List.of(sizeX, sizeY, sizeZ));
         root.put("palette", List.of(floor, air));
         root.put("blocks", blocks);

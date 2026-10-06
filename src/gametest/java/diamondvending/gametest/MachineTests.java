@@ -10,7 +10,6 @@ import diamondvending.registry.ModContent;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
@@ -22,11 +21,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.WrittenBookContent;
-import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WallTorchBlock;
@@ -40,7 +34,6 @@ import net.minecraft.resources.ResourceKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -163,7 +156,7 @@ public final class MachineTests {
     }
 
     public static void placesAllFourParts(GameTestHelper helper) {
-        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player owner = TestCompat.mockPlayer(helper, GameType.SURVIVAL);
         ItemStack stack = machineItem(2);
         placeOn(helper, owner, stack, FLOOR);
         assertWholeMachine(helper, DyeColor.RED);
@@ -176,7 +169,7 @@ public final class MachineTests {
 
     public static void placementNeedsRoom(GameTestHelper helper) {
         helper.setBlock(UPPER_RIGHT, Blocks.STONE);
-        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player owner = TestCompat.mockPlayer(helper, GameType.SURVIVAL);
         ItemStack stack = machineItem(1);
         placeOn(helper, owner, stack, FLOOR);
         assertAir(helper, MASTER, LOWER_RIGHT, UPPER_LEFT);
@@ -185,7 +178,7 @@ public final class MachineTests {
     }
 
     public static void placesInTheItemsColor(GameTestHelper helper) {
-        placeOn(helper, helper.makeMockPlayer(GameType.SURVIVAL), MachineItems.forColor(DyeColor.BLUE), FLOOR);
+        placeOn(helper, TestCompat.mockPlayer(helper, GameType.SURVIVAL), MachineItems.forColor(DyeColor.BLUE), FLOOR);
         assertWholeMachine(helper, DyeColor.BLUE);
         helper.succeed();
     }
@@ -196,7 +189,7 @@ public final class MachineTests {
         Direction[] machineFacings = {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
         BlockPos[] rightOffsets = {new BlockPos(-1, 0, 0), new BlockPos(0, 0, -1), new BlockPos(1, 0, 0), new BlockPos(0, 0, 1)};
         for (int i = 0; i < yaws.length; i++) {
-            Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+            Player owner = TestCompat.mockPlayer(helper, GameType.SURVIVAL);
             owner.setYRot(yaws[i]);
             placeOn(helper, owner, machineItem(1), FLOOR);
             BlockPos right = MASTER.offset(rightOffsets[i]);
@@ -211,7 +204,7 @@ public final class MachineTests {
     }
 
     public static void breakingAnyPartRemovesTheMachineAndDropsIt(GameTestHelper helper) {
-        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player owner = TestCompat.mockPlayer(helper, GameType.SURVIVAL);
         placeOn(helper, owner, MachineItems.forColor(DyeColor.LIME), FLOOR);
         breakAsPlayer(helper, UPPER_RIGHT, owner);
         assertAir(helper, MASTER, LOWER_RIGHT, UPPER_LEFT, UPPER_RIGHT);
@@ -223,7 +216,7 @@ public final class MachineTests {
     }
 
     public static void creativeBreakingDropsNothing(GameTestHelper helper) {
-        Player admin = helper.makeMockPlayer(GameType.CREATIVE);
+        Player admin = TestCompat.mockPlayer(helper, GameType.CREATIVE);
         placeOn(helper, admin, machineItem(1), FLOOR);
         breakAsPlayer(helper, MASTER, admin);
         assertAir(helper, MASTER, LOWER_RIGHT, UPPER_LEFT, UPPER_RIGHT);
@@ -232,10 +225,10 @@ public final class MachineTests {
     }
 
     public static void onlyOwnersAndAdminsCanMineIt(GameTestHelper helper) {
-        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player owner = TestCompat.mockPlayer(helper, GameType.SURVIVAL);
         placeOn(helper, owner, machineItem(1), FLOOR);
-        Player stranger = helper.makeMockPlayer(GameType.SURVIVAL);
-        Player admin = helper.makeMockPlayer(GameType.CREATIVE);
+        Player stranger = TestCompat.mockPlayer(helper, GameType.SURVIVAL);
+        Player admin = TestCompat.mockPlayer(helper, GameType.CREATIVE);
         ServerLevel level = helper.getLevel();
         BlockPos pos = helper.absolutePos(UPPER_LEFT);
         BlockState state = level.getBlockState(pos);
@@ -255,23 +248,23 @@ public final class MachineTests {
         ServerLevel level = helper.getLevel();
         BlockPos pos = helper.absolutePos(MASTER);
         BlockState state = level.getBlockState(pos);
-        helper.assertTrue(state.getDestroyProgress(helper.makeMockPlayer(GameType.SURVIVAL), level, pos) == 0,
+        helper.assertTrue(state.getDestroyProgress(TestCompat.mockPlayer(helper, GameType.SURVIVAL), level, pos) == 0,
                 "nobody but an admin may mine an ownerless machine");
-        helper.assertTrue(state.getDestroyProgress(helper.makeMockPlayer(GameType.CREATIVE), level, pos) > 0,
+        helper.assertTrue(state.getDestroyProgress(TestCompat.mockPlayer(helper, GameType.CREATIVE), level, pos) > 0,
                 "an admin may mine an ownerless machine");
         helper.succeed();
     }
 
     /** Removing one part without a player (a world edit) must not leave ghost parts behind. */
     public static void aBrokenMachineCleansItselfUp(GameTestHelper helper) {
-        placeOn(helper, helper.makeMockPlayer(GameType.SURVIVAL), machineItem(1), FLOOR);
+        placeOn(helper, TestCompat.mockPlayer(helper, GameType.SURVIVAL), machineItem(1), FLOOR);
         helper.setBlock(MASTER, Blocks.AIR);
         assertAir(helper, LOWER_RIGHT, UPPER_LEFT, UPPER_RIGHT);
         helper.succeed();
     }
 
     public static void neighbouringMachinesStaySeparate(GameTestHelper helper) {
-        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player owner = TestCompat.mockPlayer(helper, GameType.SURVIVAL);
         placeOn(helper, owner, machineItem(1), FLOOR);                // occupies x = 3 and 2
         BlockPos otherFloor = FLOOR.east(2);
         placeOn(helper, owner, machineItem(1), otherFloor);           // occupies x = 5 and 4
@@ -286,7 +279,7 @@ public final class MachineTests {
     }
 
     public static void ownersCanDyeTheWholeMachine(GameTestHelper helper) {
-        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player owner = TestCompat.mockPlayer(helper, GameType.SURVIVAL);
         placeOn(helper, owner, machineItem(1), FLOOR);
         ItemStack dye = new ItemStack(Items.BLUE_DYE, 2);
         owner.setItemInHand(InteractionHand.MAIN_HAND, dye);
@@ -297,8 +290,8 @@ public final class MachineTests {
     }
 
     public static void strangersCannotDyeIt(GameTestHelper helper) {
-        placeOn(helper, helper.makeMockPlayer(GameType.SURVIVAL), machineItem(1), FLOOR);
-        Player stranger = helper.makeMockPlayer(GameType.SURVIVAL);
+        placeOn(helper, TestCompat.mockPlayer(helper, GameType.SURVIVAL), machineItem(1), FLOOR);
+        Player stranger = TestCompat.mockPlayer(helper, GameType.SURVIVAL);
         ItemStack dye = new ItemStack(Items.BLUE_DYE, 2);
         stranger.setItemInHand(InteractionHand.MAIN_HAND, dye);
         helper.useBlock(MASTER, stranger);
@@ -308,7 +301,7 @@ public final class MachineTests {
     }
 
     public static void dyeingTheSameColorUsesNoDye(GameTestHelper helper) {
-        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player owner = TestCompat.mockPlayer(helper, GameType.SURVIVAL);
         placeOn(helper, owner, machineItem(1), FLOOR);
         ItemStack dye = new ItemStack(Items.RED_DYE, 2);
         owner.setItemInHand(InteractionHand.MAIN_HAND, dye);
@@ -319,7 +312,7 @@ public final class MachineTests {
     }
 
     public static void creativeDyeingKeepsTheDye(GameTestHelper helper) {
-        Player admin = helper.makeMockPlayer(GameType.CREATIVE);
+        Player admin = TestCompat.mockPlayer(helper, GameType.CREATIVE);
         placeOn(helper, admin, machineItem(1), FLOOR);
         ItemStack dye = new ItemStack(Items.GREEN_DYE, 1);
         admin.setItemInHand(InteractionHand.MAIN_HAND, dye);
@@ -342,19 +335,12 @@ public final class MachineTests {
 
     /** Spec §6.2: a book and a gold nugget craft the manual — a written book whose pages are the manual's lang keys. */
     public static void theManualRecipeMakesTheManual(GameTestHelper helper) {
-        CraftingInput input = CraftingInput.of(2, 1, List.of(new ItemStack(Items.BOOK), new ItemStack(Items.GOLD_NUGGET)));
-        //? if >=26.1 {
-        Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().recipeAccess().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
-        ItemStack book = recipe.map(holder -> holder.value().assemble(input)).orElse(ItemStack.EMPTY);
-        //?} else {
-        /*Optional<RecipeHolder<CraftingRecipe>> recipe = helper.getLevel().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, helper.getLevel());
-        ItemStack book = recipe.map(holder -> holder.value().assemble(input, helper.getLevel().registryAccess())).orElse(ItemStack.EMPTY);
-        *///?}
+        ItemStack book = TestCompat.craft(helper, new ItemStack(Items.BOOK), new ItemStack(Items.GOLD_NUGGET));
         helper.assertTrue(book.is(Items.WRITTEN_BOOK), "a book and a gold nugget should craft the manual, got " + book);
-        WrittenBookContent content = book.get(DataComponents.WRITTEN_BOOK_CONTENT);
-        helper.assertTrue(content != null && content.title().raw().equals("Diamond Vending Manual")
-                && content.author().equals("Diamond Vending HQ"), "the manual's title and author, got " + content);
-        List<Component> pages = content.getPages(false);
+        TestCompat.Book content = TestCompat.book(book);
+        helper.assertTrue(content.title().equals("Diamond Vending Manual") && content.author().equals("Diamond Vending HQ"),
+                "the manual's title and author, got " + content);
+        List<Component> pages = content.pages();
         helper.assertTrue(pages.size() == Texts.MANUAL_PAGES.size(),
                 "the manual should have " + Texts.MANUAL_PAGES.size() + " pages, it has " + pages.size());
         for (int i = 0; i < pages.size(); i++) {
@@ -393,7 +379,7 @@ public final class MachineTests {
 
     /** Blocks hanging on any part (signs, torches…) must pop off when the machine is broken, never float. */
     public static void attachedBlocksFallWhenTheMachineIsBroken(GameTestHelper helper) {
-        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player owner = TestCompat.mockPlayer(helper, GameType.SURVIVAL);
         placeOn(helper, owner, machineItem(1), FLOOR);
         BlockPos torch = LOWER_RIGHT.west(); // hangs on the far side of the right-hand column
         helper.setBlock(torch, Blocks.WALL_TORCH.defaultBlockState().setValue(WallTorchBlock.FACING, Direction.WEST));
@@ -405,7 +391,7 @@ public final class MachineTests {
     /** A pet or villager where another part would go blocks placement — otherwise it would be entombed. */
     public static void cannotBePlacedInsideCreatures(GameTestHelper helper) {
         helper.spawnWithNoFreeWill(EntityType.PIG, LOWER_RIGHT);
-        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        Player owner = TestCompat.mockPlayer(helper, GameType.SURVIVAL);
         ItemStack stack = machineItem(1);
         placeOn(helper, owner, stack, FLOOR);
         assertAir(helper, MASTER, UPPER_LEFT, UPPER_RIGHT);
