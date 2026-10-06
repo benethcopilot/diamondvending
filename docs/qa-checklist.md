@@ -1,12 +1,13 @@
 # Release QA checklist
 
-Before a release, run this on **each of the four jars**: the dev client against a dedicated server of the same jar, so
+Before a release, run this on **each of the five jars**: the dev client against a dedicated server of the same jar, so
 every packet really crosses the network (singleplayer skips encoding). It takes about ten minutes per jar. Record each
 result (✅ or what was wrong) in the release PR. Needs Windows (the window scripts), Python 3 and a display.
 
 ## Run one jar
 
-Replace `<node>` with `26.1-neoforge`, `26.1-fabric`, `1.21.1-neoforge` or `1.21.1-fabric`. One jar at a time.
+Replace `<node>` with `26.1-neoforge`, `26.1-fabric`, `1.21.1-neoforge`, `1.21.1-fabric` or `1.20.1-forge`. One jar at a
+time.
 
 1. `python tools/qa/prepare_server.py <node>` — a fresh flat world, `qa-world`, in `run/<node>-server/` (any other
    world there is left alone), RCON on (this accepts the
@@ -29,7 +30,31 @@ Replace `<node>` with `26.1-neoforge`, `26.1-fabric`, `1.21.1-neoforge` or `1.21
 | 5 | `kept`, then `kept_view` | `-Slot 1 -Click right` before `kept_view` | `kept` | A second machine at x 9–10 with a cake on button 1's shelf and a red `SOLD OUT` tag (its setup came back; its stock didn't). |
 | 6 | `colors` | — | `colors` | 16 machines in a row in white, orange, magenta, light blue, yellow, lime, pink, gray, light gray, cyan, purple, blue, brown, green, red, black — each clearly its own color, fronts drawn right. |
 | 7 | `icons` | `-Keys "e"` | `icons` | The inventory with red, blue, lime and black machine icons in the hotbar. Then `-Keys "{ESC}"`. |
-| 8 | `manual`, wait 2 s, `read` | `-Slot 1 -Click right` | `manual_1`; `-PageDown 10`, then `manual_11` | The crafter made the manual (it's in slot 1). The book opens on "Welcome, New Franchise Owner!" (bold) with its text; page 11 is "More Admin Tools". Nothing is cut off. Then `-Keys "{ESC}"`. |
+| 8 | `manual`, wait 2 s, `read` | `-Slot 1 -Click right` | `manual_1`; `-PageDown 10`, then `manual_11` | The crafter made the manual (it's in slot 1). On 1.20.1, which has no crafter, the scene gives the book with the recipe's own NBT instead (`the_manual_recipe_makes_the_manual` checks the recipe there). The book opens on "Welcome, New Franchise Owner!" (bold) with its text; page 11 is "More Admin Tools". Nothing is cut off. Then `-Keys "{ESC}"`. |
 
 JEI, EMI and REI aren't in the dev runs. If you play a pack with one of them, check that the machine and the manual
 recipes show up there too.
+
+## Forge floor check (1.20.1)
+
+The dev runs use the newest code paths of the Forge we build against. This check runs the **release jar** (the
+reobfuscated one in `build/libs`, never `build/devlibs`) on a real server of the **oldest** Forge it asks for.
+
+1. `./gradlew :1.20.1-forge:build`
+2. `python tools/qa/prepare_floor_server.py versions/1.20.1-forge/build/libs/diamondvending-forge-<version>+1.20.1.jar <java 17>`
+   — the first time, it downloads Forge's installer and installs the server in `run/1.20.1-forge-floor/` (its output goes
+   to `installer.log` there). Java 17: Gradle's copy, e.g. `~/.gradle/jdks/eclipse_adoptium-17-amd64-windows.2/bin/java.exe`.
+3. In `run/1.20.1-forge-floor/`, start the server with the command it printed. Wait for `Done (`, and check its console
+   says `Diamond Vending <version> loaded for Minecraft 1.20.1` and `Loaded 1 vending machine catalog(s)`.
+4. `./gradlew :1.20.1-forge:runClient -Pdiamondvending.join=127.0.0.1`, then `python tools/qa/scene.py start 1.20.1-forge`,
+   `python tools/qa/scene.py shop 1.20.1-forge`, and rows 1–2 above (buy once).
+5. `python tools/qa/scene.py stop 1.20.1-forge`, close the game, and look for `ERROR` lines naming `diamondvending` in
+   `run/1.20.1-forge-floor/logs/latest.log`.
+
+## Pack check (1.20.1, by the owner)
+
+A copy of one of the owner's 1.20.1 Forge ATLauncher packs, never the original: the copy leaves out `saves`, `logs`,
+`crash-reports` and `screenshots`, gets its own name and `uuid` in `instance.json`, and the release jar in `mods/`.
+Launching needs the owner's account, so the owner restarts ATLauncher, launches the copy, makes a world, places a
+machine, buys from it and opens its setup screen, and reports back. This is the only check of the release jar's client
+code (renderer, tooltip, setup screen) in a real game.

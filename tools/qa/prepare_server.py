@@ -24,25 +24,37 @@ PROPERTIES = {
     "motd": "Diamond Vending QA",
     "level-name": "qa-world",  # its own world, so a world someone plays on this dev server is never touched
 }
-NODES = {"26.1-neoforge", "26.1-fabric", "1.21.1-neoforge", "1.21.1-fabric"}
+NODES = {"26.1-neoforge", "26.1-fabric", "1.21.1-neoforge", "1.21.1-fabric", "1.20.1-forge"}
+RUN = pathlib.Path(__file__).resolve().parents[2] / "run"
 
 # A client's first start shows a welcome screen that holds up the auto-join (and a stray key there turns the narrator
 # on), a first multiplayer join asks about third-party servers, and the tutorial's toasts cover the screenshots.
 CLIENT_OPTIONS = {"onboardAccessibility": "false", "narrator": "0", "skipMultiplayerWarning": "true", "tutorialStep": "none"}
 
-if len(sys.argv) != 2 or sys.argv[1] not in NODES:
-    sys.exit(f"usage: python tools/qa/prepare_server.py <node>, where <node> is one of {', '.join(sorted(NODES))}")
-node = sys.argv[1]
-run = pathlib.Path(__file__).resolve().parents[2] / "run"
-server = run / f"{node}-server"
-server.mkdir(parents=True, exist_ok=True)
-shutil.rmtree(server / PROPERTIES["level-name"], ignore_errors=True)  # every QA run starts from a new QA world
-(server / "eula.txt").write_text("eula=true\n", encoding="utf-8")
-(server / "server.properties").write_text("".join(f"{key}={value}\n" for key, value in PROPERTIES.items()), encoding="utf-8")
-options = run / node / "options.txt"
-lines = options.read_text(encoding="utf-8").splitlines() if options.exists() else []
-lines = [line for line in lines if line.split(":", 1)[0] not in CLIENT_OPTIONS]
-lines += [f"{key}:{value}" for key, value in CLIENT_OPTIONS.items()]
-options.parent.mkdir(parents=True, exist_ok=True)
-options.write_text("\n".join(lines) + "\n", encoding="utf-8")
-print(f"prepared {server} and the client options in {options}")
+
+def prepare_server(server):
+    """A new QA world, the EULA and server.properties in the server folder."""
+    server.mkdir(parents=True, exist_ok=True)
+    shutil.rmtree(server / PROPERTIES["level-name"], ignore_errors=True)  # every QA run starts from a new QA world
+    (server / "eula.txt").write_text("eula=true\n", encoding="utf-8")
+    (server / "server.properties").write_text("".join(f"{key}={value}\n" for key, value in PROPERTIES.items()), encoding="utf-8")
+
+
+def prepare_client(node):
+    """The dev client's options for this node; returns the options file."""
+    options = RUN / node / "options.txt"
+    lines = options.read_text(encoding="utf-8").splitlines() if options.exists() else []
+    lines = [line for line in lines if line.split(":", 1)[0] not in CLIENT_OPTIONS]
+    lines += [f"{key}:{value}" for key, value in CLIENT_OPTIONS.items()]
+    options.parent.mkdir(parents=True, exist_ok=True)
+    options.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return options
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2 or sys.argv[1] not in NODES:
+        sys.exit(f"usage: python tools/qa/prepare_server.py <node>, where <node> is one of {', '.join(sorted(NODES))}")
+    node = sys.argv[1]
+    server = RUN / f"{node}-server"
+    prepare_server(server)
+    print(f"prepared {server} and the client options in {prepare_client(node)}")
