@@ -1,6 +1,5 @@
 package diamondvending.block;
 
-import com.mojang.serialization.MapCodec;
 import diamondvending.Messages;
 import diamondvending.core.Hit;
 import diamondvending.core.Region;
@@ -47,8 +46,13 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
 //?} else {
+/*import net.minecraft.world.level.LevelAccessor;
+*///?}
+//? if >=1.20.5 {
+import com.mojang.serialization.MapCodec;
+//?}
+//? if <26.1 && >=1.20.5 {
 /*import net.minecraft.world.ItemInteractionResult;
-import net.minecraft.world.level.LevelAccessor;
 *///?}
 
 /**
@@ -56,7 +60,9 @@ import net.minecraft.world.level.LevelAccessor;
  * front) is the master and owns the {@link VendingMachineBlockEntity}.
  */
 public class VendingMachineBlock extends BaseEntityBlock {
+    //? if >=1.20.5 {
     public static final MapCodec<VendingMachineBlock> CODEC = simpleCodec(VendingMachineBlock::new);
+    //?}
     public static final Property<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
     public static final EnumProperty<MachineSide> SIDE = EnumProperty.create("side", MachineSide.class);
@@ -88,18 +94,21 @@ public class VendingMachineBlock extends BaseEntityBlock {
                 .noLootTable();
     }
 
+    //? if >=1.20.5 {
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
+    //?}
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, HALF, SIDE, COLOR);
     }
 
+    // The overrides below are public: 1.20.1 declares these methods public, newer versions protected (widening is allowed).
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
     }
 
@@ -171,7 +180,7 @@ public class VendingMachineBlock extends BaseEntityBlock {
      */
     @Override
     @SuppressWarnings("deprecation")
-    protected float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
+    public float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
         if (!MachineAccess.canManage(player, machineOf(level, pos, state))) return 0.0F;
         int divisor = player.hasCorrectToolForDrops(state) ? 30 : 100;
         return player.getDestroySpeed(state) / OWNER_HARDNESS / divisor;
@@ -179,7 +188,7 @@ public class VendingMachineBlock extends BaseEntityBlock {
 
     /** Tells someone who may not break it why nothing happens when they start mining. */
     @Override
-    protected void attack(BlockState state, Level level, BlockPos pos, Player player) {
+    public void attack(BlockState state, Level level, BlockPos pos, Player player) {
         VendingMachineBlockEntity machine = machineOf(level, pos, state);
         if (!level.isClientSide() && !MachineAccess.canManage(player, machine)) {
             Messages.actionBar(player, Component.translatable(MachineAccess.refusal(player, machine)));
@@ -187,25 +196,37 @@ public class VendingMachineBlock extends BaseEntityBlock {
         super.attack(state, level, pos, player);
     }
 
+    //? if >=1.20.5 {
+    @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        dropForPlayer(level, pos, state, player);
+        return super.playerWillDestroy(level, pos, state, player);
+    }
+    //?} else {
+    /*@Override
+    public void playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        dropForPlayer(level, pos, state, player);
+        super.playerWillDestroy(level, pos, state, player);
+    }
+    *///?}
+
     /**
      * Survival breaks drop one machine item in the machine's color, carrying its setup. The other parts then remove
      * themselves through {@link #keepIfWhole}, like a door's other half, so blocks hanging on them (torches, signs…) get
      * their updates too.
      */
-    @Override
-    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+    private static void dropForPlayer(Level level, BlockPos pos, BlockState state, Player player) {
         if (!level.isClientSide() && !player.isCreative()) {
             BlockPos master = MachinePart.masterOf(pos, state);
             VendingMachineBlockEntity machine = level.getBlockEntity(master) instanceof VendingMachineBlockEntity found ? found : null;
             popResource(level, master, MachineItems.forMachine(state.getValue(COLOR), machine));
         }
-        return super.playerWillDestroy(level, pos, state, player);
     }
 
     //? if <26.1 {
-    /*// 1.21.1: spill when the master is really removed — a repaint keeps the same block, so it must not spill.
+    /*// 1.20.1 and 1.21.1: spill when the master is really removed — a repaint keeps the same block, so it must not spill.
     @Override
-    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof VendingMachineBlockEntity machine) {
             machine.spillContents();
         }
@@ -219,15 +240,21 @@ public class VendingMachineBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, BlockHitResult hit) {
-        if (!level.isClientSide()) use(stack, state, level, pos, player, hit);
+        if (!level.isClientSide()) handleClick(stack, state, level, pos, player, hit);
         return InteractionResult.SUCCESS;
     }
-    //?} else {
+    //?} else if >=1.20.5 {
     /*@Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
                                               InteractionHand hand, BlockHitResult hit) {
-        if (!level.isClientSide()) use(stack, state, level, pos, player, hit);
+        if (!level.isClientSide()) handleClick(stack, state, level, pos, player, hit);
         return ItemInteractionResult.sidedSuccess(level.isClientSide());
+    }
+    *///?} else {
+    /*@Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (!level.isClientSide()) handleClick(player.getItemInHand(hand), state, level, pos, player, hit);
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
     *///?}
 
@@ -235,7 +262,7 @@ public class VendingMachineBlock extends BaseEntityBlock {
      * Spec §3.2, on the server. Owners and admins holding a dye repaint the machine; otherwise the spot clicked on the
      * front decides. Every click is used up (see {@link #useItemOn}), so blocks in hand are never placed against it.
      */
-    private void use(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    private void handleClick(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!(level.getBlockEntity(MachinePart.masterOf(pos, state)) instanceof VendingMachineBlockEntity machine)) return;
         machine.refreshOwnerName(player);
         if (player.isSecondaryUseActive()) {
@@ -297,14 +324,14 @@ public class VendingMachineBlock extends BaseEntityBlock {
 
     //? if >=26.1 {
     @Override
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
-                                     BlockPos neighborPos, BlockState neighborState, RandomSource random) {
+    public BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
+                                  BlockPos neighborPos, BlockState neighborState, RandomSource random) {
         return keepIfWhole(state, pos, neighborPos, neighborState);
     }
     //?} else {
     /*@Override
-    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level,
-                                     BlockPos pos, BlockPos neighborPos) {
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level,
+                                  BlockPos pos, BlockPos neighborPos) {
         return keepIfWhole(state, pos, neighborPos, neighborState);
     }
     *///?}

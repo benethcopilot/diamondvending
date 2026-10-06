@@ -15,7 +15,11 @@ public final class DiamondVending {
 
     /** An id in this mod's namespace, e.g. {@code id("vending_machine")}. */
     public static Identifier id(String path) {
+        //? if >=1.20.5 {
         return Identifier.fromNamespaceAndPath(MOD_ID, path);
+        //?} else {
+        /*return new Identifier(MOD_ID, path);
+        *///?}
     }
 
     /** Common setup, called once by each loader's entrypoint. */

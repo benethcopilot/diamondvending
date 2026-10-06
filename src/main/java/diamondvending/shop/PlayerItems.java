@@ -37,9 +37,9 @@ public final class PlayerItems {
             if (slot == -1) break;
             ItemStack there = inventory.getItem(slot);
             if (there.isEmpty()) {
-                inventory.setItem(slot, rest.split(Math.min(rest.getCount(), inventory.getMaxStackSize(rest))));
+                inventory.setItem(slot, rest.split(Math.min(rest.getCount(), maxStackSize(inventory, rest))));
             } else {
-                int moved = Math.min(rest.getCount(), inventory.getMaxStackSize(there) - there.getCount());
+                int moved = Math.min(rest.getCount(), maxStackSize(inventory, there) - there.getCount());
                 there.grow(moved);
                 rest.shrink(moved);
             }
@@ -48,5 +48,10 @@ public final class PlayerItems {
         if (!rest.isEmpty()) {
             Containers.dropItemStack(player.level(), player.getX(), player.getY(), player.getZ(), rest);
         }
+    }
+
+    /** How many of this item one inventory slot holds (the newer {@code Container.getMaxStackSize(ItemStack)}, which 1.20.1 lacks). */
+    private static int maxStackSize(Inventory inventory, ItemStack stack) {
+        return Math.min(inventory.getMaxStackSize(), stack.getMaxStackSize());
     }
 }

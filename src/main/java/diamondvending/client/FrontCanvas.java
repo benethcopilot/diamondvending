@@ -92,6 +92,10 @@ final class FrontCanvas {
     }
 
     private static void vertex(VertexConsumer out, PoseStack.Pose at, float u, float v, int color) {
+        //? if >=1.20.5 {
         out.addVertex(at, u, v, GLOW_DEPTH).setColor(color).setLight(FULL_BRIGHT);
+        //?} else {
+        /*out.vertex(at.pose(), u, v, GLOW_DEPTH).color(color).uv2(FULL_BRIGHT).endVertex();
+        *///?}
     }
 }
