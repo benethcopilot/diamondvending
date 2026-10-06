@@ -34,6 +34,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 //? if >=26.1 {
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -49,6 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * Everything a machine holds, kept on the master part (spec §8.3): owner, 12 selections, stock, cash box, tray,
@@ -521,10 +523,69 @@ public class VendingMachineBlockEntity extends BlockEntity {
         syncedCredits = input.getIntArray(SYNC_CREDITS).orElse(new int[0]);
         syncedProblems = input.getIntArray(SYNC_PROBLEMS).orElse(new int[0]);
     }
-    //?} else {
+    //?} else if >=1.20.5 {
     /*@Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
+        writeTo(tag, registries);
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        readFrom(tag, registries);
+    }
+
+    // From 1.20.5 on, item stacks need the registries to save and load.
+    private static Tag saveItem(ItemStack stack, HolderLookup.Provider registries) {
+        return stack.save(registries);
+    }
+
+    private static ItemStack loadItem(Tag tag, HolderLookup.Provider registries) {
+        return ItemStack.parse(registries, tag).orElse(ItemStack.EMPTY);
+    }
+
+    private static CompoundTag saveItems(NonNullList<ItemStack> items, HolderLookup.Provider registries) {
+        return ContainerHelper.saveAllItems(new CompoundTag(), items, registries);
+    }
+
+    private static void loadItems(CompoundTag tag, NonNullList<ItemStack> items, HolderLookup.Provider registries) {
+        ContainerHelper.loadAllItems(tag, items, registries);
+    }
+    *///?} else {
+    /*@Override
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        writeTo(tag, null);
+    }
+
+    @Override
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        readFrom(tag, null);
+    }
+
+    // 1.20.1 saves and loads item stacks without the registries (writeTo and readFrom pass null for them).
+    private static Tag saveItem(ItemStack stack, HolderLookup.Provider registries) {
+        return stack.save(new CompoundTag());
+    }
+
+    private static ItemStack loadItem(Tag tag, HolderLookup.Provider registries) {
+        return tag instanceof CompoundTag compound ? ItemStack.of(compound) : ItemStack.EMPTY;
+    }
+
+    private static CompoundTag saveItems(NonNullList<ItemStack> items, HolderLookup.Provider registries) {
+        return ContainerHelper.saveAllItems(new CompoundTag(), items);
+    }
+
+    private static void loadItems(CompoundTag tag, NonNullList<ItemStack> items, HolderLookup.Provider registries) {
+        ContainerHelper.loadAllItems(tag, items);
+    }
+    *///?}
+
+    //? if <26.1 {
+    /*// The saved format, the same on 1.20.1 and 1.21.1 (only the items inside differ, each in its version's own format).
+    private void writeTo(CompoundTag tag, HolderLookup.Provider registries) {
         if (owner != null) tag.putUUID(OWNER, owner);
         tag.putString(OWNER_NAME, ownerName);
         tag.putBoolean(INFINITE, infinite);
@@ -537,27 +598,25 @@ public class VendingMachineBlockEntity extends BlockEntity {
             if (!selection.isSetUp()) continue;
             CompoundTag entry = new CompoundTag();
             entry.putInt(SLOT, i);
-            entry.put(ITEM, selection.template().save(registries));
+            entry.put(ITEM, saveItem(selection.template(), registries));
             entry.putInt(PRICE, selection.price());
             selectionList.add(entry);
         }
         tag.put(SELECTIONS, selectionList);
-        tag.put(STOCK, ContainerHelper.saveAllItems(new CompoundTag(), stock, registries));
-        tag.put(CASH_BOX, ContainerHelper.saveAllItems(new CompoundTag(), cashBox, registries));
-        tag.put(TRAY, ContainerHelper.saveAllItems(new CompoundTag(), tray, registries));
+        tag.put(STOCK, saveItems(stock, registries));
+        tag.put(CASH_BOX, saveItems(cashBox, registries));
+        tag.put(TRAY, saveItems(tray, registries));
         ListTag creditList = new ListTag();
         credits.forEach((player, items) -> {
             if (ItemSlots.isEmpty(items)) return;
-            CompoundTag entry = ContainerHelper.saveAllItems(new CompoundTag(), items, registries);
+            CompoundTag entry = saveItems(items, registries);
             entry.putUUID(PLAYER, player);
             creditList.add(entry);
         });
         tag.put(CREDITS, creditList);
     }
 
-    @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
+    private void readFrom(CompoundTag tag, HolderLookup.Provider registries) {
         clearContents();
         owner = tag.hasUUID(OWNER) ? tag.getUUID(OWNER) : null;
         ownerName = tag.getString(OWNER_NAME);
@@ -571,22 +630,22 @@ public class VendingMachineBlockEntity extends BlockEntity {
             CompoundTag entry = selectionList.getCompound(i);
             int slot = entry.contains(SLOT) ? entry.getInt(SLOT) : -1;
             if (slot < 0 || slot >= selections.length) continue;
-            ItemStack item = entry.contains(ITEM) ? ItemStack.parse(registries, entry.get(ITEM)).orElse(ItemStack.EMPTY) : ItemStack.EMPTY;
+            ItemStack item = entry.contains(ITEM) ? loadItem(entry.get(ITEM), registries) : ItemStack.EMPTY;
             if (item.isEmpty()) {
                 warnLostSelection(slot);
                 continue;
             }
             selections[slot] = Selection.of(item, entry.getInt(PRICE));
         }
-        ContainerHelper.loadAllItems(tag.getCompound(STOCK), stock, registries);
-        ContainerHelper.loadAllItems(tag.getCompound(CASH_BOX), cashBox, registries);
-        ContainerHelper.loadAllItems(tag.getCompound(TRAY), tray, registries);
+        loadItems(tag.getCompound(STOCK), stock, registries);
+        loadItems(tag.getCompound(CASH_BOX), cashBox, registries);
+        loadItems(tag.getCompound(TRAY), tray, registries);
         ListTag creditList = tag.getList(CREDITS, Tag.TAG_COMPOUND);
         for (int i = 0; i < creditList.size(); i++) {
             CompoundTag entry = creditList.getCompound(i);
             if (!entry.hasUUID(PLAYER)) continue;
             NonNullList<ItemStack> items = NonNullList.withSize(CREDIT_SLOTS, ItemStack.EMPTY);
-            ContainerHelper.loadAllItems(entry, items, registries);
+            loadItems(entry, items, registries);
             if (!ItemSlots.isEmpty(items)) credits.put(entry.getUUID(PLAYER), items);
         }
         syncedStock = tag.getIntArray(SYNC_STOCK);
@@ -609,12 +668,23 @@ public class VendingMachineBlockEntity extends BlockEntity {
      * plus stock counts, each player's credit total, the problems, the catalog's name and the effective currency.
      * Never the stock, cash box or credit items themselves.
      */
+    //? if >=1.20.5 {
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return updateTag(() -> saveCustomOnly(registries));
+    }
+    //?} else {
+    /*@Override
+    public CompoundTag getUpdateTag() {
+        return updateTag(this::saveWithoutMetadata);
+    }
+    *///?}
+
+    private CompoundTag updateTag(Supplier<CompoundTag> save) {
         CompoundTag tag;
         syncing = true;
         try {
-            tag = saveCustomOnly(registries);
+            tag = save.get();
         } finally {
             syncing = false;
         }
@@ -650,5 +720,11 @@ public class VendingMachineBlockEntity extends BlockEntity {
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    // Forge 1.20.1 culls block entity renderers by this box (its default is the master block alone, which would hide the
+    // whole front up close). Not an @Override: the other loaders have no such method on block entities.
+    public AABB getRenderBoundingBox() {
+        return MachinePart.bounds(worldPosition, getBlockState().getValue(VendingMachineBlock.FACING));
     }
 }

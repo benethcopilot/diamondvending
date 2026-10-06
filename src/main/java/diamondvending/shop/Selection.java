@@ -29,6 +29,6 @@ public record Selection(ItemStack template, int price) {
 
     /** Whether a stack is what this button sells: same item and same components (spec §3.3). */
     public boolean sells(ItemStack stack) {
-        return ItemStack.isSameItemSameComponents(stack, template);
+        return ItemSlots.sameItemAndData(stack, template);
     }
 }

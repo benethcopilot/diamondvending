@@ -1,6 +1,7 @@
 package diamondvending.block;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import diamondvending.core.MachineLayout;
 import diamondvending.shop.Selection;
@@ -24,7 +25,7 @@ public final class MachineSetup {
     private record Entry(int slot, Optional<ItemStack> item, int price) {
         static final Codec<Entry> CODEC = RecordCodecBuilder.create(entry -> entry.group(
                 Codec.intRange(0, MachineLayout.SELECTIONS - 1).fieldOf("slot").forGetter(Entry::slot),
-                ItemStack.CODEC.lenientOptionalFieldOf("item").forGetter(Entry::item),
+                lenientField(ItemStack.CODEC, "item").forGetter(Entry::item),
                 Codec.intRange(0, Selection.MAX_PRICE).fieldOf("price").forGetter(Entry::price)
         ).apply(entry, Entry::new));
     }
@@ -32,9 +33,18 @@ public final class MachineSetup {
     public static final Codec<MachineSetup> CODEC = RecordCodecBuilder.create(setup -> setup.group(
             Entry.CODEC.listOf().optionalFieldOf("selections", List.of()).forGetter(MachineSetup::entries),
             Identifier.CODEC.optionalFieldOf("catalog").forGetter(s -> Optional.ofNullable(s.catalog)),
-            BuiltInRegistries.ITEM.byNameCodec().lenientOptionalFieldOf("currency").forGetter(s -> Optional.ofNullable(s.currency)),
+            lenientField(BuiltInRegistries.ITEM.byNameCodec(), "currency").forGetter(s -> Optional.ofNullable(s.currency)),
             Codec.BOOL.optionalFieldOf("infinite", false).forGetter(s -> s.infinite)
     ).apply(setup, MachineSetup::new));
+
+    /** An optional field that reads a value it can't understand as missing (1.20.1's {@code optionalFieldOf} already does). */
+    private static <T> MapCodec<Optional<T>> lenientField(Codec<T> codec, String name) {
+        //? if >=1.20.5 {
+        return codec.lenientOptionalFieldOf(name);
+        //?} else {
+        /*return codec.optionalFieldOf(name);
+        *///?}
+    }
 
     private final Selection[] selections = new Selection[MachineLayout.SELECTIONS];
     private final Identifier catalog;
@@ -117,8 +127,16 @@ public final class MachineSetup {
     public int hashCode() {
         int hash = Objects.hash(catalog, currency, infinite);
         for (Selection selection : selections) {
-            hash = 31 * hash + 31 * ItemStack.hashItemAndComponents(selection.template()) + 7 * selection.quantity() + selection.price();
+            hash = 31 * hash + 31 * itemHash(selection.template()) + 7 * selection.quantity() + selection.price();
         }
         return hash;
+    }
+
+    private static int itemHash(ItemStack stack) {
+        //? if >=1.20.5 {
+        return ItemStack.hashItemAndComponents(stack);
+        //?} else {
+        /*return 31 * stack.getItem().hashCode() + Objects.hashCode(stack.getTag());
+        *///?}
     }
 }

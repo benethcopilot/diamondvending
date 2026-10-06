@@ -42,7 +42,7 @@ public final class ItemSlots {
         ItemStack rest = stack.copy();
         for (int i = 0; i < slots.size() && !rest.isEmpty(); i++) {
             ItemStack slot = slots.get(i);
-            if (!slot.isEmpty() && ItemStack.isSameItemSameComponents(slot, rest)) {
+            if (!slot.isEmpty() && sameItemAndData(slot, rest)) {
                 int moved = Math.min(rest.getCount(), slot.getMaxStackSize() - slot.getCount());
                 if (moved > 0) {
                     slot.grow(moved);
@@ -103,5 +103,14 @@ public final class ItemSlots {
 
     public static void clear(List<ItemStack> slots) {
         Collections.fill(slots, ItemStack.EMPTY);
+    }
+
+    /** Whether two stacks are the same item with the same data: components, or on 1.20.1 the NBT tag (its own stacking rule). */
+    public static boolean sameItemAndData(ItemStack a, ItemStack b) {
+        //? if >=1.20.5 {
+        return ItemStack.isSameItemSameComponents(a, b);
+        //?} else {
+        /*return ItemStack.isSameItemSameTags(a, b);
+        *///?}
     }
 }

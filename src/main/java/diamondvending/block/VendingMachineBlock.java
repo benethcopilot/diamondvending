@@ -168,7 +168,7 @@ public class VendingMachineBlock extends BaseEntityBlock {
         Player player = placer instanceof Player p ? p : null;
         if (player != null) machine.setOwner(player.getUUID(), player.getName().getString());
         // Spec §5.4: an item that kept its setup puts it back; only an admin gets an infinite machine back.
-        MachineSetup setup = stack.get(ModContent.MACHINE_SETUP.get());
+        MachineSetup setup = MachineItems.setupOf(stack);
         if (setup != null) setup.applyTo(machine, player != null && MachineAccess.isAdmin(player));
     }
 
