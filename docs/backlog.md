@@ -7,7 +7,7 @@ Each entry notes why it was deferred and what it would take. Every entry is also
 | Issue | Idea | Why deferred / notes |
 |---|---|---|
 | [#1](https://github.com/benethcopilot/diamondvending/issues/1) | **Hopper / pipe automation** — hoppers feed the stock storage; pull diamonds out of the cash box | Item-transfer APIs differ per loader (NeoForge capabilities vs Fabric Transfer API) and per version. Stock/cash box are already separate inventories, so this is additive. Decide which faces are input vs output. |
-| [#2](https://github.com/benethcopilot/diamondvending/issues/2) | **Forge 1.20.1 support** | Big long-tail install base (older Create / BMC4 packs), but a third API generation (pre-data-components) means many more code branches and tests. |
+| [#2](https://github.com/benethcopilot/diamondvending/issues/2) | **Forge 1.20.1 support** | Done in 1.1.0 (Plan 7). |
 | [#3](https://github.com/benethcopilot/diamondvending/issues/3) | **Minecraft 26.2 support** | Add one Stonecutter node once 26.1 builds are stable and packs start moving. |
 | [#4](https://github.com/benethcopilot/diamondvending/issues/4) | **Village / structure spawning** | e.g. an infinite machine with a catalog appearing in villages (MacTso's mod does this). Needs structure/jigsaw work per version. |
 | [#5](https://github.com/benethcopilot/diamondvending/issues/5) | **Patchouli guide book** | Richer illustrated manual, as an *optional* integration only (Patchouli must not become a required dependency). Check its 26.1 status first. |
@@ -27,3 +27,13 @@ Found in Plan 5's review and left for later — none loses or duplicates items.
 - A machine placed from a creative player's machine item shares its button templates with that item (nothing changes
   templates today, so nothing shows). Copying them in `MachineSetup.applyTo` would remove the risk.
 - "An item from a removed mod in a kept setup" is tested at the component level, not by placing such an item.
+
+## Small known issues (1.1.0, Forge 1.20.1)
+
+Found in Plan 7's review — none loses or duplicates items.
+
+- A kept setup (on the machine item) doesn't keep Forge capability data: 1.20.1's `ItemStack.CODEC`, which
+  `MachineSetup.CODEC` uses, writes only `id`, `Count` and `tag`. A button selling a modded item whose state lives only
+  in capabilities comes back with fresh ones after the machine is broken and placed again, so stocked items may not
+  match and the button shows SOLD OUT until the owner sets it again. Stock, credit, cash box and the placed machine's
+  selections keep capabilities (`ItemStack.save`).

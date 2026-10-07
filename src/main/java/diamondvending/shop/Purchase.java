@@ -48,9 +48,11 @@ public final class Purchase {
                 price,
                 inCredit,
                 inWallet);
-        switch (PurchaseRules.decide(input)) {
-            case PurchaseDecision.Approved approved -> complete(machine, player, index, selection, approved);
-            case PurchaseDecision.Denied denied -> refuse(machine, player, index, denied.reason(), inCredit + inWallet);
+        PurchaseDecision decision = PurchaseRules.decide(input);
+        if (decision instanceof PurchaseDecision.Approved approved) {
+            complete(machine, player, index, selection, approved);
+        } else if (decision instanceof PurchaseDecision.Denied denied) {
+            refuse(machine, player, index, denied.reason(), inCredit + inWallet);
         }
     }
 

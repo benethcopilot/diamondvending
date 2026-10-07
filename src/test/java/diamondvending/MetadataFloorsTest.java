@@ -26,7 +26,7 @@ class MetadataFloorsTest {
     private static final Path ROOT = Path.of(System.getProperty("diamondvending.root", "../.."));
     private static final String MOD_ID = "diamondvending";
     private static final String GLOBAL = "";
-    private static final Pattern SECTION = Pattern.compile("^\\[(?:(fabric|neoforge)\\.)?\"([^\"]+)\"]$");
+    private static final Pattern SECTION = Pattern.compile("^\\[(?:(fabric|neoforge|forge)\\.)?\"([^\"]+)\"]$");
     private static final Pattern ENTRY = Pattern.compile("^([a-z_.]+)\\s*=\\s*\"([^\"]*)\"");
 
     /** Section name ("fabric.1.21.1", or "" for the top) → key → value, from stonecutter.properties.toml. */
@@ -101,9 +101,12 @@ class MetadataFloorsTest {
             } else if (name.startsWith("neoforge.")) {
                 assertFloor(name, values, "deps.neo_loader_min", "deps.neo_loader");
                 checked++;
+            } else if (name.startsWith("forge.")) {
+                assertFloor(name, values, "deps.forge_loader_min", "deps.forge_loader");
+                checked++;
             }
         }
-        assertTrue(checked >= 4, "expected a fabric and a neoforge section per version, found " + sections.keySet());
+        assertTrue(checked >= 5, "expected a section for every node, found " + sections.keySet());
     }
 
     @Test
@@ -117,6 +120,9 @@ class MetadataFloorsTest {
             String json = ourMetadata("fabric.mod.json", "\"id\": \"" + MOD_ID + "\"");
             assertTrue(json.contains("\"fabricloader\": \">=" + values.get("deps.fabric_loader_min") + "\""), json);
             assertTrue(json.contains("\"fabric-api\": \">=" + values.get("deps.fabric_api_min") + "\""), json);
+        } else if (loader.equals("forge")) {
+            String toml = ourMetadata("META-INF/mods.toml", "modId = \"" + MOD_ID + "\"");
+            assertTrue(toml.contains("versionRange = \"[" + values.get("deps.forge_loader_min") + ",)\""), toml);
         } else {
             String toml = ourMetadata("META-INF/neoforge.mods.toml", "modId = \"" + MOD_ID + "\"");
             assertTrue(toml.contains("versionRange = \"[" + values.get("deps.neo_loader_min") + ",)\""), toml);

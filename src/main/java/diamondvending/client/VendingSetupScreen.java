@@ -362,12 +362,6 @@ public final class VendingSetupScreen extends AbstractContainerScreen<VendingSet
         drawLabels(new Gui(graphics));
     }
 
-    @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
-        renderTooltip(graphics, mouseX, mouseY);
-    }
-
     // While the price box is being typed in, letters and numbers are for it — not the inventory or hotbar keys.
     @Override
     public boolean keyPressed(int key, int scanCode, int modifiers) {
@@ -376,6 +370,22 @@ public final class VendingSetupScreen extends AbstractContainerScreen<VendingSet
             return price.keyPressed(key, scanCode, modifiers) || price.canConsumeInput() || super.keyPressed(key, scanCode, modifiers);
         }
         return super.keyPressed(key, scanCode, modifiers);
+    }
+    *///?}
+
+    //? if <26.1 && >=1.20.5 {
+    /*@Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        renderTooltip(graphics, mouseX, mouseY);
+    }
+    *///?} else if <1.20.5 {
+    /*// 1.20.1 screens draw their own dimmed background, as vanilla's container screens do.
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        renderBackground(graphics);
+        super.render(graphics, mouseX, mouseY, partialTick);
+        renderTooltip(graphics, mouseX, mouseY);
     }
     *///?}
 }

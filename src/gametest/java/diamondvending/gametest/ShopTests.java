@@ -18,7 +18,6 @@ import diamondvending.menu.VendingSetupMenu;
 import diamondvending.registry.ModContent;
 import diamondvending.shop.ItemSlots;
 import diamondvending.shop.Selection;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -35,7 +34,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -96,6 +94,10 @@ public final class ShopTests {
             Map.entry("double_click_gathering_skips_hidden_slots", ShopTests::doubleClickGatheringSkipsHiddenSlots),
             Map.entry("dragging_and_number_keys_skip_hidden_slots", ShopTests::draggingAndNumberKeysSkipHiddenSlots),
             Map.entry("spectators_get_no_empty_hands_hint", ShopTests::spectatorsGetNoEmptyHandsHint),
+            //? if <1.20.5 {
+            /*Map.entry("an_unreadable_kept_setup_places_an_empty_machine", ShopTests::anUnreadableKeptSetupPlacesAnEmptyMachine),
+            *///?}
+            Map.entry("a_catalog_for_the_other_version_is_skipped", ShopTests::aCatalogForTheOtherVersionIsSkipped),
             Map.entry("a_missing_catalog_is_one_press_from_none", ShopTests::aMissingCatalogIsOnePressFromNone));
 
     private ShopTests() {}
@@ -135,7 +137,7 @@ public final class ShopTests {
     public static void theCurrencySlotIsSavedAndSynced(GameTestHelper helper) {
         VendingMachineBlockEntity machine = BuyingTests.placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
         machine.setCurrencySlot(Items.EMERALD);
-        VendingMachineBlockEntity loaded = BuyingTests.reload(helper, machine, machine.saveWithFullMetadata(BuyingTests.registries(helper)));
+        VendingMachineBlockEntity loaded = BuyingTests.reload(helper, machine, TestCompat.save(helper, machine));
         helper.assertTrue(loaded.currencySlot() == Items.EMERALD, "the currency slot should be saved, got " + loaded.currencySlot());
         VendingMachineBlockEntity client = DisplayTests.clientView(helper, machine);
         helper.assertTrue(client.currency().displayItem() == Items.EMERALD, "clients should show emerald prices");
@@ -146,7 +148,7 @@ public final class ShopTests {
     /** Spec §9: a currency item from a removed mod loads as the default currency. */
     public static void anUnknownCurrencyLoadsAsTheDefault(GameTestHelper helper) {
         VendingMachineBlockEntity machine = BuyingTests.placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
-        CompoundTag saved = machine.saveWithFullMetadata(BuyingTests.registries(helper));
+        CompoundTag saved = TestCompat.save(helper, machine);
         saved.putString("currency", "notamod:coin");
         VendingMachineBlockEntity loaded = BuyingTests.reload(helper, machine, saved);
         helper.assertTrue(loaded.currencySlot() == null, "an unknown currency should load as an empty slot");
@@ -167,7 +169,7 @@ public final class ShopTests {
         helper.assertTrue(catalog.selections().size() == 6, "it has 6 entries, got " + catalog.selections().size());
         ItemStack book = catalog.selection(5).template();
         helper.assertTrue(book.is(Items.ENCHANTED_BOOK)
-                        && !book.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY).isEmpty(),
+                        && TestCompat.hasStoredEnchantments(book),
                 "button 6 sells a book with mending on it, got " + book);
         helper.assertTrue(catalog.currency().isEmpty(), "it takes the default currency");
         helper.succeed();
@@ -258,7 +260,7 @@ public final class ShopTests {
         helper.assertTrue(client.currency().displayItem() == Items.EMERALD, "clients show the catalog's currency");
         helper.assertTrue(client.usesCatalog() && client.catalogLabel().equals("Emerald Emporium"),
                 "clients know the catalog's name, got \"" + client.catalogLabel() + "\"");
-        VendingMachineBlockEntity loaded = BuyingTests.reload(helper, machine, machine.saveWithFullMetadata(BuyingTests.registries(helper)));
+        VendingMachineBlockEntity loaded = BuyingTests.reload(helper, machine, TestCompat.save(helper, machine));
         helper.assertTrue(EMERALDS.equals(loaded.catalogId()), "the save keeps the catalog id");
         helper.assertTrue(loaded.ownSelection(0).template().is(Items.BREAD), "and the machine's own button 1");
         helper.succeed();
@@ -283,7 +285,7 @@ public final class ShopTests {
         machine.setSelection(11, Selection.of(new ItemStack(Items.ARROW, 16), 0));
         machine.setCurrencySlot(Items.EMERALD);
         machine.stock().set(0, new ItemStack(Items.APPLE, 10));
-        MachineSetup setup = breakAndPickUp(helper, owner).get(ModContent.MACHINE_SETUP.get());
+        MachineSetup setup = MachineItems.setupOf(breakAndPickUp(helper, owner));
         helper.assertTrue(setup != null, "the dropped machine should carry its setup");
         Selection first = setup.selection(0);
         helper.assertTrue(first.template().is(Items.APPLE) && first.quantity() == 2 && first.price() == 3, "button 1 is kept, got " + first);
@@ -328,7 +330,7 @@ public final class ShopTests {
     public static void anUnsetMachineDropsAPlainItem(GameTestHelper helper) {
         VendingMachineBlockEntity machine = BuyingTests.placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
         ItemStack item = MachineItems.forMachine(DyeColor.RED, machine);
-        helper.assertTrue(ItemStack.isSameItemSameComponents(item, MachineItems.forColor(DyeColor.RED)), "expected a plain machine item, got " + item);
+        helper.assertTrue(ItemSlots.sameItemAndData(item, MachineItems.forColor(DyeColor.RED)), "expected a plain machine item, got " + item);
         helper.succeed();
     }
 
@@ -339,16 +341,16 @@ public final class ShopTests {
         machine.setSelection(1, Selection.of(new ItemStack(Items.BREAD), 2));
         RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, BuyingTests.registries(helper));
         MachineSetup setup = MachineSetup.of(machine);
-        helper.assertTrue(setup.equals(MachineSetup.CODEC.parse(ops, MachineSetup.CODEC.encodeStart(ops, setup).getOrThrow()).getOrThrow()),
+        helper.assertTrue(setup.equals(MachineSetup.CODEC.parse(ops, MachineSetup.CODEC.encodeStart(ops, setup).result().orElseThrow()).result().orElseThrow()),
                 "a setup survives a save unchanged");
-        CompoundTag saved = (CompoundTag) MachineSetup.CODEC.encodeStart(ops, setup).getOrThrow();
+        CompoundTag saved = (CompoundTag) MachineSetup.CODEC.encodeStart(ops, setup).result().orElseThrow();
         // Pretend button 1's item came from a mod that has since been removed.
         //? if >=26.1 {
         saved.getListOrEmpty("selections").getCompoundOrEmpty(0).getCompoundOrEmpty("item").putString("id", "notamod:gadget");
         //?} else {
         /*saved.getList("selections", Tag.TAG_COMPOUND).getCompound(0).getCompound("item").putString("id", "notamod:gadget");
         *///?}
-        MachineSetup loaded = MachineSetup.CODEC.parse(ops, saved).getOrThrow();
+        MachineSetup loaded = MachineSetup.CODEC.parse(ops, saved).result().orElseThrow();
         helper.assertFalse(loaded.selection(0).isSetUp(), "the unknown item leaves button 1 empty");
         helper.assertTrue(loaded.selection(1).template().is(Items.BREAD) && loaded.selection(1).price() == 2, "button 2 is untouched");
         helper.succeed();
@@ -761,8 +763,57 @@ public final class ShopTests {
         helper.assertTrue(machine.catalogId() == null, "▶ from a missing catalog should pick None, got " + machine.catalogId());
         machine.setCatalog(DiamondVending.id("no_such_catalog"));
         menu.clickMenuButton(admin, SetupButtons.cycleCatalog(-1));
-        helper.assertTrue(Catalogs.ids().getLast().equals(machine.catalogId()),
+        helper.assertTrue(Catalogs.ids().get(Catalogs.ids().size() - 1).equals(machine.catalogId()),
                 "◀ from a missing catalog should pick the last catalog, got " + machine.catalogId());
         helper.succeed();
     }
+
+    /**
+     * Forge 1.20.1 spec §5.5: the two test catalogs sell the same enchanted book, one written with components (1.20.5 and
+     * newer) and one with nbt (1.20.1). The one for this version loads; the other is skipped with an error saying how to
+     * fix it, instead of quietly selling a plain book.
+     */
+    public static void aCatalogForTheOtherVersionIsSkipped(GameTestHelper helper) {
+        //? if >=1.20.5 {
+        Identifier mine = DiamondVending.id("test_book_components");
+        Identifier other = DiamondVending.id("test_book_nbt");
+        String otherItem = "{\"id\":\"minecraft:enchanted_book\",\"nbt\":\"{}\"}";
+        String fix = "nbt is for Minecraft 1.20.1; on this version use \"components\"";
+        //?} else {
+        /*Identifier mine = DiamondVending.id("test_book_nbt");
+        Identifier other = DiamondVending.id("test_book_components");
+        String otherItem = "{\"id\":\"minecraft:enchanted_book\",\"components\":{}}";
+        String fix = "item components need Minecraft 1.20.5 or newer; on 1.20.1 write the item's NBT as \"nbt\"";
+        *///?}
+        Catalog catalog = Catalogs.get(mine);
+        helper.assertTrue(catalog != null, mine + " is written for this version and should load; loaded: " + Catalogs.ids());
+        ItemStack book = catalog.selection(0).template();
+        helper.assertTrue(book.is(Items.ENCHANTED_BOOK) && TestCompat.hasStoredEnchantments(book), "it sells the enchanted book, got " + book);
+        helper.assertTrue(Catalogs.get(other) == null, other + " is written for the other version, so it must be skipped");
+        String error = parseError(helper, "{\"entries\":[{\"item\":" + otherItem + ",\"price\":1}]}");
+        helper.assertTrue(error.contains(fix), "the log should say how to fix it, got: " + error);
+        helper.succeed();
+    }
+
+    /** The error a catalog's JSON gives, or "" if it parses. */
+    private static String parseError(GameTestHelper helper, String json) {
+        return Catalog.CODEC.parse(RegistryOps.create(JsonOps.INSTANCE, BuyingTests.registries(helper)), JsonParser.parseString(json))
+                .error().map(error -> error.message()).orElse("");
+    }
+
+    //? if <1.20.5 {
+    /*// Forge 1.20.1 spec §5.2: a kept setup that can't be read at all places an empty machine, never a half set-up one.
+    public static void anUnreadableKeptSetupPlacesAnEmptyMachine(GameTestHelper helper) {
+        ItemStack item = MachineItems.forColor(DyeColor.RED);
+        item.getOrCreateTag().putString("diamondvending:machine_setup", "not a setup");
+        helper.assertTrue(MachineItems.setupOf(item) == null, "an unreadable kept setup should read as none");
+        MachineTests.placeOn(helper, new RecordingPlayer(helper, GameType.SURVIVAL), item, MachineTests.FLOOR);
+        VendingMachineBlockEntity machine = MachineTests.machineAt(helper, MachineTests.MASTER);
+        helper.assertTrue(machine != null, "the machine should still be placed");
+        for (int i = 0; i < MachineLayout.SELECTIONS; i++) {
+            helper.assertFalse(machine.ownSelection(i).isSetUp(), "button " + (i + 1) + " should start empty");
+        }
+        helper.succeed();
+    }
+    *///?}
 }

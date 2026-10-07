@@ -8,14 +8,18 @@ import org.slf4j.LoggerFactory;
 public final class DiamondVending {
     public static final String MOD_ID = "diamondvending";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    public static final String VERSION = /*$ mod_version*/ "1.0.0";
+    public static final String VERSION = /*$ mod_version*/ "1.1.0";
     public static final String MINECRAFT = /*$ minecraft*/ "26.1.2";
 
     private DiamondVending() {}
 
     /** An id in this mod's namespace, e.g. {@code id("vending_machine")}. */
     public static Identifier id(String path) {
+        //? if >=1.20.5 {
         return Identifier.fromNamespaceAndPath(MOD_ID, path);
+        //?} else {
+        /*return new Identifier(MOD_ID, path);
+        *///?}
     }
 
     /** Common setup, called once by each loader's entrypoint. */

@@ -1,14 +1,15 @@
 # Developer Setup
 
 ## Requirements
-- **JDK 25** (Eclipse Temurin). Gradle downloads JDK 21 automatically for the 1.21.1 builds.
+- **JDK 25** (Eclipse Temurin). Gradle downloads JDK 17 for the 1.20.1 build and JDK 21 for the 1.21.1 builds.
 - Git. Any IDE with Gradle support (IntelliJ IDEA recommended).
 
 ## Build targets
-Stonecutter turns the single `src/` tree into four Gradle projects:
+Stonecutter turns the single `src/` tree into five Gradle projects:
 
 | Node | Minecraft | Loader |
 |---|---|---|
+| `1.20.1-forge` | 1.20.1 | Forge 47.2.0 |
 | `1.21.1-fabric` | 1.21.1 | Fabric |
 | `1.21.1-neoforge` | 1.21.1 | NeoForge |
 | `26.1-fabric` | 26.1.2 | Fabric |
@@ -23,15 +24,21 @@ Build or test **one target at a time** (memory):
 ./gradlew :26.1-fabric:runServer
 ```
 
-Jars land in `versions/<node>/build/libs/`. `./gradlew build` builds all four (slow, memory-heavy).
-Each node has its own game folder under `run/<node>/`.
+Jars land in `versions/<node>/build/libs/`. `./gradlew build` builds all five (slow, memory-heavy).
+Each node has its own game folder under `run/<node>/`. The Forge jar in `build/libs` is the reobfuscated one that runs in
+a real Forge install; `build/devlibs` holds the dev-only jar.
 
 ## Stonecutter in 60 seconds
 - Code is written once in `src/`. Differences use comments:
-  `//? if neoforge {` … `//?}` and `//? if >=26.1 {` … `//?} else {` … `//?}`.
-- Write `Identifier` (26.1 name). Stonecutter rewrites it to `ResourceLocation` for 1.21.1.
-- Loader-only classes go in `diamondvending/platform/fabric/` or `.../neoforge/`; each loader's
-  build excludes the other folder, so these files need no loader comments.
+  `//? if neoforge {` … `//?}` and `//? if >=26.1 {` … `//?} else {` … `//?}`. Loader constants: `fabric`, `neoforge`, `forge`.
+- 1.20.1 differences use one cut-off, 1.20.5 (item components, registry-aware saving, the newer block methods):
+  `//? if >=1.20.5 {` … `//?} else {` … `//?}`, or a three-way `//? if >=26.1 {` … `//?} else if >=1.20.5 {` … `//?} else {`.
+  A node between 1.20.1 and 1.21.1 would need every such block re-checked.
+- **Java 17:** Forge 1.20.1 runs on Java 17, so every shared file (main, gametest, test) is Java 17 — no pattern-matching
+  `switch`, no `getFirst()`/`getLast()`. The `1.20.1-forge` build fails on anything newer.
+- Write `Identifier` (26.1 name). Stonecutter rewrites it to `ResourceLocation` for 1.21.1 and 1.20.1.
+- Loader-only classes go in `diamondvending/platform/fabric/`, `.../neoforge/` or `.../forge/`; each loader's
+  build excludes the other folders, so these files need no loader comments.
 - `diamondvending/core/` is plain Java with **no Minecraft imports** — test it with JUnit.
 - To edit code for another version in the IDE, run e.g.
   `./gradlew "Set active project to 1.21.1-fabric"`. **Before committing, run
@@ -44,12 +51,16 @@ Game tests live in `src/gametest/` and build a separate test-only mod, so they n
 ```bash
 ./gradlew :26.1-neoforge:runGameTestServer
 ./gradlew :26.1-fabric:runGametest
+./gradlew :1.20.1-forge:runGameTestServer
 ```
 
 Add a test in three places: a `public static void` method in `gametest/MachineTests.java`, `BuyingTests.java`,
 `DisplayTests.java` or `ShopTests.java` (+ its `ALL` entry), a method in the matching `gametest/fabric/Fabric*Tests.java`, and one in the 1.21.1 block of the
 matching `gametest/neoforge/NeoForge*Tests.java`. A new test class also goes into `AllTests` and the test mod's
-`fabric.mod.json` entrypoints. Use `MachineTests.platform(x, y, z)` for fixed positions: 1.21.1 and 26.1 measure test
+`fabric.mod.json` entrypoints. Forge needs no adapter: `gametest/forge/ForgeGameTests` generates a test for every
+`AllTests.ALL` entry. A test for one version only goes in `ALL` behind a version block (with no Fabric or NeoForge
+adapter when those nodes don't have it). Test code that differs on 1.20.1 (mock players, saving, item data, recipes)
+lives in `TestCompat`. Use `MachineTests.platform(x, y, z)` for fixed positions: 1.21.1 and 26.1 measure test
 coordinates from different origins. Put items in the mock player's hand before `placeAt`/`useBlock` — placement reads
 the item in hand. `RecordingPlayer` is a mock player that remembers its action-bar messages.
 
@@ -90,17 +101,23 @@ Textures, block/item models, the blockstate, the mod icon and the GameTest platf
 ./gradlew :26.1-neoforge:generateArt
 ```
 
-`GeneratedFilesTest` fails the build if the committed files drift from the generator.
+`GeneratedFilesTest` fails the build if the committed files drift from the generator. The GameTest platform carries
+1.20.1's data version, so one file loads on every version (newer ones upgrade it).
 
 ## Version-specific resources
 JSON that differs between Minecraft versions lives in `src/main/resources-1.21.1/` and `src/main/resources-26.1/`
-(recipes, item models). Everything else goes in `src/main/resources/`.
+(recipes, item models, the example catalog) and `src/main/resources-1.20.1/` (Forge's `META-INF/mods.toml`,
+`pack.mcmeta`, recipes, the example catalog with `nbt`). The example catalog lives in each version folder because its
+enchanted book is written differently. Everything else goes in `src/main/resources/`. The 1.20.1 build reuses 1.21.1's
+item model, and renames shared data folders to 1.20.1's plural names (`buildSrc/src/main/kotlin/DataFolders.kt`).
 
 ## Loader versions players need
 `stonecutter.properties.toml` has two kinds of dependency versions. `deps.fabric_api`, `deps.fabric_loader` and
 `deps.neo_loader` are what we build against — bump them freely. `deps.*_min` are the floors written into
-`fabric.mod.json` / `neoforge.mods.toml`: the oldest release that has every API we call. Raise a floor only when new
-code needs a newer API, so packs on older loaders keep working. `MetadataFloorsTest` checks both.
+`fabric.mod.json` / `neoforge.mods.toml` / `mods.toml`: the oldest release that has every API we call. Raise a floor only
+when new code needs a newer API, so packs on older loaders keep working. `MetadataFloorsTest` checks both. Forge is the
+exception: `deps.forge_loader` and `deps.forge_loader_min` are both 47.2.0, so the node compiles against the floor itself
+and no newer Forge API can slip in; release QA runs the jar on a real Forge 47.2.0 server (the floor check).
 
 ## Stocking a machine by command
 In game, the setup screen does this. For a scripted world (tests, QA scenes), use `/data` on the machine's lower-left part, for example:
@@ -111,7 +128,8 @@ In game, the setup screen does this. For a scripted world (tests, QA scenes), us
 
 `slot` 0–11 is button 1–12; `count` is how many one purchase gives; `price` is 0–999 diamonds. Add `infinite:1b` for a
 machine that never runs out and destroys what it's paid. The other saved fields are `owner`, `owner_name`, `cash_box`,
-`tray` and `credits` (see `VendingMachineBlockEntity`).
+`tray` and `credits` (see `VendingMachineBlockEntity`). On 1.20.1, items are written the old way, with a byte count:
+`{id:"minecraft:apple",Count:2b}` (and NBT under `tag`).
 
 ## Vanilla vs NeoForge sources
 NeoForge's patched Minecraft sources widen some access (e.g. `BlockEntityType`'s constructor is public there but
@@ -119,13 +137,14 @@ private in vanilla 26.1). When checking an API, confirm it in vanilla too — Fa
 
 ## Releasing
 1. Set `mod.version` in `stonecutter.properties.toml`, give the changes a `## [<version>] - <date>` section in
-   `CHANGELOG.md`, and run the [release QA checklist](qa-checklist.md) on all four jars.
+   `CHANGELOG.md`, and run the [release QA checklist](qa-checklist.md) on all five jars (plus its Forge floor check).
 2. Merge, then tag the merge commit `v<version>` and push the tag. `.github/workflows/release.yml` builds and tests each
    jar again and uploads it with the Mod Publish Plugin: the file, "Diamond Vending <version> for <loader> <minecraft>",
    the changelog section for that version, the Minecraft versions in `mod.mc_releases`, and Fabric API as a required
    dependency of the Fabric jars.
 3. Create the GitHub release by hand for now: `./gradlew :<node>:buildAndCollect` for each node (one at a time), then
-   `gh release create v<version>` with the four jars from `build/libs/<version>/`.
+   `gh release create v<version>` with the five jars from `build/libs/<version>/` (the Forge one is the reobfuscated
+   jar `buildAndCollect` takes from `build/libs`, never `build/devlibs`).
 
 A site is only used once the repository has its project id as a **variable** (`MODRINTH_PROJECT_ID`,
 `CURSEFORGE_PROJECT_ID`) and its token as a **secret** (`MODRINTH_TOKEN`, `CURSEFORGE_TOKEN`). Locally,

@@ -37,7 +37,7 @@ public final class Catalogs {
         List<Identifier> choices = new ArrayList<>();
         choices.add(null);
         choices.addAll(ids());
-        if (current != null && !choices.contains(current)) return step > 0 ? null : choices.getLast();
+        if (current != null && !choices.contains(current)) return step > 0 ? null : choices.get(choices.size() - 1);
         return choices.get(Math.floorMod(choices.indexOf(current) + step, choices.size()));
     }
 

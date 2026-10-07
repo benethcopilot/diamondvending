@@ -29,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [1.21.1-fabric, 1.21.1-neoforge, 26.1-fabric, 26.1-neoforge]
+        target: [1.20.1-forge, 1.21.1-fabric, 1.21.1-neoforge, 26.1-fabric, 26.1-neoforge]
     steps:
       - uses: actions/checkout@v7
 
@@ -37,6 +37,7 @@ jobs:
         with:
           distribution: temurin
           java-version: |
+            17
             21
             25
 

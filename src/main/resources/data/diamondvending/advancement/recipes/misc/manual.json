@@ -4,7 +4,7 @@
     "has_diamond": {
       "conditions": {
         "items": [
-          { "items": "minecraft:diamond" }
+          { "items": ["minecraft:diamond"] }
         ]
       },
       "trigger": "minecraft:inventory_changed"

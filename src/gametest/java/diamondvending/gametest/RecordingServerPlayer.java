@@ -4,23 +4,25 @@ import com.mojang.authlib.GameProfile;
 import io.netty.channel.embedded.EmbeddedChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.GameType;
+//? if >=1.20.5 {
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.network.CommonListenerCookie;
+import java.util.function.Consumer;
+//?}
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 /**
  * A real server player — menus open for it, and its clicks can go through the game's own click handling, loader events
@@ -31,18 +33,29 @@ import java.util.function.Consumer;
 public final class RecordingServerPlayer extends ServerPlayer {
     private final List<Component> messages = new ArrayList<>();
 
+    //? if >=1.20.5 {
     private RecordingServerPlayer(MinecraftServer server, ServerLevel level, GameProfile profile, ClientInformation information) {
         super(server, level, profile, information);
     }
+    //?} else {
+    /*private RecordingServerPlayer(MinecraftServer server, ServerLevel level, GameProfile profile) {
+        super(server, level, profile);
+    }
+    *///?}
 
     public static RecordingServerPlayer create(GameTestHelper helper, GameType gameType) {
         ServerLevel level = helper.getLevel();
-        CommonListenerCookie cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "test-player"), false);
-        RecordingServerPlayer player = new RecordingServerPlayer(level.getServer(), level, cookie.gameProfile(), cookie.clientInformation());
         // Spelled out: inside a ServerPlayer, "Connection" means a waypoint type it inherits (26.1).
         net.minecraft.network.Connection connection = new net.minecraft.network.Connection(PacketFlow.SERVERBOUND);
         new EmbeddedChannel(connection);
+        //? if >=1.20.5 {
+        CommonListenerCookie cookie = CommonListenerCookie.createInitial(new GameProfile(UUID.randomUUID(), "test-player"), false);
+        RecordingServerPlayer player = new RecordingServerPlayer(level.getServer(), level, cookie.gameProfile(), cookie.clientInformation());
         level.getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
+        //?} else {
+        /*RecordingServerPlayer player = new RecordingServerPlayer(level.getServer(), level, new GameProfile(UUID.randomUUID(), "test-player"));
+        level.getServer().getPlayerList().placeNewPlayer(connection, player);
+        *///?}
         player.setGameMode(gameType);
         BlockPos spot = helper.absolutePos(MachineTests.MASTER.north(2));
         player.teleportTo(spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5);
@@ -52,7 +65,7 @@ public final class RecordingServerPlayer extends ServerPlayer {
 
     /** The latest action-bar message, or null if there was none. */
     public Component lastMessage() {
-        return messages.isEmpty() ? null : messages.getLast();
+        return messages.isEmpty() ? null : messages.get(messages.size() - 1);
     }
 
     // The test connection never agreed on the loaders' own packets, so NeoForge refuses to send its "open screen with
@@ -63,10 +76,12 @@ public final class RecordingServerPlayer extends ServerPlayer {
         return openWithoutPacket(provider);
     }
 
+    //? if >=1.20.5 {
     // NeoForge's two-argument openMenu (an override there; on Fabric, where it doesn't exist, just an unused method).
     public OptionalInt openMenu(MenuProvider provider, Consumer<RegistryFriendlyByteBuf> extraData) {
         return openWithoutPacket(provider);
     }
+    //?}
 
     private OptionalInt openWithoutPacket(MenuProvider provider) {
         AbstractContainerMenu menu = provider.createMenu(1, getInventory(), this);

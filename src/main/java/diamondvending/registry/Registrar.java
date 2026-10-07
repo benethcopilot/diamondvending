@@ -1,7 +1,6 @@
 package diamondvending.registry;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
@@ -10,6 +9,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+
+//? if >=1.20.5 {
+import net.minecraft.core.component.DataComponentType;
+//?}
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -28,8 +31,10 @@ public interface Registrar {
 
     <T extends BlockEntity> Supplier<BlockEntityType<T>> blockEntity(String name, BlockEntityFactory<T> factory, Supplier<? extends Block> block);
 
-    /** A data component type: a piece of data an item can carry, such as a machine's setup. */
+    //? if >=1.20.5 {
+    /** A data component type: a piece of data an item can carry, such as a machine's setup. 1.20.1 items use NBT instead. */
     <T> Supplier<DataComponentType<T>> dataComponent(String name, Supplier<DataComponentType<T>> type);
+    //?}
 
     /** Makes a menu for a block: on the server when it opens, and on the client from the position the server sends. */
     @FunctionalInterface

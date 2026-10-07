@@ -12,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -25,7 +24,6 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
@@ -112,7 +110,7 @@ public final class BuyingTests {
 
     /** Loads {@code tag} into a new block entity at the machine's spot, the way the game loads a chunk or a client does. */
     static VendingMachineBlockEntity reload(GameTestHelper helper, VendingMachineBlockEntity machine, CompoundTag tag) {
-        BlockEntity loaded = BlockEntity.loadStatic(machine.getBlockPos(), machine.getBlockState(), tag, registries(helper));
+        BlockEntity loaded = TestCompat.load(helper, machine, tag);
         helper.assertTrue(loaded instanceof VendingMachineBlockEntity, "the saved machine should load, got " + loaded);
         return (VendingMachineBlockEntity) loaded;
     }
@@ -225,7 +223,7 @@ public final class BuyingTests {
     public static void diamondsAreTheDefaultCurrency(GameTestHelper helper) {
         Currency currency = Currency.DEFAULT;
         ItemStack renamed = new ItemStack(Items.DIAMOND);
-        renamed.set(DataComponents.CUSTOM_NAME, Component.literal("Lucky"));
+        TestCompat.named(renamed, "Lucky");
         helper.assertTrue(currency.matches(new ItemStack(Items.DIAMOND, 5)), "diamonds should be money");
         helper.assertTrue(currency.matches(renamed), "a renamed diamond is still a diamond");
         helper.assertFalse(currency.matches(new ItemStack(Items.EMERALD)), "emeralds are not money unless a datapack says so");
@@ -246,7 +244,7 @@ public final class BuyingTests {
     // ---- contents ------------------------------------------------------------------------------------------------
 
     public static void contentsSurviveSaveAndLoad(GameTestHelper helper) {
-        VendingMachineBlockEntity machine = placeMachine(helper, helper.makeMockPlayer(GameType.SURVIVAL));
+        VendingMachineBlockEntity machine = placeMachine(helper, TestCompat.mockPlayer(helper, GameType.SURVIVAL));
         UUID buyer = UUID.randomUUID();
         machine.setSelection(0, Selection.of(new ItemStack(Items.APPLE, 2), 3));
         machine.setSelection(11, Selection.of(new ItemStack(Items.ARROW, 16), 0));
@@ -256,7 +254,7 @@ public final class BuyingTests {
         machine.tray().set(8, new ItemStack(Items.BREAD, 1));
         machine.creditOf(buyer).set(0, new ItemStack(Items.DIAMOND, 4));
 
-        VendingMachineBlockEntity loaded = reload(helper, machine, machine.saveWithFullMetadata(registries(helper)));
+        VendingMachineBlockEntity loaded = reload(helper, machine, TestCompat.save(helper, machine));
         assertSelection(helper, loaded, 0, Items.APPLE, 2, 3);
         assertSelection(helper, loaded, 11, Items.ARROW, 16, 0);
         helper.assertFalse(loaded.getSelection(5).isSetUp(), "button 6 was never set up");
@@ -271,10 +269,10 @@ public final class BuyingTests {
 
     /** Spec §9: an item from a removed mod loads as an empty button; the rest of the machine keeps working. */
     public static void unknownItemsLoadAsEmptySelections(GameTestHelper helper) {
-        VendingMachineBlockEntity machine = placeMachine(helper, helper.makeMockPlayer(GameType.SURVIVAL));
+        VendingMachineBlockEntity machine = placeMachine(helper, TestCompat.mockPlayer(helper, GameType.SURVIVAL));
         machine.setSelection(0, Selection.of(new ItemStack(Items.APPLE), 1));
         machine.setSelection(1, Selection.of(new ItemStack(Items.BREAD), 2));
-        CompoundTag saved = machine.saveWithFullMetadata(registries(helper));
+        CompoundTag saved = TestCompat.save(helper, machine);
         // Pretend button 1's item came from a mod that has since been removed.
         //? if >=26.1 {
         saved.getListOrEmpty("selections").getCompoundOrEmpty(0).getCompoundOrEmpty("item").putString("id", "notamod:gadget");
@@ -289,7 +287,7 @@ public final class BuyingTests {
 
     /** Spec §8.3: clients get what they draw and a few totals, never the stock, cash box or anyone's credit items. */
     public static void clientsGetOnlyWhatTheyNeed(GameTestHelper helper) {
-        VendingMachineBlockEntity machine = placeMachine(helper, helper.makeMockPlayer(GameType.SURVIVAL));
+        VendingMachineBlockEntity machine = placeMachine(helper, TestCompat.mockPlayer(helper, GameType.SURVIVAL));
         UUID buyer = UUID.randomUUID();
         machine.setSelection(0, Selection.of(new ItemStack(Items.APPLE, 2), 3));
         machine.stock().set(0, new ItemStack(Items.APPLE, 10));
@@ -297,7 +295,7 @@ public final class BuyingTests {
         fill(machine.tray(), Items.BREAD);
         machine.creditOf(buyer).set(0, new ItemStack(Items.DIAMOND, 4));
 
-        CompoundTag update = machine.getUpdateTag(registries(helper));
+        CompoundTag update = TestCompat.updateTag(helper, machine);
         for (String secret : List.of("stock", "cash_box", "credits")) {
             helper.assertFalse(update.contains(secret), "clients must not be sent the machine's " + secret);
         }
@@ -313,7 +311,7 @@ public final class BuyingTests {
     }
 
     public static void problemsFollowTheMachine(GameTestHelper helper) {
-        VendingMachineBlockEntity machine = placeMachine(helper, helper.makeMockPlayer(GameType.SURVIVAL));
+        VendingMachineBlockEntity machine = placeMachine(helper, TestCompat.mockPlayer(helper, GameType.SURVIVAL));
         assertProblems(helper, machine, Problem.NOT_SET_UP);
         machine.setSelection(0, Selection.of(new ItemStack(Items.APPLE, 2), 1));
         assertProblems(helper, machine, Problem.SOLD_OUT);
@@ -329,7 +327,7 @@ public final class BuyingTests {
     }
 
     public static void infiniteMachinesHaveNoOwnerProblems(GameTestHelper helper) {
-        VendingMachineBlockEntity machine = placeMachine(helper, helper.makeMockPlayer(GameType.SURVIVAL));
+        VendingMachineBlockEntity machine = placeMachine(helper, TestCompat.mockPlayer(helper, GameType.SURVIVAL));
         machine.setInfinite(true);
         machine.setSelection(0, Selection.of(new ItemStack(Items.APPLE), 1));
         fill(machine.cashBox(), Items.COBBLESTONE);
@@ -485,7 +483,7 @@ public final class BuyingTests {
         VendingMachineBlockEntity machine = placeMachine(helper, new RecordingPlayer(helper, GameType.SURVIVAL));
         RecordingPlayer buyer = new RecordingPlayer(helper, GameType.SURVIVAL);
         ItemStack lucky = new ItemStack(Items.DIAMOND, 3);
-        lucky.set(DataComponents.CUSTOM_NAME, Component.literal("Lucky"));
+        TestCompat.named(lucky, "Lucky");
         machine.creditOf(buyer.getUUID()).set(0, lucky.copy());
         machine.creditOf(buyer.getUUID()).set(1, new ItemStack(Items.DIAMOND, 2));
         click(helper, buyer, MachineLayout.COIN_RETURN);
@@ -493,7 +491,7 @@ public final class BuyingTests {
         boolean luckyBack = false;
         for (int i = 0; i < buyer.getInventory().getContainerSize(); i++) {
             ItemStack stack = buyer.getInventory().getItem(i);
-            luckyBack |= ItemStack.isSameItemSameComponents(stack, lucky) && stack.getCount() == 3;
+            luckyBack |= ItemSlots.sameItemAndData(stack, lucky) && stack.getCount() == 3;
         }
         helper.assertTrue(luckyBack, "renamed diamonds should come back still renamed");
         helper.assertTrue(machine.credit(buyer.getUUID()).isEmpty(), "and the credit should be gone");
@@ -584,7 +582,7 @@ public final class BuyingTests {
     public static void stockMustMatchTheTemplateExactly(GameTestHelper helper) {
         VendingMachineBlockEntity machine = appleMachine(helper);
         ItemStack namedApples = new ItemStack(Items.APPLE, 10);
-        namedApples.set(DataComponents.CUSTOM_NAME, Component.literal("Special"));
+        TestCompat.named(namedApples, "Special");
         machine.stock().set(0, namedApples);
         RecordingPlayer buyer = buyerWith(helper, 5);
         pressButton(helper, buyer, 0);
@@ -630,7 +628,7 @@ public final class BuyingTests {
         VendingMachineBlockEntity machine = appleMachine(helper);
         RecordingPlayer buyer = buyerWith(helper, 0);
         ItemStack box = new ItemStack(Items.SHULKER_BOX);
-        box.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(List.of(new ItemStack(Items.DIAMOND, 10))));
+        TestCompat.packed(box, new ItemStack(Items.DIAMOND, 10));
         buyer.getInventory().add(box);
         pressButton(helper, buyer, 0);
         assertNeedMoney(helper, buyer, 1, 0);

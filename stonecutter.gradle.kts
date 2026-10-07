@@ -12,9 +12,9 @@ stonecutter parameters {
         tags(version, loader)
     }
 
-    // Enables `//? if fabric` / `//? if neoforge` in source comments
+    // Enables //? if fabric / neoforge / forge in source comments
     constants {
-        match(loader, "fabric", "neoforge")
+        match(loader, "fabric", "neoforge", "forge")
     }
 
     swaps["mod_version"] = "\"${properties.get<String>("mod.version")}\";"

@@ -1,6 +1,6 @@
 mod.id = "diamondvending"
 mod.name = "Diamond Vending"
-mod.version = "1.0.0"
+mod.version = "1.1.0"
 mod.description = "A real-looking 2x2 vending machine that sells items for diamonds."
 mod.authors = "Diamond Vending Team"
 
@@ -40,3 +40,13 @@ mod.mc_compat = "[26.1, 26.2)"
 deps.neo_loader = "26.1.2.107"
 # Any NeoForge for 26.1.x; "[26.1,)" sorts after the 26.1 snapshot alphas
 deps.neo_loader_min = "26.1"
+
+["1.20.1"]
+mod.mc_releases = ["1.20.1"]
+
+[forge."1.20.1"]
+mod.mc_compat = "[1.20.1,1.20.2)"
+# Forge 47.2.0 is older than every 1.20.1 Forge pack we play (47.2.17-47.4.22); the node compiles against it, so no
+# newer API can slip in.
+deps.forge_loader = "47.2.0"
+deps.forge_loader_min = "47.2.0"

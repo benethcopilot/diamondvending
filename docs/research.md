@@ -32,8 +32,8 @@ targets what it does; re-check version facts before relying on them later.
 - **1.21.1** is where most actively maintained packs live today.
 - **26.1.x** is expected to become the next stable modding version (ATM11 is on it; Create is
   porting to it).
-- 1.20.1 Forge still has a large long-tail install base (older Create / BMC4 packs) — deferred
-  (see backlog).
+- 1.20.1 Forge still has a large long-tail install base (older Create / BMC4 packs) — supported from 1.1.0
+  (Plan 7).
 - Fabric remains favored for lighter / performance packs; NeoForge for big content packs.
 
 ## Existing vending machine mods (inspiration)

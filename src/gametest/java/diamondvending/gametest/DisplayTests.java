@@ -15,12 +15,10 @@ import diamondvending.scene.HoverText;
 import diamondvending.scene.MachineScene;
 import diamondvending.shop.Selection;
 import com.google.gson.JsonParser;
-import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.network.protocol.game.ClientboundBlockEventPacket;
@@ -78,7 +76,7 @@ public final class DisplayTests {
 
     /** What a client knows about the machine: its update tag, loaded into a fresh block entity (which has no level). */
     static VendingMachineBlockEntity clientView(GameTestHelper helper, VendingMachineBlockEntity machine) {
-        CompoundTag update = machine.getUpdateTag(BuyingTests.registries(helper));
+        CompoundTag update = TestCompat.updateTag(helper, machine);
         update.putString("id", "diamondvending:vending_machine");
         return BuyingTests.reload(helper, machine, update);
     }
@@ -242,12 +240,13 @@ public final class DisplayTests {
     }
 
     /** Delivers a block event to {@code client} the way the server does: in a packet, as bytes. */
-    @SuppressWarnings("deprecation") // NeoForge 1.21.1 wants a connection type for the buffer; there's no connection here
     static void overTheNetwork(GameTestHelper helper, VendingMachineBlockEntity client, BlockEventData event) {
-        RegistryFriendlyByteBuf bytes = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
-        ClientboundBlockEventPacket.STREAM_CODEC.encode(bytes, new ClientboundBlockEventPacket(event.pos(), event.block(), event.paramA(), event.paramB()));
-        ClientboundBlockEventPacket received = ClientboundBlockEventPacket.STREAM_CODEC.decode(bytes);
+        ClientboundBlockEventPacket received = TestCompat.overTheNetwork(helper, event);
         client.triggerEvent(received.getB0(), received.getB1());
+    }
+
+    private static <T> T last(List<T> list) {
+        return list.get(list.size() - 1);
     }
 
     public static void aFlashShowsForTwoSeconds(GameTestHelper helper) {
@@ -321,7 +320,7 @@ public final class DisplayTests {
         helper.assertTrue(item.icon().is(Items.APPLE) && ((TranslatableContents) item.text().getContents()).getArgs()[1].equals(2),
                 "the first line should show the apple and how many one purchase gives");
         helper.assertTrue(line(helper, lines, Texts.DIAMOND + ".many").icon().is(Items.DIAMOND), "then the price, with the currency's icon");
-        HoverText.Line owner = lines.getLast();
+        HoverText.Line owner = last(lines);
         BuyingTests.translation(helper, owner.text(), Texts.HUD_OWNED_BY);
         helper.assertTrue(((TranslatableContents) owner.text().getContents()).getArgs()[0].equals("test-player"), "and who owns the machine");
         helper.succeed();
@@ -372,10 +371,10 @@ public final class DisplayTests {
     public static void shopMachinesSaySo(GameTestHelper helper) {
         VendingMachineBlockEntity server = BuyingTests.appleMachine(helper);
         server.setInfinite(true);
-        BuyingTests.translation(helper, HoverText.lines(clientView(helper, server), Hit.NONE, UUID.randomUUID()).getLast().text(), Texts.HUD_SHOP_MACHINE);
+        BuyingTests.translation(helper, last(HoverText.lines(clientView(helper, server), Hit.NONE, UUID.randomUUID())).text(), Texts.HUD_SHOP_MACHINE);
         server.setInfinite(false);
         server.setOwner(null, "");
-        BuyingTests.translation(helper, HoverText.lines(clientView(helper, server), Hit.NONE, UUID.randomUUID()).getLast().text(), Texts.HUD_SHOP_MACHINE);
+        BuyingTests.translation(helper, last(HoverText.lines(clientView(helper, server), Hit.NONE, UUID.randomUUID())).text(), Texts.HUD_SHOP_MACHINE);
         helper.succeed();
     }
 }

@@ -20,7 +20,7 @@ public final class DiamondVendingNeoForgeClient {
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, event ->
                 event.registerBlockEntityRenderer(ModContent.VENDING_MACHINE_BLOCK_ENTITY.get(), VendingMachineRenderer::new));
         modBus.addListener(RegisterGuiLayersEvent.class, event ->
-                event.registerAbove(VanillaGuiLayers.CROSSHAIR, DiamondVending.id("hover"), HoverHud::render));
+                event.registerAbove(VanillaGuiLayers.CROSSHAIR, DiamondVending.id("hover"), (graphics, delta) -> HoverHud.render(graphics)));
         modBus.addListener(RegisterMenuScreensEvent.class, event -> event.register(ModContent.SETUP_MENU.type(), VendingSetupScreen::new));
     }
 }

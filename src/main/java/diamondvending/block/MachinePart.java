@@ -59,6 +59,6 @@ public enum MachinePart {
 
     /** A box around the whole machine and the items drawn just in front of its glass, for deciding whether it's in view. */
     public static AABB bounds(BlockPos master, Direction facing) {
-        return AABB.encapsulatingFullBlocks(master, UPPER_RIGHT.posFrom(master, facing)).inflate(0.1);
+        return new AABB(master).minmax(new AABB(UPPER_RIGHT.posFrom(master, facing))).inflate(0.1);
     }
 }

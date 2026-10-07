@@ -1,0 +1,11 @@
+{
+  "display_name": "Snack Shack",
+  "entries": [
+    { "item": { "id": "minecraft:cookie", "count": 8 }, "price": 1 },
+    { "item": { "id": "minecraft:bread", "count": 4 }, "price": 1 },
+    { "item": { "id": "minecraft:cake" }, "price": 3 },
+    { "item": { "id": "minecraft:golden_apple" }, "price": 4 },
+    { "item": { "id": "minecraft:arrow", "count": 16 }, "price": 1 },
+    { "item": { "id": "minecraft:enchanted_book", "nbt": "{StoredEnchantments:[{id:\"minecraft:mending\",lvl:1s}]}" }, "price": 12 }
+  ]
+}

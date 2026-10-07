@@ -53,7 +53,7 @@ expect fail "two mod jars" 26.1-fabric "$work/two"
 
 # 4. The other loader's classes inside the jar must fail
 make_jar "$(libs leak 26.1-fabric)/diamondvending-fabric-0.1.0+26.1.2.jar" \
-  diamondvending/platform/fabric/A.class diamondvending/platform/neoforge/B.class
+  diamondvending/platform/fabric/A.class diamondvending/platform/neoforge/B.class diamondvending/platform/forge/C.class
 expect fail "fabric jar with neoforge classes" 26.1-fabric "$work/leak"
 make_jar "$(libs leakn 1.21.1-neoforge)/diamondvending-neoforge-0.1.0+1.21.1.jar" \
   diamondvending/platform/neoforge/A.class diamondvending/platform/fabric/B.class
@@ -65,8 +65,19 @@ echo "not a zip" > "$(libs corrupt 26.1-fabric)/diamondvending-fabric-0.1.0+26.1
 expect fail "corrupt jar" 26.1-fabric "$work/corrupt"
 
 # 6. Unknown node names must fail
-make_jar "$(libs odd 26.1-forge)/diamondvending-forge-0.1.0+26.1.2.jar" diamondvending/A.class
-expect fail "unknown node name" 26.1-forge "$work/odd"
+make_jar "$(libs odd 26.1-quilt)/diamondvending-quilt-0.1.0+26.1.2.jar" diamondvending/A.class
+expect fail "unknown node name" 26.1-quilt "$work/odd"
+
+# 4b. A forge jar must hold neither fabric nor neoforge classes
+make_jar "$(libs leakf 1.20.1-forge)/diamondvending-forge-0.1.0+1.20.1.jar" \
+  diamondvending/platform/forge/A.class diamondvending/platform/neoforge/B.class
+expect fail "forge jar with neoforge classes" 1.20.1-forge "$work/leakf"
+make_jar "$(libs leakff 1.20.1-forge)/diamondvending-forge-0.1.0+1.20.1.jar" \
+  diamondvending/platform/forge/A.class diamondvending/platform/fabric/B.class
+expect fail "forge jar with fabric classes" 1.20.1-forge "$work/leakff"
+make_jar "$(libs goodf 1.20.1-forge)/diamondvending-forge-0.1.0+1.20.1.jar" \
+  diamondvending/DiamondVending.class diamondvending/platform/forge/A.class META-INF/mods.toml
+expect pass "clean forge jar" 1.20.1-forge "$work/goodf"
 
 # 7. A clean jar (plus its sources jar) passes
 make_jar "$(libs good 26.1-fabric)/diamondvending-fabric-0.1.0+26.1.2.jar" \

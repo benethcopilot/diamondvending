@@ -22,9 +22,9 @@ public final class DiamondVendingFabricClient implements ClientModInitializer {
         // Vanilla's registration, opened up by Fabric API's transitive access wideners (its own registry is deprecated).
         BlockEntityRenderers.register(ModContent.VENDING_MACHINE_BLOCK_ENTITY.get(), VendingMachineRenderer::new);
         //? if >=26.1 {
-        HudElementRegistry.attachElementAfter(VanillaHudElements.CROSSHAIR, DiamondVending.id("hover"), HoverHud::render);
+        HudElementRegistry.attachElementAfter(VanillaHudElements.CROSSHAIR, DiamondVending.id("hover"), (graphics, delta) -> HoverHud.render(graphics));
         //?} else {
-        /*HudRenderCallback.EVENT.register(HoverHud::render);
+        /*HudRenderCallback.EVENT.register((graphics, delta) -> HoverHud.render(graphics));
         *///?}
         // Vanilla's registration, opened up by Fabric API's transitive access wideners on both versions.
         MenuScreens.register(ModContent.SETUP_MENU.type(), VendingSetupScreen::new);

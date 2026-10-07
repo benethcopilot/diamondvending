@@ -6,7 +6,6 @@ import diamondvending.block.VendingMachineBlock;
 import diamondvending.block.VendingMachineBlockEntity;
 import diamondvending.registry.ModContent;
 import diamondvending.scene.HoverText;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.FormattedCharSequence;
@@ -36,10 +35,11 @@ public final class HoverHud {
 
     private HoverHud() {}
 
+    /** Each loader's HUD hook calls this with its GUI graphics (the hooks' other arguments differ, and none are needed). */
     //? if >=26.1 {
-    public static void render(GuiGraphicsExtractor graphics, DeltaTracker delta) {
+    public static void render(GuiGraphicsExtractor graphics) {
     //?} else {
-    /*public static void render(GuiGraphics graphics, DeltaTracker delta) {
+    /*public static void render(GuiGraphics graphics) {
     *///?}
         Minecraft mc = Minecraft.getInstance();
         if (mc.options.hideGui || mc.level == null || mc.player == null) return;

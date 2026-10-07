@@ -4,6 +4,15 @@ All notable changes to Diamond Vending are documented here. Format: [Keep a Chan
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-06
+
+### Added
+- Runs on Minecraft 1.20.1 with Forge 47.2.0 or newer — every feature, on singleplayer and servers.
+
+### Changed
+- A datapack catalog written for the other Minecraft generation (`components` on 1.20.1, `nbt` on 1.21.1 and 26.1) is
+  skipped with a log line that says how to fix it, instead of selling plain items.
+
 ## [1.0.0] - 2026-09-25
 
 ### Added

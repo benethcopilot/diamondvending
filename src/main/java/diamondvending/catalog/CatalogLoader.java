@@ -2,6 +2,7 @@ package diamondvending.catalog;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import diamondvending.DiamondVending;
 import net.minecraft.core.HolderLookup;
@@ -45,9 +46,9 @@ public class CatalogLoader extends SimplePreparableReloadListener<Map<Identifier
         FILES.listMatchingResources(manager).forEach((file, resource) -> {
             Identifier id = FILES.fileToId(file);
             try (Reader reader = resource.openAsReader()) {
-                Catalog.CODEC.parse(ops, JsonParser.parseReader(reader))
-                        .ifSuccess(catalog -> catalogs.put(id, catalog))
-                        .ifError(error -> DiamondVending.LOGGER.error("Skipping vending machine catalog {} ({}): {}", id, file, error.message()));
+                DataResult<Catalog> read = Catalog.CODEC.parse(ops, JsonParser.parseReader(reader));
+                read.result().ifPresent(catalog -> catalogs.put(id, catalog));
+                read.error().ifPresent(error -> DiamondVending.LOGGER.error("Skipping vending machine catalog {} ({}): {}", id, file, error.message()));
             } catch (IOException | RuntimeException e) {
                 DiamondVending.LOGGER.error("Skipping vending machine catalog {} ({}): {}", id, file, e.getMessage());
             }

@@ -59,26 +59,26 @@ final class NbtWriter {
 
     @SuppressWarnings("unchecked")
     private static void writePayload(DataOutputStream out, Object value) throws IOException {
-        switch (value) {
-            case Integer i -> out.writeInt(i);
-            case String s -> out.writeUTF(s);
-            case List<?> list -> {
-                out.writeByte(list.isEmpty() ? TAG_END : tagOf(list.getFirst()));
-                out.writeInt(list.size());
-                for (Object element : list) writePayload(out, element);
-            }
-            case Map<?, ?> map -> writeCompoundBody(out, (Map<String, Object>) map);
-            default -> throw new IllegalArgumentException("unsupported NBT value: " + value);
+        if (value instanceof Integer i) {
+            out.writeInt(i);
+        } else if (value instanceof String s) {
+            out.writeUTF(s);
+        } else if (value instanceof List<?> list) {
+            out.writeByte(list.isEmpty() ? TAG_END : tagOf(list.get(0)));
+            out.writeInt(list.size());
+            for (Object element : list) writePayload(out, element);
+        } else if (value instanceof Map<?, ?> map) {
+            writeCompoundBody(out, (Map<String, Object>) map);
+        } else {
+            throw new IllegalArgumentException("unsupported NBT value: " + value);
         }
     }
 
     private static byte tagOf(Object value) {
-        return switch (value) {
-            case Integer i -> TAG_INT;
-            case String s -> TAG_STRING;
-            case List<?> l -> TAG_LIST;
-            case Map<?, ?> m -> TAG_COMPOUND;
-            default -> throw new IllegalArgumentException("unsupported NBT value: " + value);
-        };
+        if (value instanceof Integer) return TAG_INT;
+        if (value instanceof String) return TAG_STRING;
+        if (value instanceof List<?>) return TAG_LIST;
+        if (value instanceof Map<?, ?>) return TAG_COMPOUND;
+        throw new IllegalArgumentException("unsupported NBT value: " + value);
     }
 }

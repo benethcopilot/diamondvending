@@ -1,0 +1,15 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+license = "MIT"
+
+[[mods]]
+modId = "diamondvending_gametest"
+version = "0.0.0"
+displayName = "Diamond Vending game tests"
+
+[[dependencies.diamondvending_gametest]]
+modId = "diamondvending"
+mandatory = true
+versionRange = "[0,)"
+ordering = "AFTER"
+side = "BOTH"
