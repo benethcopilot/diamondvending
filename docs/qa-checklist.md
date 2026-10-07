@@ -32,6 +32,15 @@ time.
 | 7 | `icons` | `-Keys "e"` | `icons` | The inventory with red, blue, lime and black machine icons in the hotbar. Then `-Keys "{ESC}"`. |
 | 8 | `manual`, wait 2 s, `read` | `-Slot 1 -Click right` | `manual_1`; `-PageDown 10`, then `manual_11` | The crafter made the manual (it's in slot 1). On 1.20.1, which has no crafter, the scene gives the book with the recipe's own NBT instead (`the_manual_recipe_makes_the_manual` checks the recipe there). The book opens on "Welcome, New Franchise Owner!" (bold) with its text; page 11 is "More Admin Tools". Nothing is cut off. Then `-Keys "{ESC}"`. |
 
+Two 1.20.1 quirks seen on the owner's Windows machine (not the mod; the other jars don't have them):
+
+- The 1.20.1 dev client can hang while joining the Gradle dev server directly and drop after 30 seconds (the server
+  logs `lost connection: Disconnected`).
+  Joining through any plain local TCP relay (port 25566 forwarded to 25565, then
+  `-Pdiamondvending.join=127.0.0.1:25566`) works, and so does joining a real Forge server (the floor check) directly.
+- `capture.ps1` can save the 1.20.1 window as plain white. Use the game's own screenshot instead:
+  `powershell -File tools/qa/input.ps1 -Keys "{F2}"`, then the newest file in `run/1.20.1-forge/screenshots/`.
+
 JEI, EMI and REI aren't in the dev runs. If you play a pack with one of them, check that the machine and the manual
 recipes show up there too.
 
@@ -47,7 +56,9 @@ reobfuscated one in `build/libs`, never `build/devlibs`) on a real server of the
 3. In `run/1.20.1-forge-floor/`, start the server with the command it printed. Wait for `Done (`, and check its console
    says `Diamond Vending <version> loaded for Minecraft 1.20.1` and `Loaded 1 vending machine catalog(s)`.
 4. `./gradlew :1.20.1-forge:runClient -Pdiamondvending.join=127.0.0.1`, then `python tools/qa/scene.py start 1.20.1-forge`,
-   `python tools/qa/scene.py shop 1.20.1-forge`, and rows 1–2 above (buy once).
+   `python tools/qa/scene.py shop 1.20.1-forge`, and rows 1–2 above (buy once). Then craft the manual once by hand: put
+   a book and a gold nugget in the inventory's crafting grid, take the written book and open it on "Welcome, New
+   Franchise Owner!". This is the only check that Forge's `nbt` recipe result works in a real server.
 5. `python tools/qa/scene.py stop 1.20.1-forge`, close the game, and look for `ERROR` lines naming `diamondvending` in
    `run/1.20.1-forge-floor/logs/latest.log`.
 
@@ -56,5 +67,5 @@ reobfuscated one in `build/libs`, never `build/devlibs`) on a real server of the
 A copy of one of the owner's 1.20.1 Forge ATLauncher packs, never the original: the copy leaves out `saves`, `logs`,
 `crash-reports` and `screenshots`, gets its own name and `uuid` in `instance.json`, and the release jar in `mods/`.
 Launching needs the owner's account, so the owner restarts ATLauncher, launches the copy, makes a world, places a
-machine, buys from it and opens its setup screen, and reports back. This is the only check of the release jar's client
+machine, buys from it, opens its setup screen, crafts the manual (a book and a gold nugget) and reports back. This is the only check of the release jar's client
 code (renderer, tooltip, setup screen) in a real game.

@@ -27,7 +27,7 @@ catalog's entries on buttons 1…N instead of its own selections; picking **None
 | `display_name` | no | The name in the Admin tab and on the setup screen. Default: the catalog's id. |
 | `currency` | no | `{ "id": "<item>" }` — what machines using this catalog take as money (a count is ignored). A machine's own currency slot wins over it. |
 | `entries` | yes | 1 to 12 entries. They fill buttons 1, 2, 3… in order. |
-| `entries[].item` | yes | A standard item stack: `id`, `count` (how many one purchase gives, up to the item's stack size) and optional `components`. |
+| `entries[].item` | yes | A standard item stack: `id`, `count` (how many one purchase gives, up to the item's stack size) and optional `components` (`nbt` on 1.20.1, see below). |
 | `entries[].price` | yes | 0–999 currency items. 0 means free. |
 
 - Catalogs load with the datapacks and again on `/reload`. Machines using one update right after a reload.
@@ -47,10 +47,18 @@ catalog's entries on buttons 1…N instead of its own selections; picking **None
 { "item": { "id": "minecraft:enchanted_book", "nbt": "{StoredEnchantments:[{id:\"minecraft:mending\",lvl:1s}]}" }, "price": 12 }
 ```
 
+Write the NBT exactly the way the game stores it, number types included (`lvl:1s`, not `lvl:1`). The game accepts
+either, but an owned machine sells from its Stock only items whose NBT matches the entry exactly, so with `lvl:1` real
+mending books in the Stock never match and the button shows SOLD OUT. To see an item's NBT as the game stores it,
+hold it and run `/data get entity @s SelectedItem`.
+
 A catalog written for the other version is skipped rather than selling plain items, and the log says how to fix it:
 `components` on 1.20.1 gives *item components need Minecraft 1.20.5 or newer; on 1.20.1 write the item's NBT as "nbt"*,
-and `nbt` on 1.21.1 or 26.1 gives *nbt is for Minecraft 1.20.1; on this version use "components"*. 1.20.1 datapacks also
-use the older plural folder names, e.g. `tags/items` instead of `tags/item`.
+and `nbt` on 1.21.1 or 26.1 gives *nbt is for Minecraft 1.20.1; on this version use "components"*.
+
+Minecraft's own data folders have their older plural names on 1.20.1, e.g. `tags/items` instead of `tags/item` and
+`recipes` instead of `recipe`. The catalog folder doesn't change: it is `diamondvending/catalog` on every version, and a
+catalog anywhere else isn't loaded at all.
 
 ## Currency
 

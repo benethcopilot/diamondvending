@@ -27,3 +27,13 @@ Found in Plan 5's review and left for later — none loses or duplicates items.
 - A machine placed from a creative player's machine item shares its button templates with that item (nothing changes
   templates today, so nothing shows). Copying them in `MachineSetup.applyTo` would remove the risk.
 - "An item from a removed mod in a kept setup" is tested at the component level, not by placing such an item.
+
+## Small known issues (1.1.0, Forge 1.20.1)
+
+Found in Plan 7's review — none loses or duplicates items.
+
+- A kept setup (on the machine item) doesn't keep Forge capability data: 1.20.1's `ItemStack.CODEC`, which
+  `MachineSetup.CODEC` uses, writes only `id`, `Count` and `tag`. A button selling a modded item whose state lives only
+  in capabilities comes back with fresh ones after the machine is broken and placed again, so stocked items may not
+  match and the button shows SOLD OUT until the owner sets it again. Stock, credit, cash box and the placed machine's
+  selections keep capabilities (`ItemStack.save`).
