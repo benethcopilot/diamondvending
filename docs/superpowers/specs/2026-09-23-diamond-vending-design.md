@@ -5,32 +5,34 @@
 - **Mod ID:** `diamondvending` · **Display name:** Diamond Vending · **Java package / Gradle group:** `diamondvending`
 - **License:** MIT · **Mod-list author:** "Diamond Vending Team"
 - Research behind these decisions: [`docs/research.md`](../../research.md). Deferred ideas: [`docs/backlog.md`](../../backlog.md).
+- **Forge 1.20.1:** [2026-09-28-forge-1.20.1-design.md](2026-09-28-forge-1.20.1-design.md)
 
 ## 1. Goal
 
 A Minecraft Java Edition mod that adds a **2×2 vending machine** that looks like a real
 snack machine and sells items for **diamonds**. Each of its 12 items has its **own physical
 button** on the machine's side panel. It must drop into the modpacks we play (NeoForge and
-Fabric, Minecraft 1.21.1 and 26.1.x) with **no extra library dependencies**, and work on
+Fabric, Minecraft 1.21.1 and 26.1.x; Forge 1.20.1 from 1.1.0) with **no extra library dependencies**, and work on
 dedicated servers.
 
 ### Success criteria
 
-1. Four jars build from one codebase: {1.21.1, 26.1.2} × {NeoForge, Fabric}.
+1. Five jars build from one codebase: {1.21.1, 26.1.2} × {NeoForge, Fabric}, plus 1.20.1 Forge (see the Forge 1.20.1
+   spec).
 2. Each jar loads in a real modpack on its version/loader with no additional required mods
    (Fabric jars require only Fabric API, which every Fabric pack already has).
 3. A player can place a machine, stock it, price it, and another player can buy from it on a
    dedicated server — with no GUI involved in buying.
 4. An admin can turn a machine into an infinite "diamond sink" shop, either by hand or by
    assigning a datapack catalog.
-5. All unit tests and GameTests pass on all four targets.
+5. All unit tests and GameTests pass on all five targets.
 
 ### Decisions made during brainstorming
 
 | Topic | Decision |
 |---|---|
 | Shop model | **Both**: player-owned (stocked, priced, collects diamonds) and infinite/admin (unlimited stock, diamonds destroyed) |
-| Targets | 1.21.1 + 26.1.x, NeoForge + Fabric; one codebase via **Stonecutter** |
+| Targets | 1.21.1 + 26.1.x, NeoForge + Fabric; one codebase via **Stonecutter**. Added in 1.1.0: 1.20.1 Forge (see the Forge 1.20.1 spec) |
 | Form factor | **2 wide × 2 tall** snack machine, **12 selections**, 12 buttons on a right-hand side panel |
 | Payment | **Both**: buttons pull from inventory; optional pre-loaded **credit** via coin slot, spent first |
 | Dispensing | Item **drops into the pickup tray**; right-click the tray to collect |
@@ -419,10 +421,10 @@ Unlocked in the recipe book when the player first obtains a diamond.
   versions). Strip the template's extra library dependencies (Fzzy Config, Mixson,
   MixinConstraints, Sodium) — the mod has **no runtime dependencies** besides the loader (and
   Fabric API on Fabric).
-- Targets: `1.21.1-fabric`, `1.21.1-neoforge`, `26.1.2-fabric`, `26.1.2-neoforge`. Adding 26.2
-  later is one new Stonecutter node.
+- Targets: `1.21.1-fabric`, `1.21.1-neoforge`, `26.1.2-fabric`, `26.1.2-neoforge`, and from 1.1.0 `1.20.1-forge`
+  (the Forge 1.20.1 spec). Adding 26.2 later is one new Stonecutter node.
 - Toolchain: **JDK 25** to run Gradle (required by 26.1); Gradle toolchains auto-provision JDK 21
-  for 1.21.1 compilation. Plugin and loader versions: latest stable at scaffold time, pinned in
+  for 1.21.1 compilation and JDK 17 for 1.20.1. Plugin and loader versions: latest stable at scaffold time, pinned in
   `stonecutter.properties.toml`.
 - Version/loader differences are expressed with Stonecutter comments (`//? if neoforge`,
   `//? if >=26.1`) and kept inside the smallest possible spots, mostly `platform/`.
@@ -498,7 +500,7 @@ Color lives in the block state. Transient display messages are block events, not
   - `MachineProblems`: each problem's trigger, owned-only problems never appear on infinite
     machines, ordering when several are active.
   - Lang completeness: every problem and per-click message has a translation key with text.
-- **GameTests** (in-game automated tests on all four targets):
+- **GameTests** (in-game automated tests on all five targets):
   - Placement creates 4 correct parts; blocked placement consumes nothing.
   - Breaking any part removes all 4 with the right drops (owned vs infinite, creative vs survival).
   - Clicking button *n* moves the right goods into the tray and takes the right currency.
@@ -515,7 +517,7 @@ Color lives in the block state. Transient display messages are block events, not
 
 ## 11. Out of scope for v1
 
-Tracked with notes in [`docs/backlog.md`](../../backlog.md): hopper/pipe automation · Forge
-1.20.1 · Minecraft 26.2 · village/structure spawning · Patchouli guide · custom sound files ·
+Tracked with notes in [`docs/backlog.md`](../../backlog.md): hopper/pipe automation · Minecraft
+26.2 · village/structure spawning · Patchouli guide · custom sound files ·
 diamond blocks as payment / making change · sales logs & owner notifications · publishing to
 CurseForge/Modrinth · currency slot for non-admin owners.

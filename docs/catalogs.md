@@ -38,6 +38,20 @@ catalog's entries on buttons 1…N instead of its own selections; picking **None
   the money disappears.
 - The mod ships `diamondvending:example_snacks`.
 
+### Minecraft 1.20.1 (Forge)
+
+1.20.1 items have no components; an entry's item carries its NBT as a string instead, written the way `/give` takes it:
+`{ "id": ..., "count": ..., "nbt": "<SNBT>" }`. The mending book from the example above is
+
+```json
+{ "item": { "id": "minecraft:enchanted_book", "nbt": "{StoredEnchantments:[{id:\"minecraft:mending\",lvl:1s}]}" }, "price": 12 }
+```
+
+A catalog written for the other version is skipped rather than selling plain items, and the log says how to fix it:
+`components` on 1.20.1 gives *item components need Minecraft 1.20.5 or newer; on 1.20.1 write the item's NBT as "nbt"*,
+and `nbt` on 1.21.1 or 26.1 gives *nbt is for Minecraft 1.20.1; on this version use "components"*. 1.20.1 datapacks also
+use the older plural folder names, e.g. `tags/items` instead of `tags/item`.
+
 ## Currency
 
 A machine takes, first match wins:
@@ -46,7 +60,8 @@ A machine takes, first match wins:
 2. its catalog's `currency`,
 3. the item tag **`#diamondvending:currency`**, which ships with just `minecraft:diamond`.
 
-To change the default for a whole pack, override `data/diamondvending/tags/item/currency.json` in a datapack. The tag's
+To change the default for a whole pack, override `data/diamondvending/tags/item/currency.json` in a datapack
+(`tags/items/currency.json` on 1.20.1). The tag's
 first item is the one shown on price tags. Currency matches by item type; names and enchantments on the coins don't
 matter. Credit is stored as the items that went in, so coin return always gives those back, even after the currency
 changes.
@@ -77,3 +92,5 @@ Fields on the lower-left block:
 | `currency` | string | An item id: the currency slot. |
 | `selections` | list of `{slot: 0–11, item: {id, count, components}, price: 0–999}` | The machine's own buttons (`slot` 0 is button 1). |
 | `stock`, `cash_box`, `tray` | `{Items: [{Slot: 0b, id, count}]}` | Contents. |
+
+On 1.20.1, items in these fields are written the old way: `{id, Count: 1b, tag}` (a byte count, and NBT under `tag`).

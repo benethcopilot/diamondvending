@@ -7,7 +7,7 @@ Each entry notes why it was deferred and what it would take. Every entry is also
 | Issue | Idea | Why deferred / notes |
 |---|---|---|
 | [#1](https://github.com/benethcopilot/diamondvending/issues/1) | **Hopper / pipe automation** — hoppers feed the stock storage; pull diamonds out of the cash box | Item-transfer APIs differ per loader (NeoForge capabilities vs Fabric Transfer API) and per version. Stock/cash box are already separate inventories, so this is additive. Decide which faces are input vs output. |
-| [#2](https://github.com/benethcopilot/diamondvending/issues/2) | **Forge 1.20.1 support** | Big long-tail install base (older Create / BMC4 packs), but a third API generation (pre-data-components) means many more code branches and tests. |
+| [#2](https://github.com/benethcopilot/diamondvending/issues/2) | **Forge 1.20.1 support** | Done in 1.1.0 (Plan 7). |
 | [#3](https://github.com/benethcopilot/diamondvending/issues/3) | **Minecraft 26.2 support** | Add one Stonecutter node once 26.1 builds are stable and packs start moving. |
 | [#4](https://github.com/benethcopilot/diamondvending/issues/4) | **Village / structure spawning** | e.g. an infinite machine with a catalog appearing in villages (MacTso's mod does this). Needs structure/jigsaw work per version. |
 | [#5](https://github.com/benethcopilot/diamondvending/issues/5) | **Patchouli guide book** | Richer illustrated manual, as an *optional* integration only (Patchouli must not become a required dependency). Check its 26.1 status first. |
